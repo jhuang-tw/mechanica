@@ -1,0 +1,6 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    { "name": "mechanica-meta", "runtimeExecutable": "node", "runtimeArgs": ["server/serve.mjs"], "port": 8098 }
+  ]
+}

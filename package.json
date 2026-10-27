@@ -1,0 +1,19 @@
+{
+  "name": "mechanica",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "start": "vite build --logLevel warn && node server/serve.mjs",
+    "test": "node --test",
+    "model:placeholder": "node tools/placeholder-bike.mjs"
+  },
+  "dependencies": {
+    "three": "0.181.0"
+  },
+  "devDependencies": {
+    "vite": "7.1.4"
+  }
+}
