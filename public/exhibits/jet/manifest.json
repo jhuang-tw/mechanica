@@ -1,0 +1,500 @@
+{
+ "id": "jet",
+ "name": "噴射引擎",
+ "title": "渦輪風扇噴射引擎",
+ "model": "model.glb",
+ "thumb": "thumb.jpg",
+ "view": [
+  0.7,
+  0.5,
+  -1
+ ],
+ "intro": "這是一台民航機的渦輪風扇引擎，左上角切開了，看得到風扇、壓縮機、燃燒室和渦輪。問我「推力從哪裡來」。",
+ "suggest": [
+  "推力從哪裡來？",
+  "為什麼要兩根軸？",
+  "飛機降落怎麼減速？"
+ ],
+ "looksLike": "噴射引擎、飛機引擎、渦扇引擎、渦輪引擎、飛機",
+ "parts": [
+  {
+   "id": "nacelle_inlet",
+   "name": "進氣唇口",
+   "en": "turbofan nacelle inlet",
+   "info": "引擎最前面的圓唇，讓空氣平順地流進風扇，就算飛機抬頭或側風也不會亂。",
+   "aliases": [
+    "進氣口",
+    "進氣道",
+    "唇口"
+   ]
+  },
+  {
+   "id": "fan",
+   "name": "風扇",
+   "en": "turbofan fan",
+   "info": "最前面那片大風扇。它推的空氣大部分不進核心，直接從外圈往後吹出去，這股「旁通氣流」提供了大部分推力。",
+   "aliases": [
+    "扇葉",
+    "風扇葉片",
+    "葉片"
+   ]
+  },
+  {
+   "id": "fan_case",
+   "name": "風扇機匣",
+   "en": "turbofan fan case",
+   "info": "包住風扇的厚機匣。萬一葉片斷裂，要能把它擋在裡面。",
+   "aliases": [
+    "機匣",
+    "外殼"
+   ]
+  },
+  {
+   "id": "fan_cowl_left",
+   "name": "左風扇整流罩",
+   "en": "turbofan left fan cowl",
+   "info": "可以往上掀開的蓋子，維修人員從這裡檢查引擎外面的附件。",
+   "aliases": [
+    "整流罩",
+    "蓋子",
+    "引擎蓋"
+   ]
+  },
+  {
+   "id": "fan_cowl_right",
+   "name": "右風扇整流罩",
+   "en": "turbofan right fan cowl",
+   "info": "右邊那片可以掀開的整流罩。",
+   "aliases": [
+    "整流罩",
+    "蓋子",
+    "引擎蓋"
+   ]
+  },
+  {
+   "id": "thrust_reverser",
+   "name": "反推力裝置",
+   "en": "turbofan thrust reverser",
+   "info": "降落後往後滑開，露出格柵，把風扇吹出的空氣轉向前方，幫飛機減速。",
+   "aliases": [
+    "反推",
+    "反向推力"
+   ]
+  },
+  {
+   "id": "booster",
+   "name": "低壓壓縮機",
+   "en": "turbofan booster (low-pressure compressor)",
+   "info": "接在風扇後面、和風扇同一根軸。先把進到核心的空氣壓一次。",
+   "aliases": [
+    "增壓器",
+    "低壓壓氣機"
+   ]
+  },
+  {
+   "id": "hp_compressor",
+   "name": "高壓壓縮機",
+   "en": "turbofan high-pressure compressor",
+   "info": "一排排越來越小的葉片，把空氣再壓到大氣壓力的幾十倍，溫度也跟著升高。",
+   "aliases": [
+    "壓縮機",
+    "壓氣機",
+    "高壓壓氣機"
+   ]
+  },
+  {
+   "id": "combustor",
+   "name": "燃燒室",
+   "en": "turbofan combustor",
+   "info": "燃油噴進被壓縮的空氣裡持續燃燒，氣體溫度超過一千多度、體積急速膨脹。",
+   "aliases": [
+    "燃燒器",
+    "燃燒"
+   ]
+  },
+  {
+   "id": "hp_turbine",
+   "name": "高壓渦輪",
+   "en": "turbofan high-pressure turbine",
+   "info": "最熱的地方。燃燒後的氣體吹動它，再經高壓軸帶動高壓壓縮機。",
+   "aliases": [
+    "渦輪",
+    "高壓渦輪"
+   ]
+  },
+  {
+   "id": "lp_turbine",
+   "name": "低壓渦輪",
+   "en": "turbofan low-pressure turbine",
+   "info": "後面幾級比較大的渦輪，從剩下的氣流拿能量，經低壓軸帶動最前面的風扇。",
+   "aliases": [
+    "渦輪",
+    "低壓渦輪"
+   ]
+  },
+  {
+   "id": "hp_shaft",
+   "name": "高壓軸",
+   "en": "turbofan high-pressure shaft",
+   "info": "空心的短軸，連接高壓渦輪和高壓壓縮機，轉得最快。",
+   "aliases": [
+    "高壓軸",
+    "軸"
+   ]
+  },
+  {
+   "id": "lp_shaft",
+   "name": "低壓軸",
+   "en": "turbofan low-pressure shaft",
+   "info": "穿過高壓軸中間的細長軸，從最後面的低壓渦輪一路通到最前面的風扇。",
+   "aliases": [
+    "低壓軸",
+    "主軸",
+    "軸"
+   ]
+  },
+  {
+   "id": "core_case",
+   "name": "核心機匣",
+   "en": "turbofan core case",
+   "info": "包住壓縮機、燃燒室和渦輪的機匣，要承受高壓和高溫。",
+   "aliases": [
+    "核心",
+    "機匣"
+   ]
+  },
+  {
+   "id": "core_cowl",
+   "name": "核心整流罩",
+   "en": "turbofan core cowl",
+   "info": "核心外面的流線外殼，旁通氣流就從它和風扇機匣之間吹過。",
+   "aliases": [
+    "整流罩"
+   ]
+  },
+  {
+   "id": "exhaust",
+   "name": "尾噴管",
+   "en": "turbofan exhaust nozzle",
+   "info": "核心的熱氣從這裡噴出。噴口的形狀讓氣流加速，產生一部分推力。",
+   "aliases": [
+    "噴嘴",
+    "排氣口",
+    "噴口"
+   ]
+  },
+  {
+   "id": "radial_driveshaft",
+   "name": "徑向傳動軸",
+   "en": "turbofan radial driveshaft",
+   "info": "從高壓軸用一對傘齒輪（48:32）往下取出動力，帶動附件齒輪箱；啟動時方向反過來，由啟動機帶高壓軸轉起來。",
+   "aliases": [
+    "傳動軸",
+    "取力軸"
+   ]
+  },
+  {
+   "id": "accessory_gearbox",
+   "name": "附件齒輪箱",
+   "en": "turbofan accessory gearbox",
+   "info": "掛在引擎下方，帶動發電機、燃油泵和液壓泵。飛機的電和液壓都從這裡來。",
+   "aliases": [
+    "附件箱",
+    "齒輪箱"
+   ]
+  },
+  {
+   "id": "stand",
+   "name": "展示架",
+   "en": "turbofan display stand",
+   "info": "放引擎用的架子，不是引擎的一部分。",
+   "aliases": [
+    "架子",
+    "支架"
+   ]
+  }
+ ],
+ "drives": [
+  {
+   "id": "run",
+   "name": "運轉（低壓軸、高壓軸）",
+   "rpm": 30,
+   "moves": [
+    {
+     "part": "fan",
+     "ratio": 1
+    },
+    {
+     "part": "booster",
+     "ratio": 1
+    },
+    {
+     "part": "lp_shaft",
+     "ratio": 1
+    },
+    {
+     "part": "lp_turbine",
+     "ratio": 1
+    },
+    {
+     "part": "hp_compressor",
+     "ratio": 3
+    },
+    {
+     "part": "hp_shaft",
+     "ratio": 3
+    },
+    {
+     "part": "hp_turbine",
+     "ratio": 3
+    },
+    {
+     "part": "radial_driveshaft",
+     "ratio": 4.5
+    }
+   ]
+  },
+  {
+   "id": "cowls",
+   "name": "掀開整流罩",
+   "swing": 60,
+   "period": 6,
+   "oneWay": true,
+   "moves": [
+    {
+     "part": "fan_cowl_left",
+     "ratio": 1
+    },
+    {
+     "part": "fan_cowl_right",
+     "ratio": -1
+    }
+   ]
+  },
+  {
+   "id": "reverse",
+   "name": "反推力裝置往後滑開",
+   "swing": 1,
+   "period": 5,
+   "oneWay": true,
+   "moves": [
+    {
+     "part": "thrust_reverser",
+     "ratio": 1,
+     "slide": [
+      -0.4,
+      0,
+      0
+     ]
+    }
+   ]
+  }
+ ],
+ "lessons": [
+  {
+   "id": "thrust",
+   "title": "推力從哪裡來",
+   "steps": [
+    {
+     "say": "風扇把大量空氣往後推。大部分空氣不進核心，從外圈直接吹出去。",
+     "parts": [
+      "fan",
+      "nacelle_inlet",
+      "fan_case"
+     ],
+     "drive": "run",
+     "speed": 0.6,
+     "quiz": {
+      "q": "這種渦輪風扇引擎，大部分推力來自哪裡？",
+      "options": [
+       [
+        "風扇推出的外圈空氣",
+        true,
+        "民航機的渦扇引擎大約八成推力來自旁通氣流：推大量空氣、速度不用太快，比較省油也比較安靜。"
+       ],
+       [
+        "尾巴噴出的火",
+        false,
+        "核心的熱氣只占一小部分推力，它主要的工作是轉動渦輪。"
+       ],
+       [
+        "燃燒室的爆炸",
+        false,
+        "燃燒是持續的，不是爆炸；它產生的能量大多拿去轉渦輪。"
+       ]
+      ]
+     }
+    },
+    {
+     "say": "進到核心的空氣先被低壓、再被高壓壓縮機一級一級壓縮。",
+     "parts": [
+      "booster",
+      "hp_compressor"
+     ],
+     "drive": "run",
+     "speed": 0.6,
+     "quiz": {
+      "q": "為什麼燃燒前要先把空氣壓縮？",
+      "options": [
+       [
+        "壓縮後燃燒，同樣的燃油能做更多功",
+        true,
+        "壓力越高，燃燒後膨脹得越厲害，能從渦輪拿回的能量越多，效率越高。"
+       ],
+       [
+        "讓空氣變冷",
+        false,
+        "壓縮會讓空氣變熱，不是變冷。"
+       ],
+       [
+        "讓引擎比較輕",
+        false,
+        "壓縮機很重，為的是效率。"
+       ]
+      ]
+     }
+    },
+    {
+     "say": "燃油在燃燒室裡持續燃燒，氣體變得又熱又膨脹。",
+     "parts": [
+      "combustor"
+     ]
+    },
+    {
+     "say": "熱氣吹過高壓渦輪和低壓渦輪，渦輪再經兩根軸轉動前面的壓縮機和風扇，剩下的熱氣從尾噴管噴出。",
+     "parts": [
+      "hp_turbine",
+      "lp_turbine",
+      "hp_shaft",
+      "lp_shaft",
+      "exhaust"
+     ],
+     "drive": "run",
+     "speed": 0.6,
+     "quiz": {
+      "q": "最前面的大風扇，是什麼在轉它？",
+      "options": [
+       [
+        "最後面的低壓渦輪，經低壓軸",
+        true,
+        "低壓軸從尾巴一路穿到前面，所以渦輪在後、風扇在前，卻是同一根軸。"
+       ],
+       [
+        "電動馬達",
+        false,
+        "風扇是靠引擎自己的渦輪轉的，不用電。"
+       ],
+       [
+        "迎面吹來的風",
+        false,
+        "風吹只會讓它慢慢轉；推力需要渦輪的力量。"
+       ]
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "id": "spools",
+   "title": "兩根軸，各轉各的",
+   "steps": [
+    {
+     "say": "低壓軸連著風扇、低壓壓縮機和低壓渦輪。",
+     "parts": [
+      "fan",
+      "booster",
+      "lp_shaft",
+      "lp_turbine"
+     ],
+     "drive": "run",
+     "speed": 0.6
+    },
+    {
+     "say": "高壓軸套在外面，連著高壓壓縮機和高壓渦輪，轉得快好幾倍。",
+     "parts": [
+      "hp_compressor",
+      "hp_shaft",
+      "hp_turbine"
+     ],
+     "drive": "run",
+     "speed": 0.6,
+     "quiz": {
+      "q": "為什麼不讓風扇和高壓壓縮機用同一根軸、轉一樣快？",
+      "options": [
+       [
+        "風扇太大，轉那麼快葉尖會超音速",
+        true,
+        "風扇直徑最大，轉太快葉尖就超過音速，又吵又沒效率；小的高壓壓縮機則要轉快才壓得夠。分兩根軸就能各自用最好的轉速。"
+       ],
+       [
+        "為了好組裝",
+        false,
+        "兩根套在一起的軸其實更難組裝，是為了效率。"
+       ],
+       [
+        "沒有理由",
+        false,
+        "有理由：大風扇和小壓縮機最好的轉速差很多。"
+       ]
+      ]
+     }
+    },
+    {
+     "say": "徑向傳動軸從高壓軸取出動力，往下帶動附件齒輪箱的發電機和油泵。",
+     "parts": [
+      "radial_driveshaft",
+      "accessory_gearbox",
+      "hp_shaft"
+     ],
+     "drive": "run",
+     "speed": 0.6
+    }
+   ]
+  },
+  {
+   "id": "service",
+   "title": "掀開來看、降落反推",
+   "steps": [
+    {
+     "say": "兩片風扇整流罩往上掀開，維修人員就能看到核心外面的附件。",
+     "parts": [
+      "fan_cowl_left",
+      "fan_cowl_right",
+      "accessory_gearbox"
+     ],
+     "drive": "cowls",
+     "speed": 1
+    },
+    {
+     "say": "降落後，反推力裝置往後滑開，把風扇吹出的空氣轉向前方，幫飛機減速。",
+     "parts": [
+      "thrust_reverser",
+      "fan"
+     ],
+     "drive": "reverse",
+     "speed": 1,
+     "quiz": {
+      "q": "反推力裝置打開時，風扇有反過來轉嗎？",
+      "options": [
+       [
+        "沒有，風扇照轉，是空氣被轉向",
+        true,
+        "風扇方向不變，反推裝置把外圈氣流擋住、從格柵轉向前方吹出。"
+       ],
+       [
+        "有，風扇倒轉",
+        false,
+        "風扇和渦輪都不能倒轉；改變的是氣流方向。"
+       ],
+       [
+        "引擎會關掉",
+        false,
+        "反推時引擎反而會加大油門。"
+       ]
+      ]
+     }
+    }
+   ]
+  }
+ ]
+}

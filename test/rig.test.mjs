@@ -139,3 +139,14 @@ test('quest: the IPD wheel turns while both eye modules slide apart and back; st
   rig.stop(); rig.update(0);
   assert.ok(Math.abs(gap() - g0) < 1e-9);
 });
+
+test('jet: HP spool turns 3× the LP spool, cowls open outward, the reverser slides aft and back', async () => {
+  const m = exhibit('jet'), rig = new Rig(await loadModel('jet'), m), part = (id) => rig.parts.get(id);
+  rig.drive('run', 1); rig.update(1);
+  assert.ok(Math.abs(part('hp_shaft').angle / part('fan').angle - 3) < 1e-9 && Math.abs(part('radial_driveshaft').angle / part('hp_shaft').angle - 1.5) < 1e-9);
+  rig.reset(); rig.drive('cowls', 1); rig.drive('reverse', 1); rig.update(2.5);   // half the 5 s reverser period: fully aft
+  const down = (id) => new THREE.Vector3(0, -1, 0).applyQuaternion(part(id).obj.quaternion);
+  assert.ok(down('fan_cowl_left').z < -0.5 && down('fan_cowl_right').z > 0.5, 'cowls swing outward');
+  assert.ok(Math.abs(part('thrust_reverser').offset.x + 0.4) < 1e-6);
+  rig.stop(); rig.update(0); assert.equal(part('thrust_reverser').offset.x, 0);
+});

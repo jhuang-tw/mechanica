@@ -75,7 +75,7 @@ export class Viewer {
     const box = new THREE.Box3().setFromObject(this.model), s = box.getSize(new THREE.Vector3()).length();
     Object.assign(this.controls, { minDistance: s * 0.05, maxDistance: s * 4 });
     this.floor.scale.setScalar(Math.max(1, s / 2.5));
-    this.fit(box, new THREE.Vector3(0.55, 0.35, 1).normalize());
+    this.fit(box, new THREE.Vector3(...(this.rig?.m.view || [0.55, 0.35, 1])).normalize());   // manifest `view`: the side worth seeing first (a cutaway)
     this.camera.position.copy(this.goal.pos); this.controls.target.copy(this.goal.target); this.goal = null;
     this.controls.update();
   }
