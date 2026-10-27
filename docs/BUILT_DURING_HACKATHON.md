@@ -31,6 +31,7 @@ None of its code, models or media are in this repository; everything here was re
 | Steam locomotive mechanisms from scratch: CAD spoked wheelsets, cutaway cylinders, pistons, valves, crossheads; Walschaerts valve gear, boiler tubes, firebox, steam pipes | — | `14c8ce8` | 2026-10-27 |
 | Helicopter mechanisms from scratch: CAD main gearbox (bevel + planetary), swashplate, teetering hub, turboshaft casing, tail gears; lofted blades, servos, controls, skids | — | `09ad2dd` | 2026-10-27 |
 | Mixed-reality headset from scratch: lofted front cover with sensor windows, mainboard with SoC, heatsink and heat pipe, blower fan with spinning rotor, cameras and depth sensor, battery, pancake lenses and displays on sliding IPD carriages with a thumb wheel, face cushion, speakers, strap | — | `56efaf2` | 2026-10-27 |
+| Car body from a Tripo3D shell: aligned to the CAD axles, Tripo wheels cut away, decimated to ~18k triangles, split into hood, four doors, trunk and body with hinge pivots; metallic-roughness map derived from the colour texture; seats and dashboard modelled in Blender | — | (this commit) | 2026-10-28 |
 
 ## Third-party (unmodified dependencies, used under their licenses)
 | Package | License |
@@ -46,5 +47,6 @@ None of its code, models or media are in this repository; everything here was re
 | Asset | Made with | Rights |
 |---|---|---|
 | Bicycle model | `tools/exhibits/bike/cad.py` (build123d) + `build.py` (Blender) + `tools/optimize-glb.mjs` | Ours |
+| Car body shell (in `public/exhibits/car/model.glb`) | Tripo3D Multiview to 3D from Codex-generated reference views (`tools/exhibits/car/tripo-ref`), generated 2026-10-27, then processed by `tools/exhibits/car/build.py` | Generated on Jim's Tripo3D account; open-source use needs a paid plan, to be confirmed |
 | Voice-over | `<Jim / TTS service>` | `<terms>` |
 | Music | `<source>` | Royalty-free |

@@ -5,7 +5,8 @@
 # Node origins are rotation centres; spin axes are written as extras.axis (glTF axes); shafts across the car spin about
 # glTF -z (Blender +y), so a positive turn rolls the wheels forward. Front wheels hang on their steering
 # knuckle (knuckle turns about the kingpin, the wheel spins inside it); brake discs hang on their wheel.
-# The body shell, seats and dashboard come from Tripo (tools/tripo-ref) and are added when those GLBs exist.
+# The body shell is a Tripo3D mesh (tools/exhibits/car/tripo/body.glb, kept out of git): aligned to the CAD axles, wheels cut away,
+# decimated and split along its panel lines into hood, doors, trunk and body. Seats and dashboard are modelled here.
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from common import *   # Mesh, part, run, V, Matrix, Y, TAU, maths
@@ -51,6 +52,9 @@ common.MATS.update({   # base colour (linear), metallic, roughness
     'brass':  ((0.60, 0.42, 0.15), 1.0, 0.35),
     'spring': ((0.70, 0.55, 0.05), 0.3, 0.40),
     'belt':   ((0.03, 0.03, 0.035), 0.0, 0.70),
+    'seat':   ((0.035, 0.035, 0.04), 0.0, 0.80),
+    'trim':   ((0.06, 0.06, 0.065), 0.0, 0.60),
+    'screen': ((0.005, 0.006, 0.01), 0.3, 0.08),
 })
 
 def helix(m, a, b, r, turns, wire, mat):
@@ -235,9 +239,124 @@ def chassis_misc():
     for side in (-1, 1): m.tube(V((FA + 0.30, side * 0.36, 0.25)), V((FA - 0.40, side * 0.36, 0.25)), 0.03, 'cast', 12)
     for x in (FA + 0.28, FA - 0.38): m.tube(V((x, -0.38, 0.25)), V((x, 0.38, 0.25)), 0.028, 'cast', 12)
 
+# ---------------------------------------------------------------- Tripo body shell
+TRIPO = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'tripo', 'body.glb')
+SHELL_TRIS, TEX = 18000, 2048
+
+def body_material(img):
+    """Tripo colour texture plus a metallic-roughness map derived from it: bright grey paint is metallic, glass and trim satin."""
+    import numpy as np
+    img.scale(TEX, TEX); img.file_format = 'JPEG'
+    px = np.array(img.pixels[:], dtype=np.float32).reshape(-1, 4)
+    v = px[:, :3].max(1); sat = (v - px[:, :3].min(1)) / np.maximum(v, 1e-4)
+    paint = np.clip((v - 0.45) / 0.20, 0, 1) * np.clip((0.25 - sat) / 0.15, 0, 1)
+    metal = 0.55 * paint
+    rough = 0.62 - 0.27 * paint - 0.3 * np.clip((sat - 0.4) / 0.3, 0, 1)            # dark glass and trim stay satin, lamps glossy
+    mr = bpy.data.images.new('body_mr', TEX, TEX)
+    mr.pixels.foreach_set(np.stack([np.ones_like(v), np.clip(rough, 0.05, 1), metal, np.ones_like(v)], 1).ravel())
+    mr.scale(TEX // 2, TEX // 2)                                                      # the exporter only keeps saved pixels: write, reload
+    path = os.path.join(__import__('tempfile').gettempdir(), 'car_body_mr.jpg')
+    mr.filepath_raw = path; mr.file_format = 'JPEG'; mr.save(); bpy.data.images.remove(mr)
+    mr = bpy.data.images.load(path); mr.name = 'body_mr'
+    m = bpy.data.materials.new('body_paint'); m.use_nodes = True; nt = m.node_tree; b = nt.nodes['Principled BSDF']
+    tc = nt.nodes.new('ShaderNodeTexImage'); tc.image = img; nt.links.new(tc.outputs['Color'], b.inputs['Base Color'])
+    tm = nt.nodes.new('ShaderNodeTexImage'); tm.image = mr; mr.colorspace_settings.name = 'Non-Color'
+    sep = nt.nodes.new('ShaderNodeSeparateColor'); nt.links.new(tm.outputs['Color'], sep.inputs['Color'])
+    nt.links.new(sep.outputs['Green'], b.inputs['Roughness']); nt.links.new(sep.outputs['Blue'], b.inputs['Metallic'])
+
+# panel lines in the aligned frame, read off the Tripo side view (x forward from mid-wheelbase, z up from the ground)
+B_PILLAR = -0.205
+def panel(c, n):
+    x, y, z = c
+    if abs(y) > 0.50 and abs(n.y) > 0.3 and 0.30 < z < 1.36:
+        front = 0.90 if z < 0.98 else 0.634 - (z - 0.98) / 0.39 * 0.69      # front door follows the window arc above the belt
+        rear = -0.88 if z < 0.70 else (-1.19 if z < 0.98 else -1.0)
+        s = 'l' if y > 0 else 'r'
+        if B_PILLAR < x < front: return f'door_f{s}'
+        if rear < x < B_PILLAR: return f'door_r{s}'
+    if x > 1.08 and z > 0.72 and n.z > 0.75 and abs(y) < 0.64: return 'hood'
+    if x < -1.80 and z > 0.80 and abs(y) < 0.55 and (n.z > 0.45 or n.x < -0.5): return 'trunk'
+    return 'body'
+
+def tripo_body():
+    if not os.path.exists(TRIPO): print('no Tripo body, shell skipped:', TRIPO); return
+    bpy.ops.import_scene.gltf(filepath=TRIPO)
+    ob = next(o for o in bpy.context.selected_objects if o.type == 'MESH'); me = ob.data
+    me.transform(Matrix.Rotation(pi / 2, 4, 'Z') @ ob.matrix_world)            # Tripo front is -y: turn it to +x
+    for o in list(bpy.context.selected_objects):
+        if o != ob: bpy.data.objects.remove(o)
+    ob.parent = None; ob.matrix_world = Matrix.Identity(4)
+    zs = [v.co.z for v in me.vertices]; z0 = min(zs); h = max(zs) - z0
+    feet = [v.co for v in me.vertices if v.co.z < z0 + 0.004 * h]               # tyre contact patches
+    front, rear = [c.x for c in feet if c.x > 0], [c.x for c in feet if c.x < 0]
+    xf, xr = sum(front) / len(front), sum(rear) / len(rear)
+    k = (FA - RA) / (xf - xr); ym = sum(v.co.y for v in me.vertices) / len(me.vertices)
+    me.transform(Matrix.Scale(k, 4) @ Matrix.Translation(V((-(xf + xr) / 2, -ym, -z0))))
+    xs = [v.co.x for v in me.vertices]
+    print(f'Tripo body: scale {k:.3f}, length {max(xs) - min(xs):.2f} m')
+    bm = bmesh.new(); bm.from_mesh(me)
+    bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=0.0004)
+    hubs = [V((x, s * TW, WR)) for x in (FA, RA) for s in (1, -1)]
+    def in_wheel(f):
+        return all(any(((p.x - c.x) ** 2 + (p.z - c.z) ** 2) ** 0.5 < WR + 0.012 and abs(p.y - c.y) < 0.13 for c in hubs) for p in (v.co for v in f.verts))
+    bmesh.ops.delete(bm, geom=[f for f in bm.faces if in_wheel(f)], context='FACES')
+    bm.to_mesh(me); bm.free()
+    dec = ob.modifiers.new('d', 'DECIMATE'); dec.ratio = min(1, SHELL_TRIS / len(me.polygons)); dec.use_collapse_triangulate = True
+    bpy.context.view_layer.objects.active = ob; bpy.ops.object.modifier_apply(modifier='d')
+    body_material(next(n.image for n in me.materials[0].node_tree.nodes if n.type == 'TEX_IMAGE'))
+    me.polygons.foreach_set('use_smooth', [True] * len(me.polygons))
+    groups = {}
+    for f in me.polygons: groups.setdefault(panel(f.center, f.normal), []).append(f.index)
+    hinge = {'hood': (V((1.06, 0, 0.98)), Y, (0.25, 0, 0.75)), 'trunk': (V((-1.80, 0, 1.12)), Y, (-0.3, 0, 0.7)), 'body': (None, None, (0, 0, 1.3))}
+    for s, side in (('l', 1), ('r', -1)):
+        hinge[f'door_f{s}'] = (V((0.90, side * 0.80, 0.70)), V((0, 0, 1)), (0.1, side * 0.9, 0))
+        hinge[f'door_r{s}'] = (V((B_PILLAR, side * 0.80, 0.70)), V((0, 0, 1)), (-0.1, side * 0.9, 0))
+    for pid, faces in sorted(groups.items()):
+        piv, ax, ex = hinge[pid]
+        m = part(pid, pivot=piv, axis=ax, explode=ex); m.mats = ['body_paint']
+        keep = set(faces); b2 = bmesh.new(); b2.from_mesh(me)
+        bmesh.ops.delete(b2, geom=[f for f in b2.faces if f.index not in keep], context='FACES')
+        m.bm.free(); m.bm = b2
+        print(pid, len(faces), 'faces')
+    bpy.data.objects.remove(ob)
+
+# ---------------------------------------------------------------- cabin
+def rbox(m, c, size, r, mat, rot=Matrix.Identity(3)):
+    """Box with rounded edges (radius r)."""
+    t = bmesh.new(); bmesh.ops.create_cube(t, size=1.0)
+    bmesh.ops.scale(t, vec=V(size), verts=t.verts)
+    bmesh.ops.bevel(t, geom=t.edges[:], offset=r, segments=3, affect='EDGES', profile=0.5)
+    bmesh.ops.transform(t, matrix=Matrix.Translation(c) @ rot.to_4x4(), verts=t.verts)
+    me = bpy.data.meshes.new('t'); t.to_mesh(me); t.free()
+    n = len(m.bm.faces); m.bm.from_mesh(me); m.bm.faces.ensure_lookup_table()
+    for f in m.bm.faces[n:]: f.material_index = m.mi(mat); f.smooth = True
+    bpy.data.meshes.remove(me)
+
+def seat(m, x, y, w):
+    lean = Matrix.Rotation(radians(-16), 3, 'Y')
+    rbox(m, V((x, y, 0.47)), (0.50, w, 0.13), 0.04, 'seat')                                  # cushion
+    rbox(m, V((x - 0.30, y, 0.80)), (0.12, w, 0.62), 0.045, 'seat', lean)                    # backrest
+    for dy in ((0,) if w < 0.7 else (-0.40, 0, 0.40)):
+        rbox(m, V((x - 0.42, y + dy, 1.20)), (0.09, 0.24, 0.17), 0.04, 'seat', lean)         # headrest
+        m.tube(V((x - 0.39, y + dy, 1.08)), V((x - 0.405, y + dy, 1.13)), 0.006, 'steel', 6)
+    if w < 0.7: m.box(V((x, y, 0.37)), (0.40, 0.36, 0.06), 'black')                          # rails
+
+def cabin():
+    for s, y in (('l', DRIVER_Y), ('r', -DRIVER_Y)): seat(part(f'seat_f{s}', explode=(0, 0, 1.0)), -0.10, y, 0.52)
+    seat(part('seat_rear', explode=(-0.3, 0, 1.0)), -0.95, 0, 1.30)
+    d = part('dashboard', explode=(0.35, 0, 0.9))
+    rbox(d, V((0.88, 0, 0.86)), (0.34, 1.44, 0.22), 0.05, 'trim')
+    rbox(d, V((0.74, DRIVER_Y, 0.99)), (0.16, 0.36, 0.07), 0.03, 'trim')                     # instrument cluster hood
+    d.box(V((0.67, DRIVER_Y, 0.95)), (0.01, 0.30, 0.09), 'screen')
+    d.box(V((0.70, 0, 0.92)), (0.02, 0.26, 0.15), 'screen', Matrix.Rotation(radians(-12), 3, 'Y'))   # centre screen
+    for y in (0.60, 0.12, -0.12, -0.60): d.box(V((0.705, y, 0.84)), (0.01, 0.12, 0.04), 'black')      # vents
+    rbox(d, V((0.25, 0, 0.42)), (0.75, 0.20, 0.14), 0.04, 'trim')                            # centre console
+    d.tube(V((0.35, 0, 0.49)), V((0.32, 0, 0.60)), 0.008, 'steel', 8); d.disc(V((0.32, 0, 0.61)), V((0, 0, 1)), 0.022, 0.04, 'black', 12)   # gear lever
+
 def build():
     engine(); transmission(); steering(); rear_axle(); chassis_misc()
     for side in (1, -1): front_corner(side); rear_corner(side)
+    cabin(); tripo_body()
 
 VIEWS = {'left_34': ((3.4, 3.0, 1.9), (0.3, 0, 0.45), 35), 'right_side': ((0.2, -5.2, 0.9), (0.2, 0, 0.45), 35),
          'engine': ((2.6, 1.5, 1.55), (1.55, 0, 0.45), 40), 'gearbox': ((1.55, -1.6, 0.7), (1.45, -0.25, 0.4), 40),
