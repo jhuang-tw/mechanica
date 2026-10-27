@@ -35,12 +35,13 @@ export class Viewer {
     r.setAnimationLoop(() => {
       const dt = Math.min(clock.getDelta(), 0.1);
       this.choreo?.update(dt); this.rig?.update(dt);
-      if (this.goal) {   // glide to a framing, then hand the camera back to the user
+      if (r.xr.isPresenting) this.vr?.update(dt);
+      else if (this.goal) {   // glide to a framing, then hand the camera back to the user
         const k = Math.min(1, dt * 3);
         this.controls.target.lerp(this.goal.target, k); this.camera.position.lerp(this.goal.pos, k);
         if (this.camera.position.distanceTo(this.goal.pos) < 0.005) this.goal = null;
       }
-      this.controls.update();
+      if (!r.xr.isPresenting) this.controls.update();
       r.render(scene, this.camera);
     });
   }
@@ -60,6 +61,7 @@ export class Viewer {
     this.rig.onIsolate = (ids) => this.focus(ids);
     this.choreo = new Choreo(this.rig);
     this.frame();
+    this.vr?.fitStage();
     return this.rig;
   }
 
@@ -111,19 +113,12 @@ export class Viewer {
     return hits.length ? this.rig.partOf(hits[0].object) : null;
   }
 
-  // ---- VR (optional): the exhibit at arm's length, controller trigger picks a part ----
+  // ---- VR (optional): see vr.js ----
   static async vrSupported() { try { return !!(await navigator.xr?.isSessionSupported('immersive-vr')); } catch { return false; } }
-  async enterVR() {
-    const session = await navigator.xr.requestSession('immersive-vr', { optionalFeatures: ['local-floor', 'hand-tracking'] });
-    await this.renderer.xr.setSession(session);
-    this.stage.position.set(0, 0, -1.2);   // on the floor, an arm's length past reach
-    const ray = new THREE.Raycaster();
-    for (const i of [0, 1]) {
-      const ctl = this.renderer.xr.getController(i);
-      ctl.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3(0, 0, -3)]), new THREE.LineBasicMaterial({ color: 0x8fd3ff })));
-      ctl.addEventListener('select', () => { ray.ray.origin.setFromMatrixPosition(ctl.matrixWorld); ray.ray.direction.set(0, 0, -1).transformDirection(ctl.matrixWorld); this.onPick?.(this.hit(ray)); });
-      this.scene.add(ctl);
-    }
-    session.addEventListener('end', () => { this.stage.position.set(0, 0, 0); this.frame(); });
+  async enterVR(app) {
+    const { VR } = await import('./vr.js');
+    this.vr = new VR(this, app);
+    try { await this.vr.start(); } catch (e) { this.vr.end(); throw e; }
+    return this.vr;
   }
 }

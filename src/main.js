@@ -2,11 +2,13 @@
 import { cleanSteps } from './choreo.js';
 import { Recorder, shrink, speak } from './media.js';
 
+// dev only: ?xr emulates a headset (Meta's IWER) so the VR mode can be tried in a desktop browser
+if (import.meta.env.DEV && new URLSearchParams(location.search).has('xr')) { const { XRDevice, metaQuest3 } = await import('iwer'); (window.xrDevice = new XRDevice(metaQuest3)).installRuntime({ forceInstall: true }); }   // the desktop browser has its own (headset-less) navigator.xr
 const $ = (id) => document.getElementById(id);
 const BASE = `${import.meta.env.BASE_URL}exhibits/`;
 const viewerModule = import('./viewer.js');   // three.js downloads while the landing page is up
 const exhibits = {};   // id -> manifest
-let viewer, ex, rig, chat = [], pointed = null, lesson = null;
+let viewer, ex, rig, chat = [], pointed = null, lesson = null, quiz = null, vr = null;
 
 // ---------- landing ----------
 const list = (await (await fetch(`${BASE}index.json`)).json()).exhibits;
@@ -31,6 +33,7 @@ async function open(id) {
   say('', '載入中…', true);
   const { Viewer } = await viewerModule;
   viewer ||= new Viewer($('c'), { onPick: pick });
+  if (import.meta.env.DEV) window.viewer = viewer;   // dev: poke at it from the console
   viewer.resize();
   rig = await viewer.load(ex, `${BASE}${id}/`);
   chat = []; pointed = null;
@@ -46,6 +49,7 @@ function say(title, text, thinking = false, voice = false) {
   $('cap-title').textContent = title; $('cap-text').textContent = text;
   $('caption').classList.toggle('thinking', thinking);
   if (voice) speak(text);
+  vr?.say(text);
 }
 
 // ---------- parts ----------
@@ -58,7 +62,7 @@ function pick(id) {
   say(p.name, p.info, false, true);
 }
 $('explode-r').oninput = (e) => rig?.setExplode(+e.target.value);
-function stopAll() { lesson = null; document.body.classList.remove('lesson'); $('lesson').hidden = $('quiz').hidden = true; viewer?.choreo?.cancel(); rig?.reset(); $('explode-r').value = 0; }
+function stopAll() { lesson = quiz = null; vr?.refresh(); document.body.classList.remove('lesson'); $('lesson').hidden = $('quiz').hidden = true; viewer?.choreo?.cancel(); rig?.reset(); $('explode-r').value = 0; }
 $('reset').onclick = () => { stopAll(); speak(''); viewer.frame(); pointed = null; say(ex.name, ex.intro); };
 
 // ---------- suggestions: AI questions and lessons ----------
@@ -101,11 +105,12 @@ $('ask').onsubmit = (e) => { e.preventDefault(); ask($('q').value); $('q').value
 // hold to talk
 const rec = new Recorder();
 let holding = false;
-$('mic').onpointerdown = async (e) => {
-  e.preventDefault(); holding = true; speak('');
-  try { await rec.start(); $('mic').classList.add('rec'); toast('說吧，放開就送出'); if (!holding) release(); }
-  catch { holding = false; toast('沒有麥克風權限，改用 ⌨ 打字'); }
+const talk = async () => {
+  holding = true; speak('');
+  try { await rec.start(); $('mic').classList.add('rec'); toast('說吧，放開就送出'); vr?.say('🎤 說吧，說完按 ⏹'); if (!holding) release(); }
+  catch { holding = false; toast('沒有麥克風權限，改用 ⌨ 打字'); vr?.say('沒有麥克風權限'); }
 };
+$('mic').onpointerdown = (e) => { e.preventDefault(); talk(); };
 const release = async () => {
   if (!holding) return;
   holding = false; $('mic').classList.remove('rec'); toast('');
@@ -123,14 +128,14 @@ for (const ev of ['pointerup', 'pointercancel', 'pointerleave']) $('mic').addEve
 // ---------- 因果連動 / 先猜再看: manifest lessons, one cause → effect per step ----------
 function startLesson(l, quiz) { stopAll(); lesson = { l, quiz, i: 0 }; document.body.classList.add('lesson'); $('lesson').hidden = false; showStep(); }
 function showStep() {
-  const { l, quiz, i } = lesson, s = l.steps[i];
+  const { l, quiz: guess, i } = lesson, s = l.steps[i];
   $('l-step').textContent = `${l.title} · ${i + 1}/${l.steps.length}`;
   $('l-prev').disabled = i === 0;
-  if (quiz && s.quiz) return askQuiz(s);
-  playStep(s);
+  if (guess && s.quiz) askQuiz(s); else playStep(s);
+  vr?.refresh();
 }
 function playStep(s) {
-  $('quiz').hidden = true;
+  $('quiz').hidden = true; quiz = null;
   viewer.choreo.cancel(); rig.stop();
   rig.isolate(s.parts);
   for (const d of [].concat(s.drive || [])) rig.drive(d, s.speed ?? 0.5);   // a step can run several drives (rotor turning while the stick moves)
@@ -139,16 +144,17 @@ function playStep(s) {
 function askQuiz(s) {
   rig.isolate(s.parts); rig.stop();
   say('先猜猜看', s.quiz.q, false, true);
-  $('quiz').hidden = false;
-  $('quiz').replaceChildren(...s.quiz.options.map(([text, right, why]) => Object.assign(document.createElement('button'), {
-    type: 'button', textContent: text,
-    onclick: (e) => {
-      for (const b of $('quiz').children) b.disabled = true;
-      e.target.classList.add(right ? 'right' : 'wrong');
-      say(right ? '答對了！' : '再想想', why, false, true);
-      setTimeout(() => lesson && playStep(s), 2600);
-    },
-  })));
+  quiz = s.quiz.options; $('quiz').hidden = false;
+  $('quiz').replaceChildren(...quiz.map(([text], i) => Object.assign(document.createElement('button'), { type: 'button', textContent: text, onclick: () => answer(i) })));
+}
+function answer(i) {
+  if (!quiz || !lesson) return;
+  const [, right, why] = quiz[i], s = lesson.l.steps[lesson.i];
+  quiz = null; vr?.refresh();
+  for (const b of $('quiz').children) b.disabled = true;
+  $('quiz').children[i].classList.add(right ? 'right' : 'wrong');
+  say(right ? '答對了！' : '再想想', why, false, true);
+  setTimeout(() => lesson && playStep(s), 2600);
 }
 const go = (d) => { if (!lesson) return; const n = lesson.i + d; if (n < 0) return; if (n >= lesson.l.steps.length) { stopAll(); return say('完成', '這一套看完了。可以再問 AI，或換一套。', false, true); } lesson.i = n; showStep(); };
 $('l-next').onclick = () => go(1);
@@ -177,12 +183,24 @@ photoIn.onchange = async () => {
 };
 
 // ---------- VR (optional) ----------
-async function vr() {
-  try { await viewer.enterVR(); } catch { toast('這個瀏覽器不能進 VR'); }
+// what the VR menu and panels can reach
+const app = {
+  list: list.map((id) => ({ id, thumb: `${BASE}${id}/${exhibits[id].thumb}`, title: exhibits[id].name })),
+  get ex() { return ex; }, get rig() { return rig; }, get lesson() { return lesson; }, get quiz() { return quiz; }, get recording() { return holding; },
+  open, pick, go, answer, startLesson,
+  quizLesson: () => startLesson(ex.lessons.find((l) => l.steps.some((s) => s.quiz)) || ex.lessons[0], true),
+  stopLesson: () => { stopAll(); say(ex.name, ex.intro); },
+  explode: (v) => { rig.setExplode(v); $('explode-r').value = v; },
+  reset: () => $('reset').onclick(),
+  talk: (on) => (on ? talk() : release()),
+  onExit: () => (vr = null),
+};
+async function enterVR() {
+  try { vr = await viewer.enterVR(app); } catch { vr = null; toast('這個瀏覽器不能進 VR'); }
 }
-$('vr').onclick = vr;
+$('vr').onclick = enterVR;
 viewerModule.then(async ({ Viewer }) => { if (await Viewer.vrSupported()) $('home-vr').hidden = false; });
-$('home-vr').onclick = async () => { await open(ex?.id || list[0]); vr(); };
+$('home-vr').onclick = async () => { await open(ex?.id || list[0]); enterVR(); };
 
 // first sound needs a tap on phones
 addEventListener('pointerdown', () => speechSynthesis?.speak(new SpeechSynthesisUtterance('')), { once: true });
