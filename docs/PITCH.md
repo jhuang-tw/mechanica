@@ -1,42 +1,41 @@
-# Mechanica: point your phone at any machine and take it apart
+# Mechanica: an interactive machine classroom
 
 > Submission text draft (English). Track: Indie. Theme: Push the Frontier.
-> Fill `<…>` once the app threads land. Keep the section that says what existed before the hackathon.
+> Fill in the `<…>` placeholders before submitting.
 
 ## One-liner
-Mechanica turns a photo of a real machine into a 3D exhibit you can take apart, ask questions about and watch run, on your phone or in a Quest headset, with Meta's models doing the seeing, the segmenting and the teaching.
+Mechanica is an interactive machine classroom on your phone or in a Quest headset. Pick a machine, take it apart, guess what happens next, and watch Meta's Muse Spark move the real parts to show you why.
 
 ## The problem
-Mechanical understanding is learned with your hands: you open the engine, you watch the gears turn. Most learners never get that chance. Textbooks show static cutaways, videos can't answer "why", and real machines are expensive, dangerous or sealed. Vocational students, junior technicians and curious kids all hit the same wall.
+People learn how machines work with their hands: you open the engine and watch the gears turn. Most learners never get that chance. Textbooks show static cutaways and videos can't answer "why". Real machines are expensive, dangerous or sealed. Vocational students, junior technicians and curious kids all hit the same wall.
 
 ## What it does
-1. **Snap a machine.** Take a photo of a bicycle, a motorbike, a watch, a helicopter. **Muse Spark vision** recognises the machine and opens the matching interactive exhibit.
-2. **Photo → parts.** **SAM 3.1** segments the photo into its real parts, and each mask is linked to the matching part in the 3D model, so you learn on *your* machine, not a stock picture.
-3. **Ask anything, and the model acts.** "Why is it harder to pedal in the big chainring?" **Muse Spark tool calling** doesn't just answer: it calls the exhibit's actions (shift to the big ring, show the gear ratio, slow time, highlight the chain path) so the answer happens in front of you.
-4. **AI-choreographed demos.** For any part, Muse Spark writes a short sequence of camera moves, part motions and captions, and the app plays it as a guided demo of cause and effect.
-5. **Talk instead of type.** **Muse Voice Transcribe** handles voice questions, hands-free in VR.
-6. **Phone first, headset ready.** The same web app runs on a phone browser and in Meta Quest (WebXR through Meta's IWSDK). No install.
-
-The first hand-built exhibit is a **road bicycle**, written from scratch during the hackathon: pedal → chainring → chain → cassette → rear wheel with live gear ratio and speed, front/rear derailleurs, rim brakes, freehub ratchet when coasting, and parts you can pull off. `<more exhibits if added>`
+1. **Pick a machine and a lesson.** Eight exhibits: road bicycle, motorbike, car, steam locomotive, helicopter, turbofan jet, mechanical watch and a mixed-reality headset. Each one has cause-and-effect lessons, for example "what happens when you shift to the big chainring?"
+2. **Guess, then see.** Every lesson step asks you to predict the result before it plays. Then the parts move, and Muse Spark explains why your guess was right or wrong.
+3. **Take it apart.** Tap a part to learn what it is, pull it off, and look inside: shells open, internals run.
+4. **Ask anything, and the model acts.** "Why is it harder to pedal in the big chainring?" **Muse Spark tool calling** answers by driving the exhibit itself: it shifts the gear, slows time, highlights the chain path and shows the ratio.
+5. **AI-choreographed demos.** For any question, Muse Spark writes a short sequence of part motions and captions, which the app checks and plays back as a guided demonstration.
+6. **Talk instead of type.** **Muse Voice Transcribe** handles spoken questions, hands-free in VR.
+7. **Bonus: photograph a real machine.** **Muse Spark vision** recognises it and opens the matching exhibit, and **SAM 3.1** outlines its real parts on your photo.
+8. **Phone first, headset ready.** One web app runs in a phone browser and in Meta Quest (WebXR). No install.
 
 ## How we used Meta AI
 | Model | Where | Beyond a basic call |
 |---|---|---|
-| Muse Spark (`muse-spark-1.3`) tool calling | Q&A agent | The exhibit's whole action surface is exposed as tools, so the model *drives the simulation* to answer |
-| Muse Spark vision | Photo → exhibit | Picks the exhibit and the parts it can see |
-| SAM 3.1 | Photo → part masks | Masks are matched to 3D parts and highlighted on both |
-| Muse Spark (structured output) | Part demos | Generates a timed choreography that the engine validates and plays |
-| Muse Voice Transcribe | Voice input | 16 kHz WAV from the browser, works inside VR |
-| Meta IWSDK | Rendering / XR | One codebase for phone and Quest |
+| Muse Spark (`muse-spark-1.3`) tool calling | Q&A tutor | The exhibit's whole action surface is exposed as tools, so the model *drives the simulation* to answer |
+| Muse Spark (structured output) | Choreographed demos, guess feedback | Generates timed part motions that the client validates (known parts only, clamped values) and plays |
+| Muse Voice Transcribe | Voice questions | 16 kHz WAV from the browser, works inside VR |
+| Muse Spark vision | Photo → exhibit (bonus) | Picks the exhibit, and says "not a machine" for a cat or a mug |
+| SAM 3.1 | Photo → part outlines (bonus) | Masks are linked to the matching 3D parts |
 
 ## Built during the hackathon
-Everything in this repository was written between Oct 26 and Nov 4, 2026; the git history is the record. See `BUILT_DURING_HACKATHON.md` for feature → commits → date.
-Third-party open source: Meta IWSDK, three.js, `<others>` (unmodified dependencies).
+Everything in this repository was written between Oct 26 and Nov 4, 2026, and the git history is the record. See `BUILT_DURING_HACKATHON.md` for each feature with its commits and date.
+Third-party open source: three.js, Vite, `<others>` (unmodified dependencies).
 
 ## Try it
-- Live demo: `<public URL>` (works on any phone browser; tap "Enter VR" on Quest)
+- Live demo: `<public URL>` (works in any phone browser; tap "Enter VR" on Quest)
 - Video: `<link>`
 - Code: `<repo link>`
 
 ## What's next
-Any machine, not only the nine exhibits: generate the 3D parts from the photo itself, then let Muse Spark choreograph the lesson. Classroom mode where a teacher's Quest leads students' phones.
+A teacher mode where one Quest leads a class of phones through the same lesson. More machines, written as data: every exhibit is a manifest of parts, motions and lessons, so a new machine needs no new code.
