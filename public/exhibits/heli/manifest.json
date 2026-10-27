@@ -4,11 +4,12 @@
  "title": "直升機（傳動與旋翼控制）",
  "model": "model.glb",
  "thumb": "thumb.jpg",
- "intro": "這是一架輕型直升機的機構：渦軸引擎、主齒輪箱、斜盤、蹺蹺板旋翼和尾旋翼。問我「直升機怎麼往前飛」。",
+ "intro": "這是一架輕型直升機。拆開（🧩）就看得到渦軸引擎、主齒輪箱、斜盤、蹺蹺板旋翼和尾旋翼。問我「直升機怎麼往前飛」。",
  "suggest": [
   "直升機怎麼往前飛？",
   "為什麼要有尾旋翼？",
-  "斜盤是做什麼的？"
+  "斜盤是做什麼的？",
+  "打開門看看裡面？"
  ],
  "looksLike": "直升機、旋翼機、無人機、螺旋槳",
  "parts": [
@@ -297,6 +298,114 @@
     "起落架",
     "腳架"
    ]
+  },
+  {
+   "id": "fuselage",
+   "name": "機身",
+   "en": "helicopter fuselage",
+   "info": "直升機的主體，前面是駕駛艙，裡面有座椅和儀表板。拆開（🧩）就看得到上面的引擎、齒輪箱和下面的操縱桿。",
+   "aliases": [
+    "機身",
+    "機艙",
+    "座艙"
+   ]
+  },
+  {
+   "id": "canopy",
+   "name": "座艙罩",
+   "en": "helicopter canopy",
+   "info": "駕駛艙前面和上面的透明罩，讓飛行員往前、往下都看得到。",
+   "aliases": [
+    "擋風玻璃",
+    "玻璃",
+    "座艙罩"
+   ]
+  },
+  {
+   "id": "door_l",
+   "name": "左前門",
+   "en": "helicopter front left door",
+   "info": "駕駛座旁的門。鉸鏈在前緣，往外打開。",
+   "aliases": [
+    "門",
+    "艙門",
+    "車門"
+   ]
+  },
+  {
+   "id": "door_r",
+   "name": "右前門",
+   "en": "helicopter front right door",
+   "info": "鉸鏈在前緣，往外打開。",
+   "aliases": [
+    "門",
+    "艙門"
+   ]
+  },
+  {
+   "id": "rear_door_l",
+   "name": "左後門",
+   "en": "helicopter rear left door",
+   "info": "後座的門，鉸鏈在後緣，往外打開。",
+   "aliases": [
+    "門",
+    "艙門",
+    "後門"
+   ]
+  },
+  {
+   "id": "rear_door_r",
+   "name": "右後門",
+   "en": "helicopter rear right door",
+   "info": "後座的門，鉸鏈在後緣，往外打開。",
+   "aliases": [
+    "門",
+    "艙門",
+    "後門"
+   ]
+  },
+  {
+   "id": "transmission_cowling",
+   "name": "齒輪箱整流罩",
+   "en": "helicopter transmission cowling",
+   "info": "蓋住主齒輪箱和斜盤下半部的外殼，讓空氣平順流過。",
+   "aliases": [
+    "整流罩",
+    "蓋子"
+   ]
+  },
+  {
+   "id": "engine_cowling",
+   "name": "引擎整流罩",
+   "en": "helicopter engine cowling",
+   "info": "蓋住渦軸引擎的外殼，後面有排氣口。",
+   "aliases": [
+    "引擎蓋",
+    "整流罩"
+   ]
+  },
+  {
+   "id": "tail_boom",
+   "name": "尾桁",
+   "en": "helicopter tail boom",
+   "info": "從機身往後伸的長桿，裡面跑著尾旋翼的傳動軸。尾旋翼放得越遠，抵銷扭力需要的力氣越小。",
+   "aliases": [
+    "尾管",
+    "尾樑",
+    "尾巴"
+   ]
+  },
+  {
+   "id": "tail_fins",
+   "name": "尾翼",
+   "en": "helicopter tail fins",
+   "info": "垂直尾翼和水平安定面。往前飛的時候，它們像箭的羽毛一樣讓機身保持正對前方。",
+   "aliases": [
+    "尾翼",
+    "垂直尾翼",
+    "水平尾翼",
+    "安定面"
+   ]
   }
  ],
  "drives": [
@@ -352,6 +461,31 @@
     {
      "part": "cyclic",
      "ratio": 1
+    }
+   ]
+  },
+  {
+   "id": "open",
+   "name": "打開艙門",
+   "swing": 70,
+   "period": 6,
+   "oneWay": true,
+   "moves": [
+    {
+     "part": "door_l",
+     "ratio": -1
+    },
+    {
+     "part": "door_r",
+     "ratio": 1
+    },
+    {
+     "part": "rear_door_l",
+     "ratio": 1
+    },
+    {
+     "part": "rear_door_r",
+     "ratio": -1
     }
    ]
   }

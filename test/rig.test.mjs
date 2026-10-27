@@ -179,3 +179,10 @@ test('moto: pistons follow the slider-crank formula on the tilted bore, left 90 
   const wheel = (g) => { rig.reset(); rig.drive(g, 1); rig.update(1); return part('wheel_rear').angle; };
   assert.ok(Math.abs(wheel('gear6') / wheel('gear1') - (65 / 24) / (44 / 45)) < 1e-4);
 });
+
+test('heli: all four cabin doors swing outward', async () => {
+  const rig = new Rig(await loadModel('heli'), exhibit('heli')), edge = (id, x) => new THREE.Vector3(x, 0, 0).applyQuaternion(rig.parts.get(id).obj.quaternion);
+  rig.drive('open', 1); rig.update(3);   // half the 6 s period: fully open
+  assert.ok(edge('door_l', -1).z < -0.9 && edge('door_r', -1).z > 0.9, 'front doors: rear edge out');
+  assert.ok(edge('rear_door_l', 1).z < -0.9 && edge('rear_door_r', 1).z > 0.9, 'rear doors: front edge out');
+});
