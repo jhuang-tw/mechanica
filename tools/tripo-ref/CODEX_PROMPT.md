@@ -1,0 +1,51 @@
+# Codex prompt：整台載具外觀的 Tripo 多視角參考圖
+
+把 `---` 之間的整段貼給 Codex。四台載具一次產完，每台四張。
+
+---
+
+You are generating reference images for Tripo3D "Multiview to 3D". Each set of four images becomes the outer body (shell) of one vehicle in a public, open-source educational app about machines. The engines, gears, wheels, rotors and other mechanisms are modelled separately in CAD and placed inside the shell later, so draw only the exterior of the vehicle, as one closed object.
+
+Write files only under `C:\AI\mme-models\tools\exhibits\<exhibit>\tripo-ref\` and do not run any git command.
+For each vehicle save exactly four PNGs: `front.png`, `back.png`, `left.png`, `right.png`.
+
+Rules for every image:
+- 1024×1024 PNG, plain pure-white background (#FFFFFF), no floor, no ground shadow, no people, no props, no scenery.
+- Orthographic-looking side/front camera at the vehicle's mid-height, no perspective tilt, no 3/4 views.
+- Consistent scale: within one vehicle all four views use the same scale, and the longest dimension of the vehicle fills about 85 % of the frame in the left/right views. The front/back views use that same scale (so they look narrower), centred.
+- Soft, even studio light, identical in all four views. Mostly matte paint, no environment reflections, no motion blur.
+- Generic, original design. No logos, brand names, badges, emblems, text, numbers, licence plates, registration codes, flags, stickers or decals anywhere. It must not resemble any specific real model closely enough to be recognised.
+- The four views must be the same object: same proportions, same colours, same details.
+- View directions: front = looking at the vehicle's nose, back = looking at its tail, left = the vehicle's left side (driver's left), right = its right side.
+- Keep wheels, rotors and propellers simple and present (they are replaced by CAD parts later), and show clean, closed panel lines where the body opens (doors, engine covers, hoods), because the shell will be cut along them.
+
+Vehicles:
+
+1. `jet` — small single-engine propeller trainer aircraft (low wing, tricycle landing gear, two-seat bubble canopy), white with a deep blue stripe. Length about 8 m, wingspan about 10 m. Clear engine cowling panel lines at the nose.
+2. `moto` — naked street motorcycle, inline-four engine area left visible, matte dark grey tank and red side panels, round headlight, no rider. Length about 2.1 m. Draw the fuel tank, seat, side covers and front fairing as clearly separate pieces.
+3. `car` — compact four-door sedan, metallic silver paint, dark tinted windows, simple five-spoke wheels. Length about 4.6 m. Hood, doors and trunk lid with clear panel gaps.
+4. `steam` — small tank steam locomotive, black boiler with dark red cab and buffer beams, 0-4-0 wheel arrangement, single chimney, side water tanks. Length about 8 m. Smokebox door and cab clearly separated from the boiler.
+
+When finished, print the list of written files.
+
+---
+
+## 交給 Tripo3D 的方式
+
+- 每台用 **Multiview to 3D**，四張依 front／left／back／right 放進對應欄位，**不要貼圖**（no texture，每次約 20 點）。顏色和材質我在 Blender 裡用頂點色和共用材質套，貼圖反而會被換掉，也比較重。
+- 100 點的分配：jet 20、moto 20、car 20、steam 20，共 80；留 20 點給四台裡面最差的那台重做一次。
+- 輸出 GLB，放到 `C:\AI\mme-models\tools\exhibits\<exhibit>\tripo\shell.glb`。
+- **授權要先確認**：Tripo 免費方案產出的模型版權歸 Tripo（只能非商業使用），付費方案的使用者才擁有產出、可以修改、散布和商用。這個 repo 要公開開源，所以生成前要在付費方案下產，或至少確認目前帳號是付費方案。
+
+## 外殼怎麼跟 CAD 機構合在一起（每個展品仍可完整拆解）
+
+1. **外殼只是一層皮**：Tripo 的 GLB 匯入 Blender 後先清理（合併重複點、補洞、刪內部面），再減面到手機預算，整個外殼約 1.5–2.5 萬面。
+2. **沿面板縫切開**：依參考圖畫的面板線把外殼切成可拆件，每塊都是 manifest 裡有語意 id 的節點，例如：
+   - jet：`cowling`（引擎罩）、`canopy`、`fuselage`、`wing_l`、`wing_r`、`tail`
+   - moto：`tank`、`seat`、`side_cover_l/r`、`fairing`
+   - car：`hood`、`door_fl/fr/rl/rr`、`trunk`、`body`
+   - steam：`smokebox_door`、`cab`、`tank_l/r`、`boiler_shell`
+   每塊的原點放在鉸鏈或拆卸方向上，帶 `explode` 位移，拆解時能一片一片掀開或拿走。
+3. **內部全是 CAD**：引擎、曲軸、活塞、變速箱、輪子、懸吊、螺旋槳、蒸汽缸和連桿，跟單車一樣用 build123d 建、Blender 組，有各自的旋轉軸和 pivot，可以單獨驅動和拆開。外殼裡被機構佔用的空間我會挖空，避免穿模。
+4. **對位**：先定 CAD 底盤的基準點（輪軸、引擎座、旋翼／螺旋槳軸），再把外殼縮放和平移到這些點上。Tripo 給的比例不準，所以以 CAD 尺寸為準。
+5. 輪子、螺旋槳這類 Tripo 也會長出來的東西，一律刪掉換成 CAD 件，因為要轉動和拆解。

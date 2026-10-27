@@ -4,12 +4,13 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import { Rig } from '../src/rig.js';
 import { Choreo, cleanSteps } from '../src/choreo.js';
 
 const manifest = JSON.parse(readFileSync(new URL('../public/exhibits/bike/manifest.json', import.meta.url), 'utf8'));
 const glb = readFileSync(new URL('../public/exhibits/bike/model.glb', import.meta.url));
-const load = () => new Promise((ok, no) => new GLTFLoader().parse(glb.buffer.slice(glb.byteOffset, glb.byteOffset + glb.byteLength), '', (g) => ok(g.scene), no));
+const load = () => new Promise((ok, no) => new GLTFLoader().setMeshoptDecoder(MeshoptDecoder).parse(glb.buffer.slice(glb.byteOffset, glb.byteOffset + glb.byteLength), '', (g) => ok(g.scene), no));
 const run = (rig, s, dt = 0.05) => { for (let t = 0; t < s; t += dt) rig.update(dt); };
 
 test('manifest: every part, drive move and lesson part exists in the model', async () => {

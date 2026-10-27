@@ -26,6 +26,7 @@ None of its code, models or media are in this repository; everything here was re
 | AI-choreographed part demos (server checks every step against the manifest) | Muse Spark tool calling | `468ce33` (server) | 2026-10-27 |
 | Voice questions (+ one Muse Spark pass: simplified → traditional, part-name fixes) | Muse Voice Transcribe, Muse Spark | `468ce33` (server) | 2026-10-27 |
 | Daily spend caps for the public demo | — | `468ce33` (server) | 2026-10-27 |
+| Bicycle model from scratch: CAD drivetrain (build123d), Blender build with one node per manifest part, phone GLB optimizer | — | `BIKE` | 2026-10-27 |
 
 ## Third-party (unmodified dependencies, used under their licenses)
 | Package | License |
@@ -33,11 +34,13 @@ None of its code, models or media are in this repository; everything here was re
 | three | MIT |
 | Vite | MIT |
 | @meta-sam/parser (official SAM 3.1 mask parser) | SAM License (see its LICENSE) |
+| build123d (CAD for the drivetrain parts, build tool only) | Apache-2.0 |
+| glTF Transform, meshoptimizer (GLB optimization, dev only) | MIT |
 | `<others>` | |
 
 ## Assets
 | Asset | Made with | Rights |
 |---|---|---|
-| Bicycle model | `<script in tools/>` | Ours |
+| Bicycle model | `tools/exhibits/bike/cad.py` (build123d) + `build.py` (Blender) + `tools/optimize-glb.mjs` | Ours |
 | Voice-over | `<Jim / TTS service>` | `<terms>` |
 | Music | `<source>` | Royalty-free |
