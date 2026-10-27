@@ -1,0 +1,813 @@
+{
+ "id": "moto",
+ "name": "重型機車",
+ "title": "雙缸重型機車（700 cc）",
+ "model": "model.glb",
+ "thumb": "thumb.jpg",
+ "view": [
+  0.55,
+  0.35,
+  -1
+ ],
+ "intro": "這是一台 700 cc 雙缸重型機車，引擎左邊切開了，看得到活塞和曲軸。拆開（🧩）看變速箱和鏈條。問我「為什麼要換檔」。",
+ "suggest": [
+  "引擎怎麼讓輪子轉？",
+  "為什麼要換檔？",
+  "為什麼前輪煞車比較大？"
+ ],
+ "looksLike": "機車、摩托車、重機、重型機車、檔車",
+ "parts": [
+  {
+   "id": "crankcase",
+   "name": "曲軸箱",
+   "en": "motorcycle crankcase",
+   "info": "引擎最下面的鋁殼，裝著曲軸、離合器和變速箱，裡面也是機油。左邊切開了看得到裡面。",
+   "aliases": [
+    "引擎",
+    "曲軸箱",
+    "底殼"
+   ]
+  },
+  {
+   "id": "cylinder_block",
+   "name": "汽缸體",
+   "en": "motorcycle cylinder block",
+   "info": "兩個並排的汽缸，往前傾 15 度。左前方切開一角，看得到活塞上下跑。",
+   "aliases": [
+    "汽缸",
+    "缸體"
+   ]
+  },
+  {
+   "id": "cylinder_head",
+   "name": "汽缸頭",
+   "en": "motorcycle cylinder head",
+   "info": "蓋在汽缸上面，裡面有進氣門、排氣門和火星塞，燃燒就發生在它下方。",
+   "aliases": [
+    "缸頭",
+    "汽門"
+   ]
+  },
+  {
+   "id": "cam_cover",
+   "name": "凸輪軸蓋",
+   "en": "motorcycle cam cover",
+   "info": "最上面那個蓋子，蓋住兩根凸輪軸。",
+   "aliases": [
+    "汽門蓋",
+    "頭蓋"
+   ]
+  },
+  {
+   "id": "piston_r",
+   "name": "右活塞",
+   "en": "motorcycle right piston",
+   "info": "被燃燒的氣體往下推，經連桿推動曲軸。現在停在最上面（上死點）。",
+   "aliases": [
+    "活塞"
+   ]
+  },
+  {
+   "id": "piston_l",
+   "name": "左活塞",
+   "en": "motorcycle left piston",
+   "info": "左缸的活塞，比右缸晚 270 度點火，所以兩個活塞不會同時上下。",
+   "aliases": [
+    "活塞"
+   ]
+  },
+  {
+   "id": "conrod_r",
+   "name": "右連桿",
+   "en": "motorcycle right connecting rod",
+   "info": "連接活塞和曲軸，把活塞的上下運動變成曲軸的旋轉。",
+   "aliases": [
+    "連桿"
+   ]
+  },
+  {
+   "id": "conrod_l",
+   "name": "左連桿",
+   "en": "motorcycle left connecting rod",
+   "info": "左缸的連桿。",
+   "aliases": [
+    "連桿"
+   ]
+  },
+  {
+   "id": "crankshaft",
+   "name": "曲軸",
+   "en": "motorcycle crankshaft",
+   "info": "兩個曲柄錯開 270 度。這種「270 度曲軸」讓雙缸引擎的聲音和出力感覺像 V 型雙缸，比較有節奏。",
+   "aliases": [
+    "曲軸",
+    "大軸"
+   ]
+  },
+  {
+   "id": "primary_gear",
+   "name": "一次齒輪",
+   "en": "motorcycle primary drive gear",
+   "info": "裝在曲軸右端的小齒輪（32 齒），帶動離合器外面的大齒輪（58 齒），先把轉速降下來。",
+   "aliases": [
+    "主動齒輪",
+    "一次減速"
+   ]
+  },
+  {
+   "id": "camshaft_intake",
+   "name": "進氣凸輪軸",
+   "en": "motorcycle intake camshaft",
+   "info": "軸上的凸輪一轉到就把進氣門頂開。它只用曲軸一半的速度轉。",
+   "aliases": [
+    "凸輪軸",
+    "凸輪"
+   ]
+  },
+  {
+   "id": "camshaft_exhaust",
+   "name": "排氣凸輪軸",
+   "en": "motorcycle exhaust camshaft",
+   "info": "負責頂開排氣門，同樣是曲軸一半的速度。",
+   "aliases": [
+    "凸輪軸",
+    "凸輪"
+   ]
+  },
+  {
+   "id": "cam_chain",
+   "name": "正時鏈條",
+   "en": "motorcycle cam chain",
+   "info": "從曲軸帶動上面的兩根凸輪軸，讓汽門開關的時間永遠跟活塞對得上。",
+   "aliases": [
+    "正時鍊",
+    "鏈條"
+   ]
+  },
+  {
+   "id": "radiator",
+   "name": "水箱",
+   "en": "motorcycle radiator",
+   "info": "引擎前面的散熱器。冷卻水流過汽缸把熱帶走，再在這裡被迎面的風吹涼。",
+   "aliases": [
+    "散熱器",
+    "水箱"
+   ]
+  },
+  {
+   "id": "exhaust_headers",
+   "name": "排氣管",
+   "en": "motorcycle exhaust headers",
+   "info": "從汽缸頭前面彎下來的兩根排氣管，把燃燒後的廢氣往後送。",
+   "aliases": [
+    "排氣管",
+    "尾管"
+   ]
+  },
+  {
+   "id": "clutch",
+   "name": "離合器",
+   "en": "motorcycle clutch",
+   "info": "一疊摩擦片。左手握把一捏就分開，引擎和變速箱斷開，才能起步和換檔。",
+   "aliases": [
+    "離合器",
+    "離合"
+   ]
+  },
+  {
+   "id": "clutch_cover",
+   "name": "離合器蓋",
+   "en": "motorcycle clutch cover",
+   "info": "引擎右邊那個圓蓋，蓋住離合器。",
+   "aliases": [
+    "蓋子"
+   ]
+  },
+  {
+   "id": "mainshaft",
+   "name": "主軸",
+   "en": "motorcycle mainshaft",
+   "info": "變速箱的輸入軸，跟離合器一起轉。上面有六個齒輪。",
+   "aliases": [
+    "主軸",
+    "輸入軸"
+   ]
+  },
+  {
+   "id": "countershaft",
+   "name": "副軸",
+   "en": "motorcycle countershaft",
+   "info": "變速箱的輸出軸。換檔就是換成另一對齒輪咬合：1 檔小齒輪推大齒輪最省力，6 檔幾乎一比一最快。",
+   "aliases": [
+    "副軸",
+    "輸出軸",
+    "變速箱",
+    "齒輪箱"
+   ]
+  },
+  {
+   "id": "sprocket_front",
+   "name": "前齒盤",
+   "en": "motorcycle front sprocket",
+   "info": "副軸末端的小齒盤（15 齒），帶動鏈條。",
+   "aliases": [
+    "小齒盤",
+    "前鏈輪"
+   ]
+  },
+  {
+   "id": "chain",
+   "name": "傳動鏈條",
+   "en": "motorcycle drive chain",
+   "info": "把前齒盤的力量傳到後輪的大齒盤。",
+   "aliases": [
+    "鏈條",
+    "鍊條"
+   ]
+  },
+  {
+   "id": "sprocket_rear",
+   "name": "後齒盤",
+   "en": "motorcycle rear sprocket",
+   "info": "後輪上的大齒盤（43 齒）。前小後大，又再減速一次、讓力氣變大。",
+   "aliases": [
+    "大齒盤",
+    "後鏈輪"
+   ]
+  },
+  {
+   "id": "frame",
+   "name": "車架",
+   "en": "motorcycle frame",
+   "info": "整台車的骨架，引擎、龍頭、後搖臂都掛在它上面。",
+   "aliases": [
+    "車架",
+    "骨架"
+   ]
+  },
+  {
+   "id": "fork",
+   "name": "前叉",
+   "en": "motorcycle front fork",
+   "info": "兩根避震管夾著前輪。整支前叉沿著傾斜 21 度的轉向軸轉，就是在轉彎。",
+   "aliases": [
+    "前叉",
+    "前避震",
+    "龍頭"
+   ]
+  },
+  {
+   "id": "handlebar",
+   "name": "把手",
+   "en": "motorcycle handlebar",
+   "info": "右手是油門和前煞車，左手是離合器。",
+   "aliases": [
+    "龍頭",
+    "把手",
+    "車手把"
+   ]
+  },
+  {
+   "id": "headlight_cowl",
+   "name": "頭燈罩",
+   "en": "motorcycle headlight cowl",
+   "info": "包住頭燈和儀表的前罩。",
+   "aliases": [
+    "頭燈",
+    "大燈"
+   ]
+  },
+  {
+   "id": "wheel_front",
+   "name": "前輪",
+   "en": "motorcycle front wheel",
+   "info": "前輪由前叉帶著轉向。",
+   "aliases": [
+    "輪子",
+    "前輪"
+   ]
+  },
+  {
+   "id": "disc_front_l",
+   "name": "左前碟盤",
+   "en": "motorcycle left front brake disc",
+   "info": "跟著前輪轉的鋼盤。煞車時卡鉗夾住它，用摩擦把車速變成熱。",
+   "aliases": [
+    "碟盤",
+    "煞車盤"
+   ]
+  },
+  {
+   "id": "disc_front_r",
+   "name": "右前碟盤",
+   "en": "motorcycle right front brake disc",
+   "info": "前輪有兩片碟盤，因為煞車時重量往前移，前輪負責大部分的煞車力。",
+   "aliases": [
+    "碟盤",
+    "煞車盤"
+   ]
+  },
+  {
+   "id": "calipers_front",
+   "name": "前卡鉗",
+   "en": "motorcycle front calipers",
+   "info": "裡面有油壓活塞，捏煞車時把來令片壓在碟盤上。",
+   "aliases": [
+    "卡鉗",
+    "煞車"
+   ]
+  },
+  {
+   "id": "swingarm",
+   "name": "後搖臂",
+   "en": "motorcycle swingarm",
+   "info": "後輪裝在它上面，前端繞著樞軸上下擺動，後避震吸收路面的起伏。",
+   "aliases": [
+    "搖臂",
+    "後叉",
+    "後避震"
+   ]
+  },
+  {
+   "id": "wheel_rear",
+   "name": "後輪",
+   "en": "motorcycle rear wheel",
+   "info": "鏈條帶動的驅動輪。",
+   "aliases": [
+    "輪子",
+    "後輪"
+   ]
+  },
+  {
+   "id": "disc_rear",
+   "name": "後碟盤",
+   "en": "motorcycle rear brake disc",
+   "info": "後輪的煞車碟盤，比前面小。",
+   "aliases": [
+    "碟盤",
+    "煞車盤"
+   ]
+  },
+  {
+   "id": "caliper_rear",
+   "name": "後卡鉗",
+   "en": "motorcycle rear caliper",
+   "info": "右腳踩煞車踏板時夾住後碟盤。",
+   "aliases": [
+    "卡鉗",
+    "煞車"
+   ]
+  },
+  {
+   "id": "tank",
+   "name": "油箱",
+   "en": "motorcycle fuel tank",
+   "info": "裝汽油的油箱，騎士用膝蓋夾著它。",
+   "aliases": [
+    "油箱"
+   ]
+  },
+  {
+   "id": "seat",
+   "name": "座墊",
+   "en": "motorcycle seat",
+   "info": "騎士和乘客坐的地方。",
+   "aliases": [
+    "座椅",
+    "坐墊"
+   ]
+  },
+  {
+   "id": "side_cover_l",
+   "name": "左側蓋",
+   "en": "motorcycle left side cover",
+   "info": "座墊下面的側蓋，裡面有電瓶和電腦。",
+   "aliases": [
+    "側蓋"
+   ]
+  },
+  {
+   "id": "side_cover_r",
+   "name": "右側蓋",
+   "en": "motorcycle right side cover",
+   "info": "右邊的側蓋。",
+   "aliases": [
+    "側蓋"
+   ]
+  },
+  {
+   "id": "tail",
+   "name": "車尾",
+   "en": "motorcycle tail",
+   "info": "車尾殼和尾燈。",
+   "aliases": [
+    "尾燈",
+    "後殼"
+   ]
+  }
+ ],
+ "drives": [
+  {
+   "id": "engine",
+   "name": "引擎空檔運轉",
+   "rpm": 40,
+   "moves": [
+    {
+     "part": "crankshaft",
+     "ratio": 1
+    },
+    {
+     "part": "camshaft_intake",
+     "ratio": 0.5
+    },
+    {
+     "part": "camshaft_exhaust",
+     "ratio": 0.5
+    },
+    {
+     "part": "clutch",
+     "ratio": 0.5517241379310345
+    },
+    {
+     "part": "mainshaft",
+     "ratio": 0.5517241379310345
+    }
+   ]
+  },
+  {
+   "id": "gear1",
+   "name": "1 檔前進",
+   "rpm": 40,
+   "moves": [
+    {
+     "part": "crankshaft",
+     "ratio": 1
+    },
+    {
+     "part": "camshaft_intake",
+     "ratio": 0.5
+    },
+    {
+     "part": "camshaft_exhaust",
+     "ratio": 0.5
+    },
+    {
+     "part": "clutch",
+     "ratio": 0.5517241379310345
+    },
+    {
+     "part": "mainshaft",
+     "ratio": 0.5517241379310345
+    },
+    {
+     "part": "countershaft",
+     "ratio": 0.203714
+    },
+    {
+     "part": "wheel_rear",
+     "ratio": 0.071063
+    },
+    {
+     "part": "wheel_front",
+     "ratio": 0.073284
+    }
+   ]
+  },
+  {
+   "id": "gear6",
+   "name": "6 檔前進",
+   "rpm": 40,
+   "moves": [
+    {
+     "part": "crankshaft",
+     "ratio": 1
+    },
+    {
+     "part": "camshaft_intake",
+     "ratio": 0.5
+    },
+    {
+     "part": "camshaft_exhaust",
+     "ratio": 0.5
+    },
+    {
+     "part": "clutch",
+     "ratio": 0.5517241379310345
+    },
+    {
+     "part": "mainshaft",
+     "ratio": 0.5517241379310345
+    },
+    {
+     "part": "countershaft",
+     "ratio": 0.564263
+    },
+    {
+     "part": "wheel_rear",
+     "ratio": 0.196836
+    },
+    {
+     "part": "wheel_front",
+     "ratio": 0.202987
+    }
+   ]
+  },
+  {
+   "id": "steer",
+   "name": "左右轉龍頭",
+   "swing": 25,
+   "period": 4,
+   "moves": [
+    {
+     "part": "fork",
+     "ratio": 1
+    }
+   ]
+  },
+  {
+   "id": "suspension",
+   "name": "後搖臂上下擺動",
+   "swing": 6,
+   "period": 2,
+   "moves": [
+    {
+     "part": "swingarm",
+     "ratio": 1
+    }
+   ]
+  }
+ ],
+ "linkages": [
+  {
+   "type": "slider_crank",
+   "crank": "crankshaft",
+   "r": 0.035,
+   "L": 0.13,
+   "up": [
+    0.258819,
+    0.965926,
+    0
+   ],
+   "cylinders": [
+    {
+     "piston": "piston_r",
+     "rod": "conrod_r",
+     "phase": 0
+    },
+    {
+     "piston": "piston_l",
+     "rod": "conrod_l",
+     "phase": -1.5707963267948966
+    }
+   ]
+  }
+ ],
+ "lessons": [
+  {
+   "id": "engine",
+   "title": "雙缸引擎怎麼動",
+   "steps": [
+    {
+     "say": "燃燒的氣體把活塞往下推，連桿再把上下的動作變成曲軸的旋轉。",
+     "parts": [
+      "piston_r",
+      "piston_l",
+      "conrod_r",
+      "conrod_l",
+      "crankshaft"
+     ],
+     "drive": "engine",
+     "speed": 0.5
+    },
+    {
+     "say": "兩個曲柄錯開 270 度，所以兩缸輪流點火，不會同時上下。",
+     "parts": [
+      "piston_r",
+      "piston_l",
+      "conrod_r",
+      "conrod_l",
+      "crankshaft"
+     ],
+     "drive": "engine",
+     "speed": 0.5,
+     "quiz": {
+      "q": "為什麼兩個活塞不設計成一起上下？",
+      "options": [
+       [
+        "讓兩缸輪流出力、震動和聲音更有節奏",
+        true,
+        "270 度曲軸讓點火間隔不平均，出力和聲音像 V 型雙缸；兩個活塞錯開，也抵銷一部分震動。"
+       ],
+       [
+        "為了省材料",
+        false,
+        "跟材料無關，是點火順序和震動的設計。"
+       ],
+       [
+        "其實一起上下比較好，只是做不到",
+        false,
+        "一起上下也做得到（360 度曲軸），只是震動和出力感覺不同。"
+       ]
+      ]
+     }
+    },
+    {
+     "say": "正時鏈條帶動上面兩根凸輪軸，負責打開進氣門和排氣門。",
+     "parts": [
+      "cam_chain",
+      "camshaft_intake",
+      "camshaft_exhaust",
+      "crankshaft"
+     ],
+     "drive": "engine",
+     "speed": 0.5,
+     "quiz": {
+      "q": "凸輪軸為什麼只用曲軸一半的速度轉？",
+      "options": [
+       [
+        "四行程引擎曲軸轉兩圈，汽門才開一次",
+        true,
+        "進氣、壓縮、爆炸、排氣四個行程要曲軸轉兩圈，每個汽門只開一次，所以凸輪軸轉一圈剛好。"
+       ],
+       [
+        "為了省油",
+        false,
+        "速度比是由四行程的節奏決定的。"
+       ],
+       [
+        "轉太快會斷",
+        false,
+        "原因是汽門開關的節奏，不是強度。"
+       ]
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "id": "drive",
+   "title": "從引擎到後輪",
+   "steps": [
+    {
+     "say": "曲軸上的小齒輪帶動離合器的大齒輪，先降一次速。",
+     "parts": [
+      "crankshaft",
+      "primary_gear",
+      "clutch"
+     ],
+     "drive": "gear1",
+     "speed": 0.5
+    },
+    {
+     "say": "離合器帶動變速箱的主軸，主軸上的齒輪咬著副軸，現在是 1 檔。",
+     "parts": [
+      "clutch",
+      "mainshaft",
+      "countershaft"
+     ],
+     "drive": "gear1",
+     "speed": 0.5
+    },
+    {
+     "say": "副軸末端的小齒盤拉動鏈條，鏈條再帶動後輪的大齒盤。",
+     "parts": [
+      "sprocket_front",
+      "chain",
+      "sprocket_rear",
+      "wheel_rear"
+     ],
+     "drive": "gear1",
+     "speed": 0.5,
+     "quiz": {
+      "q": "後齒盤為什麼比前齒盤大很多？",
+      "options": [
+       [
+        "再減速一次，讓後輪轉得慢但力氣大",
+        true,
+        "15 齒推 43 齒，後輪轉速剩不到三分之一，推力就放大差不多三倍，起步才推得動人和車。"
+       ],
+       [
+        "比較好看",
+        false,
+        "大小是為了齒數比，不是造型。"
+       ],
+       [
+        "讓鏈條不會掉",
+        false,
+        "防掉鏈靠的是鏈條張力和齒形，大小是為了減速。"
+       ]
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "id": "gears",
+   "title": "為什麼要換檔",
+   "steps": [
+    {
+     "say": "1 檔：主軸的小齒輪推副軸的大齒輪，引擎轉很多圈，後輪才轉一點點。",
+     "parts": [
+      "mainshaft",
+      "countershaft",
+      "wheel_rear"
+     ],
+     "drive": "gear1",
+     "speed": 0.5
+    },
+    {
+     "say": "6 檔：兩個齒輪幾乎一樣大，引擎一樣的轉速，後輪快了快三倍。",
+     "parts": [
+      "mainshaft",
+      "countershaft",
+      "wheel_rear"
+     ],
+     "drive": "gear6",
+     "speed": 0.5,
+     "quiz": {
+      "q": "起步為什麼要用 1 檔？",
+      "options": [
+       [
+        "1 檔力氣最大，從靜止推得動",
+        true,
+        "從停著到開始動需要最大的推力，1 檔把引擎的力量放大最多；速度起來以後再換高檔，引擎才不用轉太快。"
+       ],
+       [
+        "1 檔比較省油",
+        false,
+        "高檔、低轉速才比較省油。"
+       ],
+       [
+        "6 檔會熄火是因為齒輪太小",
+        false,
+        "6 檔熄火是因為推力不夠，引擎轉速被拉得太低。"
+       ]
+      ]
+     }
+    },
+    {
+     "say": "換檔之前要先捏離合器，讓引擎和變速箱斷開，齒輪才換得過去。",
+     "parts": [
+      "clutch",
+      "handlebar"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "chassis",
+   "title": "轉彎、避震和煞車",
+   "steps": [
+    {
+     "say": "整支前叉沿著傾斜的轉向軸轉，前輪跟著轉向。",
+     "parts": [
+      "fork",
+      "handlebar",
+      "wheel_front"
+     ],
+     "drive": "steer",
+     "speed": 1
+    },
+    {
+     "say": "後輪裝在後搖臂上，路面不平時搖臂上下擺，車身就不會跟著跳。",
+     "parts": [
+      "swingarm",
+      "wheel_rear"
+     ],
+     "drive": "suspension",
+     "speed": 1
+    },
+    {
+     "say": "前輪有兩片碟盤和兩個卡鉗，後輪只有一片。",
+     "parts": [
+      "disc_front_l",
+      "disc_front_r",
+      "calipers_front",
+      "disc_rear",
+      "caliper_rear"
+     ],
+     "quiz": {
+      "q": "為什麼前輪的煞車比後輪大？",
+      "options": [
+       [
+        "煞車時重量往前移，前輪抓地力最大",
+        true,
+        "減速時車和人的重量都往前壓，前輪壓得越緊越抓得住地，所以大部分煞車力交給前輪。"
+       ],
+       [
+        "前輪比較大",
+        false,
+        "前後輪差不多大，原因是煞車時重量轉移。"
+       ],
+       [
+        "後輪不需要煞車",
+        false,
+        "後輪也要煞車，只是分到的比例較小。"
+       ]
+      ]
+     }
+    }
+   ]
+  }
+ ]
+}

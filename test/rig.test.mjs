@@ -167,3 +167,15 @@ test('steam: the smokebox door swings out to the front and the cab roof lifts at
   assert.ok(new THREE.Vector3(0, 0, -1).applyQuaternion(q('smokebox_door')).x > 0.9, 'door edge swings forward');
   assert.ok(new THREE.Vector3(-1, 0, 0).applyQuaternion(q('cab_roof')).y > 0.5, 'roof rear edge lifts');
 });
+
+test('moto: pistons follow the slider-crank formula on the tilted bore, left 90 deg behind; 6th gear turns the wheel faster', async () => {
+  const rig = new Rig(await loadModel('moto'), exhibit('moto')), part = (id) => rig.parts.get(id), up = new THREE.Vector3(0.258819, 0.965926, 0);
+  const r = 0.035, L = 0.13, s = (f) => r * Math.cos(f) + Math.sqrt(L * L - (r * Math.sin(f)) ** 2);
+  const pos = (id) => part(id).obj.position.dot(up), r0 = pos('piston_r'), l0 = pos('piston_l');
+  rig.drive('engine', 1); rig.update(0.5);   // 40 rpm: a third of a turn
+  const f = part('crankshaft').angle;
+  assert.ok(Math.abs(pos('piston_r') - r0 - (s(f) - s(0))) < 1e-6);
+  assert.ok(Math.abs(pos('piston_l') - l0 - (s(f - Math.PI / 2) - s(-Math.PI / 2))) < 1e-6);
+  const wheel = (g) => { rig.reset(); rig.drive(g, 1); rig.update(1); return part('wheel_rear').angle; };
+  assert.ok(Math.abs(wheel('gear6') / wheel('gear1') - (65 / 24) / (44 / 45)) < 1e-4);
+});
