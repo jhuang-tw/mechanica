@@ -133,7 +133,7 @@ function playStep(s) {
   $('quiz').hidden = true;
   viewer.choreo.cancel(); rig.stop();
   rig.isolate(s.parts);
-  if (s.drive) rig.drive(s.drive, s.speed ?? 0.5);
+  for (const d of [].concat(s.drive || [])) rig.drive(d, s.speed ?? 0.5);   // a step can run several drives (rotor turning while the stick moves)
   say(`第 ${lesson.i + 1} 步`, s.say, false, true);
 }
 function askQuiz(s) {

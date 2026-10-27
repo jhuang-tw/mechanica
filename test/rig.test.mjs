@@ -20,10 +20,13 @@ for (const id of JSON.parse(read('index.json')).exhibits) {
     const ids = new Set(m.parts.map((p) => p.id));
     for (const p of ids) assert.ok(root.getObjectByName(p), `model has ${p}`);
     for (const d of m.drives) for (const mv of d.moves) assert.ok(ids.has(mv.part), `${d.id}: ${mv.part}`);
-    for (const l of m.linkages || []) for (const c of l.cylinders) assert.ok(ids.has(c.piston) && ids.has(c.rod), JSON.stringify(c));
+    for (const l of m.linkages || []) {
+      if (l.type === 'swashplate') for (const id of [l.mast, l.hub, ...l.plates, ...l.blades, l.collective.part, l.cyclic.part]) assert.ok(ids.has(id), id);
+      else for (const c of l.cylinders) assert.ok(ids.has(c.piston) && ids.has(c.rod), JSON.stringify(c));
+    }
     for (const l of m.lessons) for (const s of l.steps) {
       for (const p of s.parts) assert.ok(ids.has(p), `${l.id}: ${p}`);
-      if (s.drive) assert.ok(m.drives.some((d) => d.id === s.drive));
+      for (const d of [].concat(s.drive || [])) assert.ok(m.drives.some((x) => x.id === d), d);
       if (s.quiz) assert.equal(s.quiz.options.filter((o) => o[1] === true).length, 1, `${s.quiz.q}: one right answer`);
     }
   });
@@ -93,4 +96,23 @@ test('steam: crossheads keep the rod length, coupling rods stay level, right cra
       assert.equal(part(`crosshead_${s}`).obj.position.x, part(`piston_${s}`).obj.position.x - part(`piston_${s}`).base.pos.x + part(`crosshead_${s}`).base.pos.x);
     }
   }
+});
+
+test('heli: collective lifts both plates and pitches both blades alike; forward cyclic tips the plate and the disc forward', async () => {
+  const m = exhibit('heli'), rig = new Rig(await loadModel('heli'), m), part = (id) => rig.parts.get(id), L = m.linkages[0];
+  const world = (id) => part(id).obj.getWorldPosition(new THREE.Vector3()), tip = (id) => new THREE.Vector3(id === 'blade_1' ? 3 : -3, 0, 0).applyMatrix4(part(id).obj.matrixWorld);
+  const pitch = (id) => part(id).obj.quaternion.angleTo(part(id).base.quat) * 180 / Math.PI;
+  const y0 = [world('swashplate_lower').y, world('swashplate_upper').y];
+  part('collective').angle = (12 * Math.PI) / 180; rig.update(0); rig.root.updateMatrixWorld(true);
+  assert.ok(Math.abs(world('swashplate_lower').y - y0[0] - L.rise) < 1e-6 && Math.abs(world('swashplate_upper').y - y0[1] - L.rise) < 1e-6, 'plates rise together');
+  assert.ok(Math.abs(pitch('blade_1') - 8) < 1e-6 && Math.abs(pitch('blade_2') - 8) < 1e-6, 'both blades +8°');
+  rig.reset(); part('cyclic').angle = (10 * Math.PI) / 180;
+  for (const a of [0, 1.1, 2.7]) {   // whatever the mast angle, the plates tilt front-down and the disc is lowest at the front
+    part('mast').angle = a; rig.update(0); rig.root.updateMatrixWorld(true);
+    for (const id of ['swashplate_lower', 'swashplate_upper']) assert.ok(new THREE.Vector3(0, 1, 0).applyQuaternion(part(id).obj.getWorldQuaternion(new THREE.Quaternion())).x > 0.1, `${id} tips forward at ${a}`);
+    const t1 = tip('blade_1'), t2 = tip('blade_2'), front = t1.x > t2.x ? t1 : t2, back = front === t1 ? t2 : t1;
+    if (Math.abs(t1.x - t2.x) > 1) assert.ok(front.y < back.y, `disc lower in front at ${a}`);
+  }
+  rig.reset(); rig.drive('power', 1); rig.update(1);
+  assert.ok(Math.abs(part('mast').angle / part('input_shaft').angle - 0.0669) < 1e-9);
 });

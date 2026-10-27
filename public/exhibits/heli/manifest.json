@@ -1,0 +1,612 @@
+{
+ "id": "heli",
+ "name": "直升機",
+ "title": "直升機（傳動與旋翼控制）",
+ "model": "model.glb",
+ "thumb": "thumb.jpg",
+ "intro": "這是一架輕型直升機的機構：渦軸引擎、主齒輪箱、斜盤、蹺蹺板旋翼和尾旋翼。問我「直升機怎麼往前飛」。",
+ "suggest": [
+  "直升機怎麼往前飛？",
+  "為什麼要有尾旋翼？",
+  "斜盤是做什麼的？"
+ ],
+ "looksLike": "直升機、旋翼機、無人機、螺旋槳",
+ "parts": [
+  {
+   "id": "engine",
+   "name": "渦軸引擎",
+   "en": "helicopter turboshaft engine",
+   "info": "直升機的心臟。吸進空氣、壓縮、和燃料一起燒，熱氣吹動渦輪，再由軸把力量往前送。開了一個窗可以看到裡面的渦輪。",
+   "aliases": [
+    "引擎",
+    "發動機",
+    "渦輪引擎"
+   ]
+  },
+  {
+   "id": "turbine",
+   "name": "動力渦輪",
+   "en": "helicopter power turbine",
+   "info": "被燃燒後的熱氣吹著高速旋轉，這是整台直升機所有轉動的源頭。",
+   "aliases": [
+    "渦輪"
+   ]
+  },
+  {
+   "id": "input_shaft",
+   "name": "輸入軸",
+   "en": "helicopter input shaft",
+   "info": "把引擎的轉動送進主齒輪箱。轉得非常快，力量不大。",
+   "aliases": [
+    "傳動軸",
+    "輸入"
+   ]
+  },
+  {
+   "id": "main_gearbox",
+   "name": "主齒輪箱",
+   "en": "helicopter main gearbox",
+   "info": "把引擎每分鐘上萬轉減速成主旋翼的幾百轉，力量放大很多倍。外殼切掉四分之一，看得到裡面的齒輪。",
+   "aliases": [
+    "齒輪箱",
+    "減速箱",
+    "變速箱"
+   ]
+  },
+  {
+   "id": "bevel_gear",
+   "name": "傘齒輪與太陽齒輪",
+   "en": "helicopter bevel and sun gear",
+   "info": "71 齒的傘齒輪把水平的輸入轉成垂直的轉動，上面的太陽齒輪再帶動行星齒輪。",
+   "aliases": [
+    "傘齒輪",
+    "太陽齒輪",
+    "齒輪"
+   ]
+  },
+  {
+   "id": "planets",
+   "name": "行星齒輪",
+   "en": "helicopter planet gears",
+   "info": "繞著太陽齒輪公轉、在外圈固定齒圈裡滾動，把轉速再降下來，交給行星架和旋翼軸。",
+   "aliases": [
+    "行星",
+    "行星齒輪組"
+   ]
+  },
+  {
+   "id": "mast",
+   "name": "旋翼軸與行星架",
+   "en": "helicopter rotor mast and planet carrier",
+   "info": "從齒輪箱伸上去的主軸，頂端裝旋翼。它轉得比輸入軸慢約 15 倍，但力量大約 15 倍。",
+   "aliases": [
+    "主軸",
+    "旋翼軸",
+    "桅桿"
+   ]
+  },
+  {
+   "id": "rotor_hub",
+   "name": "旋翼頭（蹺蹺板式）",
+   "en": "helicopter teetering rotor hub",
+   "info": "兩片槳葉像蹺蹺板一樣裝在中間的軸上：一邊上來另一邊就下去，整個旋翼盤就可以傾斜。",
+   "aliases": [
+    "旋翼頭",
+    "槳轂",
+    "旋翼"
+   ]
+  },
+  {
+   "id": "blade_1",
+   "name": "槳葉 1",
+   "en": "helicopter main rotor blade 1",
+   "info": "像一片轉圈的機翼。前緣抬高一點（槳距大）就推更多空氣往下、升力變大。",
+   "aliases": [
+    "槳葉",
+    "旋翼",
+    "螺旋槳"
+   ]
+  },
+  {
+   "id": "blade_2",
+   "name": "槳葉 2",
+   "en": "helicopter main rotor blade 2",
+   "info": "和另一片槳葉一起轉。每片都可以沿著自己的長軸扭轉，改變槳距。",
+   "aliases": [
+    "槳葉",
+    "旋翼",
+    "螺旋槳"
+   ]
+  },
+  {
+   "id": "swashplate_lower",
+   "name": "下斜盤（不轉）",
+   "en": "helicopter stationary lower swashplate",
+   "info": "被三個伺服器頂著，可以整片升降、也可以往任何方向傾斜，但不會轉。駕駛的指令從這裡進到旋轉的部分。",
+   "aliases": [
+    "斜盤",
+    "下斜盤",
+    "自動傾斜器"
+   ]
+  },
+  {
+   "id": "swashplate_upper",
+   "name": "上斜盤（會轉）",
+   "en": "helicopter rotating upper swashplate",
+   "info": "跟著旋翼轉，但貼著下斜盤一起升降、傾斜，再經變距拉桿去扭槳葉。",
+   "aliases": [
+    "斜盤",
+    "上斜盤",
+    "自動傾斜器"
+   ]
+  },
+  {
+   "id": "pitch_link_1",
+   "name": "變距拉桿 1",
+   "en": "helicopter pitch link 1",
+   "info": "把上斜盤的高低傳給槳葉的變距搖臂：拉桿往上，槳葉前緣就抬高。",
+   "aliases": [
+    "變距拉桿",
+    "拉桿"
+   ]
+  },
+  {
+   "id": "pitch_link_2",
+   "name": "變距拉桿 2",
+   "en": "helicopter pitch link 2",
+   "info": "另一根變距拉桿，控制另一片槳葉。",
+   "aliases": [
+    "變距拉桿",
+    "拉桿"
+   ]
+  },
+  {
+   "id": "scissors",
+   "name": "剪刀臂",
+   "en": "helicopter scissors link",
+   "info": "把上斜盤和旋翼軸連在一起，讓上斜盤跟著轉，又不妨礙它升降傾斜。",
+   "aliases": [
+    "剪刀",
+    "扭力臂"
+   ]
+  },
+  {
+   "id": "servo_1",
+   "name": "伺服器 1（前）",
+   "en": "helicopter swashplate servo 1",
+   "info": "液壓伺服器推動下斜盤的一個點。三個一起推就是升降（總距），推得不一樣就是傾斜（週期）。",
+   "aliases": [
+    "伺服器",
+    "致動器",
+    "液壓缸"
+   ]
+  },
+  {
+   "id": "servo_2",
+   "name": "伺服器 2（左後）",
+   "en": "helicopter swashplate servo 2",
+   "info": "液壓伺服器推動下斜盤的一個點。三個一起推就是升降（總距），推得不一樣就是傾斜（週期）。",
+   "aliases": [
+    "伺服器",
+    "致動器",
+    "液壓缸"
+   ]
+  },
+  {
+   "id": "servo_3",
+   "name": "伺服器 3（右後）",
+   "en": "helicopter swashplate servo 3",
+   "info": "液壓伺服器推動下斜盤的一個點。三個一起推就是升降（總距），推得不一樣就是傾斜（週期）。",
+   "aliases": [
+    "伺服器",
+    "致動器",
+    "液壓缸"
+   ]
+  },
+  {
+   "id": "tail_driveshaft",
+   "name": "尾傳動軸",
+   "en": "helicopter tail driveshaft",
+   "info": "從主齒輪箱一路通到尾巴的長軸，帶動尾旋翼。",
+   "aliases": [
+    "尾軸",
+    "尾傳動"
+   ]
+  },
+  {
+   "id": "tail_gearbox",
+   "name": "尾齒輪箱",
+   "en": "helicopter tail gearbox",
+   "info": "在尾巴轉 90 度，把傳動軸的轉動交給尾旋翼。",
+   "aliases": [
+    "尾齒輪"
+   ]
+  },
+  {
+   "id": "tail_rotor",
+   "name": "尾旋翼",
+   "en": "helicopter tail rotor",
+   "info": "主旋翼往一邊轉，機身就會被反扭力扭向另一邊。尾旋翼往側面推，把機身扶正；踩踏板改它的槳距，機頭就左右轉。",
+   "aliases": [
+    "尾槳",
+    "尾翼"
+   ]
+  },
+  {
+   "id": "cyclic",
+   "name": "週期桿",
+   "en": "helicopter cyclic stick",
+   "info": "駕駛右手握的桿。往哪邊推，斜盤就往哪邊傾，旋翼盤跟著傾斜，直升機就往那邊飛。",
+   "aliases": [
+    "駕駛桿",
+    "操縱桿",
+    "搖桿"
+   ],
+   "axis": [
+    0,
+    0,
+    -1
+   ]
+  },
+  {
+   "id": "collective",
+   "name": "總距桿",
+   "en": "helicopter collective lever",
+   "info": "駕駛左手邊的桿。拉起來，兩片槳葉的槳距一起變大，升力變大，直升機就往上。",
+   "aliases": [
+    "總距",
+    "升降桿"
+   ]
+  },
+  {
+   "id": "pedals",
+   "name": "反扭力踏板",
+   "en": "helicopter anti-torque pedals",
+   "info": "踩左或踩右，改變尾旋翼的槳距，讓機頭左右轉。",
+   "aliases": [
+    "踏板",
+    "腳踏"
+   ]
+  },
+  {
+   "id": "control_rods",
+   "name": "操縱連桿",
+   "en": "helicopter control rods",
+   "info": "把駕駛的桿和踏板連到伺服器和尾旋翼。",
+   "aliases": [
+    "連桿",
+    "操縱系統"
+   ]
+  },
+  {
+   "id": "fuel_tank",
+   "name": "油箱",
+   "en": "helicopter fuel tank",
+   "info": "裝燃油，放在機身中間靠近重心的地方，油用掉時機身才不會失去平衡。",
+   "aliases": [
+    "油箱",
+    "燃料"
+   ]
+  },
+  {
+   "id": "skids",
+   "name": "滑橇",
+   "en": "helicopter landing skids",
+   "info": "兩根管子做的起落架，比輪子輕又簡單。",
+   "aliases": [
+    "起落架",
+    "腳架"
+   ]
+  }
+ ],
+ "drives": [
+  {
+   "id": "power",
+   "name": "動力（渦輪→齒輪箱→主旋翼、尾旋翼）",
+   "rpm": 300,
+   "moves": [
+    {
+     "part": "turbine",
+     "ratio": 1
+    },
+    {
+     "part": "input_shaft",
+     "ratio": 1
+    },
+    {
+     "part": "bevel_gear",
+     "ratio": 0.268
+    },
+    {
+     "part": "mast",
+     "ratio": 0.0669
+    },
+    {
+     "part": "tail_driveshaft",
+     "ratio": 0.4
+    },
+    {
+     "part": "tail_rotor",
+     "ratio": 0.4
+    }
+   ]
+  },
+  {
+   "id": "collective",
+   "name": "總距：拉起、放下",
+   "swing": 12,
+   "period": 4,
+   "moves": [
+    {
+     "part": "collective",
+     "ratio": 1
+    }
+   ]
+  },
+  {
+   "id": "cyclic",
+   "name": "週期：桿前推、後拉",
+   "swing": 10,
+   "period": 4,
+   "moves": [
+    {
+     "part": "cyclic",
+     "ratio": 1
+    }
+   ]
+  }
+ ],
+ "linkages": [
+  {
+   "type": "swashplate",
+   "mast": "mast",
+   "plates": [
+    "swashplate_lower",
+    "swashplate_upper"
+   ],
+   "hub": "rotor_hub",
+   "blades": [
+    "blade_1",
+    "blade_2"
+   ],
+   "collective": {
+    "part": "collective",
+    "max": 12
+   },
+   "cyclic": {
+    "part": "cyclic",
+    "max": 10
+   },
+   "rise": 0.05,
+   "tilt": 6,
+   "pitch": 8,
+   "cyclicPitch": 6,
+   "flap": 4
+  }
+ ],
+ "lessons": [
+  {
+   "id": "power",
+   "title": "引擎怎麼轉動旋翼",
+   "steps": [
+    {
+     "say": "渦軸引擎的熱氣吹動渦輪，每分鐘轉上萬圈。",
+     "parts": [
+      "engine",
+      "turbine"
+     ],
+     "drive": "power",
+     "speed": 0.5
+    },
+    {
+     "say": "輸入軸把轉動送進主齒輪箱，傘齒輪把水平轉動變成垂直。",
+     "parts": [
+      "input_shaft",
+      "bevel_gear",
+      "main_gearbox"
+     ],
+     "drive": "power",
+     "speed": 0.5,
+     "quiz": {
+      "q": "引擎轉得飛快，旋翼為什麼轉得慢很多？",
+      "options": [
+       [
+        "齒輪箱減速，把轉速換成力量",
+        true,
+        "轉速降低約 15 倍，扭力就放大約 15 倍，才轉得動又長又重的槳葉。"
+       ],
+       [
+        "引擎故意開小",
+        false,
+        "引擎一直在高轉速最有效率，減速是齒輪箱做的。"
+       ],
+       [
+        "空氣阻力讓它變慢",
+        false,
+        "阻力是要克服的，轉速是由齒輪比決定。"
+       ]
+      ]
+     }
+    },
+    {
+     "say": "行星齒輪再減速一次，行星架帶著旋翼軸和槳葉轉。",
+     "parts": [
+      "planets",
+      "mast",
+      "rotor_hub",
+      "blade_1",
+      "blade_2"
+     ],
+     "drive": "power",
+     "speed": 0.5
+    },
+    {
+     "say": "同時尾傳動軸把一部分動力送到尾旋翼。",
+     "parts": [
+      "tail_driveshaft",
+      "tail_gearbox",
+      "tail_rotor"
+     ],
+     "drive": "power",
+     "speed": 0.5,
+     "quiz": {
+      "q": "如果沒有尾旋翼，會發生什麼事？",
+      "options": [
+       [
+        "機身會反著旋翼的方向一直打轉",
+        true,
+        "引擎推旋翼往一邊轉，旋翼就把機身往另一邊推（反扭力），尾旋翼往側面推回來。"
+       ],
+       [
+        "飛不起來",
+        false,
+        "升力來自主旋翼，飛得起來，但機身會一直轉。"
+       ],
+       [
+        "什麼事都沒有",
+        false,
+        "會一直打轉。只有共軸雙旋翼這類設計不需要尾旋翼。"
+       ]
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "id": "collective",
+   "title": "總距：怎麼上升",
+   "steps": [
+    {
+     "say": "駕駛拉起總距桿，三個伺服器一起把下斜盤往上推。",
+     "parts": [
+      "collective",
+      "control_rods",
+      "servo_1",
+      "servo_2",
+      "servo_3",
+      "swashplate_lower"
+     ],
+     "drive": "collective",
+     "speed": 1
+    },
+    {
+     "say": "上斜盤一起升高，經變距拉桿把兩片槳葉的前緣同時抬高。",
+     "parts": [
+      "swashplate_lower",
+      "swashplate_upper",
+      "pitch_link_1",
+      "pitch_link_2",
+      "blade_1",
+      "blade_2"
+     ],
+     "drive": [
+      "collective",
+      "power"
+     ],
+     "speed": 1,
+     "quiz": {
+      "q": "拉起總距桿，兩片槳葉會？",
+      "options": [
+       [
+        "槳距一起變大，升力變大",
+        true,
+        "兩片一起多推一點空氣往下，直升機就往上。"
+       ],
+       [
+        "轉得更快",
+        false,
+        "旋翼轉速幾乎固定，改的是槳距。"
+       ],
+       [
+        "一片大一片小",
+        false,
+        "那是週期桿；總距是兩片一起變。"
+       ]
+      ]
+     }
+    },
+    {
+     "say": "槳距變大，阻力也變大，引擎要給更多力量，旋翼才不會慢下來。",
+     "parts": [
+      "engine",
+      "turbine",
+      "blade_1",
+      "blade_2"
+     ],
+     "drive": "collective",
+     "speed": 1
+    }
+   ]
+  },
+  {
+   "id": "cyclic",
+   "title": "週期：怎麼往前飛",
+   "steps": [
+    {
+     "say": "駕駛把週期桿往前推，伺服器讓兩片斜盤一起往前傾。",
+     "parts": [
+      "cyclic",
+      "control_rods",
+      "swashplate_lower",
+      "swashplate_upper"
+     ],
+     "drive": [
+      "cyclic",
+      "power"
+     ],
+     "speed": 1
+    },
+    {
+     "say": "槳葉每轉一圈，經過一側時槳距大、另一側時小。",
+     "parts": [
+      "swashplate_lower",
+      "swashplate_upper",
+      "pitch_link_1",
+      "pitch_link_2",
+      "blade_1",
+      "blade_2"
+     ],
+     "drive": [
+      "cyclic",
+      "power"
+     ],
+     "speed": 1,
+     "quiz": {
+      "q": "槳葉在哪裡槳距最大，旋翼盤就在哪裡最高嗎？",
+      "options": [
+       [
+        "不是，最高點會晚 90 度出現",
+        true,
+        "這叫陀螺進動：轉動的旋翼受力後，要再轉四分之一圈才反應出來，所以槳距最大的位置要提早 90 度。"
+       ],
+       [
+        "是，同一個位置",
+        false,
+        "旋翼在轉，反應會晚四分之一圈。"
+       ],
+       [
+        "最高點在相反的位置",
+        false,
+        "差的是 90 度，不是 180 度。"
+       ]
+      ]
+     }
+    },
+    {
+     "say": "結果旋翼盤往前傾，升力往前斜，直升機就往前飛。",
+     "parts": [
+      "rotor_hub",
+      "blade_1",
+      "blade_2",
+      "cyclic"
+     ],
+     "drive": [
+      "cyclic",
+      "power"
+     ],
+     "speed": 1
+    }
+   ]
+  }
+ ]
+}

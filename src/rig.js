@@ -41,7 +41,7 @@ export class Rig {
     this.explode = 0; this.explodeTarget = 0;
     this.tweens = []; this.spins = new Map();   // part id -> rad/s
     this.swings = new Map();   // part id -> { amp (rad), w (rad/s), t }: back-and-forth, like a steering wheel
-    this.linkages = (manifest.linkages || []).filter((l) => l.type === 'slider_crank' && this.parts.has(l.crank));
+    this.linkages = (manifest.linkages || []).filter((l) => (l.type === 'slider_crank' && this.parts.has(l.crank)) || (l.type === 'swashplate' && this.parts.has(l.mast)));
     this.lit = new Set(); this.isolated = null;
   }
 
@@ -117,7 +117,7 @@ export class Rig {
       p.obj.quaternion.copy(p.base.quat).multiply(q.setFromAxisAngle(p.axis, p.angle));
       p.obj.position.copy(p.base.pos).add(p.offset).addScaledVector(p.explodeVec, this.explode);
     }
-    for (const l of this.linkages) this.sliderCrank(l);
+    for (const l of this.linkages) if (l.type === 'swashplate') this.swashplate(l); else this.sliderCrank(l);
   }
 
   // engine: each piston (and anything in `slides`, like a crosshead) moves along `up`; the rod swings from the crankpin
@@ -142,5 +142,29 @@ export class Rig {
       const valve = this.parts.get(c.valve);
       if (valve) valve.obj.position.addScaledVector(up, c.valveAmp * (Math.sin(a + c.valveLead) - Math.sin(a0 + c.valveLead)));
     }
+  }
+
+  // helicopter: the collective lever raises both plates and pitches both blades together; the cyclic stick tilts the
+  // plates toward it and pitches each blade by sin(azimuth), so the disc (teetering hub) tilts 90° later, toward the stick.
+  // The rotor turns about +y; blade i sits at azimuth mast.angle + i·2π/n.
+  swashplate(l) {
+    const lever = (c) => { const p = c && this.parts.get(c.part); return p ? Math.max(-1, Math.min(1, p.angle / ((c.max * Math.PI) / 180))) : 0; };
+    const col = lever(l.collective), cyc = lever(l.cyclic), rad = Math.PI / 180, mast = this.parts.get(l.mast);
+    const up = new THREE.Vector3(0, 1, 0), tilt = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), -cyc * l.tilt * rad);   // front edge down
+    const spin = mast.obj.quaternion.clone().multiply(mast.base.quat.clone().invert()), unspin = spin.clone().invert();
+    for (const id of l.plates || []) {
+      const p = this.parts.get(id);
+      if (!p) continue;
+      const q = p.obj.parent === mast.obj ? unspin.clone().multiply(tilt).multiply(spin) : tilt;   // a plate riding the mast tilts in world space
+      p.obj.position.addScaledVector(up, col * l.rise);
+      p.obj.quaternion.premultiply(q);
+    }
+    const blades = this.ids(l.blades), az = mast.angle, q = new THREE.Quaternion();
+    blades.forEach((id, i) => {
+      const p = this.parts.get(id), a = az + (i * TAU) / blades.length;
+      p.obj.quaternion.copy(p.base.quat).multiply(q.setFromAxisAngle(p.axis, (col * l.pitch + cyc * l.cyclicPitch * Math.sin(a)) * rad));
+    });
+    const hub = this.parts.get(l.hub);   // teeter: blade 1 low at the front when the stick is forward
+    if (hub) hub.obj.quaternion.copy(hub.base.quat).multiply(q.setFromAxisAngle(hub.axis, cyc * l.flap * rad * Math.cos(az)));
   }
 }
