@@ -241,28 +241,7 @@ def chassis_misc():
 
 # ---------------------------------------------------------------- Tripo body shell
 TRIPO = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'tripo', 'body.glb')
-SHELL_TRIS, TEX = 18000, 2048
-
-def body_material(img):
-    """Tripo colour texture plus a metallic-roughness map derived from it: bright grey paint is metallic, glass and trim satin."""
-    import numpy as np
-    img.scale(TEX, TEX); img.file_format = 'JPEG'
-    px = np.array(img.pixels[:], dtype=np.float32).reshape(-1, 4)
-    v = px[:, :3].max(1); sat = (v - px[:, :3].min(1)) / np.maximum(v, 1e-4)
-    paint = np.clip((v - 0.45) / 0.20, 0, 1) * np.clip((0.25 - sat) / 0.15, 0, 1)
-    metal = 0.55 * paint
-    rough = 0.62 - 0.27 * paint - 0.3 * np.clip((sat - 0.4) / 0.3, 0, 1)            # dark glass and trim stay satin, lamps glossy
-    mr = bpy.data.images.new('body_mr', TEX, TEX)
-    mr.pixels.foreach_set(np.stack([np.ones_like(v), np.clip(rough, 0.05, 1), metal, np.ones_like(v)], 1).ravel())
-    mr.scale(TEX // 2, TEX // 2)                                                      # the exporter only keeps saved pixels: write, reload
-    path = os.path.join(__import__('tempfile').gettempdir(), 'car_body_mr.jpg')
-    mr.filepath_raw = path; mr.file_format = 'JPEG'; mr.save(); bpy.data.images.remove(mr)
-    mr = bpy.data.images.load(path); mr.name = 'body_mr'
-    m = bpy.data.materials.new('body_paint'); m.use_nodes = True; nt = m.node_tree; b = nt.nodes['Principled BSDF']
-    tc = nt.nodes.new('ShaderNodeTexImage'); tc.image = img; nt.links.new(tc.outputs['Color'], b.inputs['Base Color'])
-    tm = nt.nodes.new('ShaderNodeTexImage'); tm.image = mr; mr.colorspace_settings.name = 'Non-Color'
-    sep = nt.nodes.new('ShaderNodeSeparateColor'); nt.links.new(tm.outputs['Color'], sep.inputs['Color'])
-    nt.links.new(sep.outputs['Green'], b.inputs['Roughness']); nt.links.new(sep.outputs['Blue'], b.inputs['Metallic'])
+SHELL_TRIS = 18000
 
 # panel lines in the aligned frame, read off the Tripo side view (x forward from mid-wheelbase, z up from the ground)
 B_PILLAR = -0.205
@@ -279,59 +258,17 @@ def panel(c, n):
     return 'body'
 
 def tripo_body():
-    if not os.path.exists(TRIPO): print('no Tripo body, shell skipped:', TRIPO); return
-    bpy.ops.import_scene.gltf(filepath=TRIPO)
-    ob = next(o for o in bpy.context.selected_objects if o.type == 'MESH'); me = ob.data
-    me.transform(Matrix.Rotation(pi / 2, 4, 'Z') @ ob.matrix_world)            # Tripo front is -y: turn it to +x
-    for o in list(bpy.context.selected_objects):
-        if o != ob: bpy.data.objects.remove(o)
-    ob.parent = None; ob.matrix_world = Matrix.Identity(4)
-    zs = [v.co.z for v in me.vertices]; z0 = min(zs); h = max(zs) - z0
-    feet = [v.co for v in me.vertices if v.co.z < z0 + 0.004 * h]               # tyre contact patches
-    front, rear = [c.x for c in feet if c.x > 0], [c.x for c in feet if c.x < 0]
-    xf, xr = sum(front) / len(front), sum(rear) / len(rear)
-    k = (FA - RA) / (xf - xr); ym = sum(v.co.y for v in me.vertices) / len(me.vertices)
-    me.transform(Matrix.Scale(k, 4) @ Matrix.Translation(V((-(xf + xr) / 2, -ym, -z0))))
-    xs = [v.co.x for v in me.vertices]
-    print(f'Tripo body: scale {k:.3f}, length {max(xs) - min(xs):.2f} m')
-    bm = bmesh.new(); bm.from_mesh(me)
-    bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=0.0004)
     hubs = [V((x, s * TW, WR)) for x in (FA, RA) for s in (1, -1)]
-    def in_wheel(f):
-        return all(any(((p.x - c.x) ** 2 + (p.z - c.z) ** 2) ** 0.5 < WR + 0.012 and abs(p.y - c.y) < 0.13 for c in hubs) for p in (v.co for v in f.verts))
-    bmesh.ops.delete(bm, geom=[f for f in bm.faces if in_wheel(f)], context='FACES')
-    bm.to_mesh(me); bm.free()
-    dec = ob.modifiers.new('d', 'DECIMATE'); dec.ratio = min(1, SHELL_TRIS / len(me.polygons)); dec.use_collapse_triangulate = True
-    bpy.context.view_layer.objects.active = ob; bpy.ops.object.modifier_apply(modifier='d')
-    body_material(next(n.image for n in me.materials[0].node_tree.nodes if n.type == 'TEX_IMAGE'))
-    me.polygons.foreach_set('use_smooth', [True] * len(me.polygons))
-    groups = {}
-    for f in me.polygons: groups.setdefault(panel(f.center, f.normal), []).append(f.index)
-    hinge = {'hood': (V((1.06, 0, 0.98)), Y, (0.25, 0, 0.75)), 'trunk': (V((-1.80, 0, 1.12)), Y, (-0.3, 0, 0.7)), 'body': (None, None, (0, 0, 1.3))}
+    def cut(ps):   # Tripo's own wheels and tyres
+        return all(any(((p.x - c.x) ** 2 + (p.z - c.z) ** 2) ** 0.5 < WR + 0.012 and abs(p.y - c.y) < 0.13 for c in hubs) for p in ps)
+    nodes = {'hood': (V((1.06, 0, 0.98)), Y, (0.25, 0, 0.75), None), 'trunk': (V((-1.80, 0, 1.12)), Y, (-0.3, 0, 0.7), None),
+             'body': (None, None, (0, 0, 1.3), None)}
     for s, side in (('l', 1), ('r', -1)):
-        hinge[f'door_f{s}'] = (V((0.90, side * 0.80, 0.70)), V((0, 0, 1)), (0.1, side * 0.9, 0))
-        hinge[f'door_r{s}'] = (V((B_PILLAR, side * 0.80, 0.70)), V((0, 0, 1)), (-0.1, side * 0.9, 0))
-    for pid, faces in sorted(groups.items()):
-        piv, ax, ex = hinge[pid]
-        m = part(pid, pivot=piv, axis=ax, explode=ex); m.mats = ['body_paint']
-        keep = set(faces); b2 = bmesh.new(); b2.from_mesh(me)
-        bmesh.ops.delete(b2, geom=[f for f in b2.faces if f.index not in keep], context='FACES')
-        m.bm.free(); m.bm = b2
-        print(pid, len(faces), 'faces')
-    bpy.data.objects.remove(ob)
+        nodes[f'door_f{s}'] = (V((0.90, side * 0.80, 0.70)), V((0, 0, 1)), (0.1, side * 0.9, 0), None)
+        nodes[f'door_r{s}'] = (V((B_PILLAR, side * 0.80, 0.70)), V((0, 0, 1)), (-0.1, side * 0.9, 0), None)
+    tripo_shell(TRIPO, (FA, RA), cut, SHELL_TRIS, panel, nodes)
 
 # ---------------------------------------------------------------- cabin
-def rbox(m, c, size, r, mat, rot=Matrix.Identity(3)):
-    """Box with rounded edges (radius r)."""
-    t = bmesh.new(); bmesh.ops.create_cube(t, size=1.0)
-    bmesh.ops.scale(t, vec=V(size), verts=t.verts)
-    bmesh.ops.bevel(t, geom=t.edges[:], offset=r, segments=3, affect='EDGES', profile=0.5)
-    bmesh.ops.transform(t, matrix=Matrix.Translation(c) @ rot.to_4x4(), verts=t.verts)
-    me = bpy.data.meshes.new('t'); t.to_mesh(me); t.free()
-    n = len(m.bm.faces); m.bm.from_mesh(me); m.bm.faces.ensure_lookup_table()
-    for f in m.bm.faces[n:]: f.material_index = m.mi(mat); f.smooth = True
-    bpy.data.meshes.remove(me)
-
 def seat(m, x, y, w):
     lean = Matrix.Rotation(radians(-16), 3, 'Y')
     rbox(m, V((x, y, 0.47)), (0.50, w, 0.13), 0.04, 'seat')                                  # cushion

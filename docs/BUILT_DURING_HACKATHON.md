@@ -32,6 +32,7 @@ None of its code, models or media are in this repository; everything here was re
 | Helicopter mechanisms from scratch: CAD main gearbox (bevel + planetary), swashplate, teetering hub, turboshaft casing, tail gears; lofted blades, servos, controls, skids | — | `09ad2dd` | 2026-10-27 |
 | Mixed-reality headset from scratch: lofted front cover with sensor windows, mainboard with SoC, heatsink and heat pipe, blower fan with spinning rotor, cameras and depth sensor, battery, pancake lenses and displays on sliding IPD carriages with a thumb wheel, face cushion, speakers, strap | — | `56efaf2` | 2026-10-27 |
 | Car body from a Tripo3D shell: aligned to the CAD axles, Tripo wheels cut away, decimated to ~18k triangles, split into hood, four doors, trunk and body with hinge pivots; metallic-roughness map derived from the colour texture; seats and dashboard modelled in Blender | — | `2367db0` | 2026-10-28 |
+| Motorcycle from scratch: CAD 700 cc parallel twin (270-degree crank, pistons, rods, camshafts, cutaway block and crankcase), wet clutch, 6-speed gearbox, 520 chain and sprockets, 17-inch rims, floating discs; Tripo3D bodywork fitted to the CAD axles and split into tank, seat, side covers, tail, headlight cowl, handlebar, fork, swingarm and frame; shared Tripo shell pipeline in `common.py` | — | (this commit) | 2026-10-28 |
 
 ## Third-party (unmodified dependencies, used under their licenses)
 | Package | License |
@@ -48,5 +49,6 @@ None of its code, models or media are in this repository; everything here was re
 |---|---|---|
 | Bicycle model | `tools/exhibits/bike/cad.py` (build123d) + `build.py` (Blender) + `tools/optimize-glb.mjs` | Ours |
 | Car body shell (in `public/exhibits/car/model.glb`) | Tripo3D Multiview to 3D from Codex-generated reference views (`tools/exhibits/car/tripo-ref`), generated 2026-10-27, then processed by `tools/exhibits/car/build.py` | Generated on Jim's Tripo3D account; open-source use needs a paid plan, to be confirmed |
+| Motorcycle bodywork (in `public/exhibits/moto/model.glb`) | Tripo3D Multiview to 3D from Codex-generated reference views (`tools/exhibits/moto/tripo-ref`), generated 2026-10-27, then processed by `tools/exhibits/moto/build.py` | Generated on Jim's Tripo3D account; open-source use needs a paid plan, to be confirmed |
 | Voice-over | `<Jim / TTS service>` | `<terms>` |
 | Music | `<source>` | Royalty-free |
