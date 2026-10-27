@@ -74,9 +74,9 @@ export const server = createServer(async (req, res) => {
   if (path.endsWith('/')) path += 'index.html';
   const file = join(web, normalize(path));
   if (!file.startsWith(web)) { res.writeHead(403); return res.end(); }
-  try {
-    res.writeHead(200, { 'Content-Type': TYPES[extname(file)] || 'application/octet-stream' }).end(await readFile(file));
-  } catch { res.writeHead(404).end('not found'); }
+  let data;   // read before writing headers: a missing file must still be able to answer 404
+  try { data = await readFile(file); } catch { return res.writeHead(404).end('not found'); }
+  res.writeHead(200, { 'Content-Type': TYPES[extname(file)] || 'application/octet-stream' }).end(data);
 });
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   const port = Number(process.env.PORT) || 8098;

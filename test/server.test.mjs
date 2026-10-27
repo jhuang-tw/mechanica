@@ -78,5 +78,8 @@ try {
   process.env.CAP_PER_DAY = '1';
   assert.equal(overBudget('someone-else', '2099-01-01'), true);
   assert.equal((await fetch(app + '/api/status')).status, 200);
+  // a missing static file answers 404 and the server stays up (it used to crash with headers already sent)
+  assert.equal((await fetch(app + '/assets/missing.js')).status, 404);
+  assert.equal((await fetch(app + '/api/status')).status, 200);
   console.log('server ok');
 } finally { server.close(); meta.close(); }
