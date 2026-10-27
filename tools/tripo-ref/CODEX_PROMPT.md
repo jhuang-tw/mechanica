@@ -1,11 +1,11 @@
 # Codex prompt：Tripo 多視角參考圖（外殼和曲面件）
 
-把 `---` 之間的整段貼給 Codex。共 5 組，每組四張：四台載具外殼，加上 Quest 頭顯外殼。只做外殼。
+把 `---` 之間的整段貼給 Codex。共 4 組，每組四張：四台載具外殼。只做外殼。Quest 頭顯整台自己在 Blender 建，不走 Tripo。
 內裝（座椅、儀表板）、機構、齒輪、輪子和旋轉體（渦扇短艙、錶殼）都由我直接建模，不需要參考圖。
 
 ---
 
-You are generating reference images for Tripo3D "Multiview to 3D". Each set of four images becomes the outer shell of one vehicle or device in a public, open-source educational app about machines. The engines, gears, wheels, rotors and other mechanisms are modelled separately in CAD and placed inside later, so draw only the object named below, alone, as one closed object.
+You are generating reference images for Tripo3D "Multiview to 3D". Each set of four images becomes the outer shell of one vehicle in a public, open-source educational app about machines. The engines, gears, wheels, rotors and other mechanisms are modelled separately in CAD and placed inside later, so draw only the object named below, alone, as one closed object.
 
 Write files only under `C:\AI\mme-models\tools\exhibits\<exhibit>\tripo-ref\<object>\` (the folder is given with each object below) and do not run any git command.
 For each object save exactly four PNGs: `front.png`, `back.png`, `left.png`, `right.png`.
@@ -26,7 +26,6 @@ Objects (folder in brackets):
 2. `moto/tripo-ref/body` — modern naked street motorcycle, 700 cc parallel-twin class: upright one-piece handlebar, round headlight, sculpted 14-litre fuel tank, short stepped seat, short tail, engine and frame left open (no fairing), chain on the left side, exhaust tucked under the engine. Length 2.1 m, wheelbase 1.45 m, seat height 0.8 m, 17-inch wheels. Matte dark grey tank, red side panels, no rider. Fuel tank, seat, side covers and headlight cowl drawn as clearly separate pieces.
 3. `steam/tripo-ref/body` — early-1900s industrial 0-6-0 side-tank steam locomotive, standard gauge: three pairs of 1.2 m spoked driving wheels (wheelbase 2.9 m), two outside cylinders under the smokebox, round-topped boiler with one dome and a tall single chimney, rectangular side water tanks alongside the boiler, enclosed cab at the rear with round front spectacle windows, small coal bunker behind the cab. Length 8 m over buffers, chimney top about 3.6 m above the rail. Black boiler and tanks, dark red cab sides, red buffer beams. Smokebox door, cab and side tanks clearly separated from the boiler. Draw cylinders and coupling rods simply; they are replaced later.
 4. `heli/tripo-ref/body` — modern light single-turbine utility helicopter, five seats (two front, three rear): rounded glazed nose, cabin doors on both sides, turbine engine housed behind the rotor mast on top of the cabin with an exhaust pointing back, slim tail boom with a vertical fin and the tail rotor on the right side, skid landing gear. Two-blade main rotor about 10.7 m across with the hub about 2.95 m above the ground. Fuselage length about 9.5 m, cabin width 1.5 m. White body with a blue lower band. Cabin doors and the engine cowling behind the main rotor mast with clear panel lines.
-5. `quest/tripo-ref/shell` — current-generation standalone mixed-reality headset front shell, thin pancake-lens style (not a deep box): about 184 mm wide, 100 mm tall, 90 mm deep, smooth matte white plastic, three small dark camera and depth-sensor windows on the front, a soft grey fabric face cushion at the back, short stubs where the head strap attaches on each side (no strap). No lenses visible from the front.
 
 When finished, print the list of written files.
 
@@ -35,7 +34,7 @@ When finished, print the list of written files.
 ## 交給 Tripo3D 的方式
 
 - 每組用 **Multiview to 3D**，四張依 front／left／back／right 放進對應欄位，**不要貼圖**。顏色和材質我在 Blender 裡用共用材質套，貼圖反而會被換掉，也比較重。
-- 輸出 GLB，放到 `C:\AI\mme-models\tools\exhibits\<exhibit>\tripo\<object>.glb`，例如 `car\tripo\body.glb`、`quest\tripo\shell.glb`。
+- 輸出 GLB，放到 `C:\AI\mme-models\tools\exhibits\<exhibit>\tripo\<object>.glb`，例如 `car\tripo\body.glb`。
 - **授權要先確認**：Tripo 免費方案產出的模型版權歸 Tripo（只能非商業使用），付費方案的使用者才擁有產出、可以修改、散布和商用。這個 repo 要公開開源，所以生成前要在付費方案下產，或至少確認目前帳號是付費方案。
 
 ## 外殼怎麼跟 CAD 機構合在一起（每個展品仍可完整拆解）
@@ -62,6 +61,6 @@ When finished, print the list of written files.
 | 5 | moto | Tripo 外殼 | CAD：雙缸引擎、離合器、鏈條 |
 | 6 | jet（渦扇引擎） | CAD 旋轉體短艙 | CAD：風扇、壓縮機、渦輪、反推 |
 | 7 | watch | CAD | CAD：擒縱、齒輪系、自動盤 |
-| 8 | quest | Tripo 外殼 | CAD：鏡片、IPD 調整、電路板 |
+| 8 | quest | CAD + Blender（參考舊專案佈局重建） | CAD：鏡片、IPD 調整、電路板、風扇 |
 
 bike、car、steam、heli 優先，示範時先拿得出三到四個完整的展品。每個都在活動期間從零重做，舊專案只當參考。
