@@ -8,8 +8,8 @@ import { fileURLToPath } from 'node:url';
 const root = fileURLToPath(new URL('..', import.meta.url));
 try {
   for (const line of readFileSync(join(root, '.env'), 'utf8').split(/\r?\n/)) {
-    const m = line.match(/^\s*([A-Z0-9_]+)\s*=\s*(.*?)\s*$/);
-    if (m && m[2] && process.env[m[1]] === undefined) process.env[m[1]] = m[2].replace(/^["']|["']$/g, '');
+    const [, key, value] = /^\s*([A-Z0-9_]+)\s*=\s*["']?(.*?)["']?\s*$/.exec(line) || [];
+    if (value && !(key in process.env)) process.env[key] = value;
   }
 } catch { /* no .env */ }
 const { identify, segment, choreograph, transcribe, exhibit } = await import('./ai.mjs');
@@ -24,13 +24,13 @@ async function body(req, max) {
   if (!n) throw Object.assign(new Error('empty body'), { status: 400 });
   return Buffer.concat(chunks);
 }
-const str = (v, n) => (typeof v === 'string' ? v.slice(0, n) : '');
+const str = (v, max) => (typeof v === 'string' ? v : '').slice(0, max);
 
 // Spend guard for a public build: model-backed calls per visitor and per server, per UTC day.
 // cf-connecting-ip can be spoofed without Cloudflare in front, so the server-wide cap is the real ceiling.
-const spend = { day: '', all: 0, by: new Map() };
+let spend = { day: '', all: 0, by: new Map() };
 export function overBudget(who, day = new Date().toISOString().slice(0, 10)) {
-  if (spend.day !== day) Object.assign(spend, { day, all: 0, by: new Map() });
+  if (spend.day !== day) spend = { day, all: 0, by: new Map() };
   const n = (spend.by.get(who) || 0) + 1;
   if (n > Number(process.env.DAILY_LIMIT || 200) || spend.all >= Number(process.env.CAP_PER_DAY || 2000)) return true;
   spend.by.set(who, n); spend.all++;
@@ -41,7 +41,7 @@ async function api(req, res, path, q) {
   if (path === '/api/status') return send(res, 200, { meta: configured() });
   if (req.method !== 'POST') return send(res, 405, { error: 'POST only' });
   if (overBudget(String(req.headers['cf-connecting-ip'] || req.socket.remoteAddress))) return send(res, 429, { error: '今天的 AI 額度用完了，明天再來。' });
-  const mime = String(req.headers['content-type'] || '').split(';')[0].trim();
+  const [mime] = (req.headers['content-type'] || '').toLowerCase().split(/\s*;/);
   try {
     if (path === '/api/identify' || path === '/api/segment') {   // raw photo upload; photos are never saved
       if (!/^image\/(jpeg|png|webp)$/.test(mime)) return send(res, 415, { error: 'image body expected' });
@@ -49,7 +49,7 @@ async function api(req, res, path, q) {
       if (path === '/api/identify') return send(res, 200, await identify({ image, mime }));
       return send(res, 200, await segment({ image, mime, exhibit: str(q.get('exhibit'), 20), parts: q.getAll('part').map((p) => str(p, 40)) }));
     }
-    if (path === '/api/stt') {
+    if (path.endsWith('/stt')) {
       if (mime !== 'audio/wav') return send(res, 415, { error: 'audio/wav body expected' });
       return send(res, 200, await transcribe({ wav: await body(req, 2 << 20), exhibit: str(q.get('exhibit'), 20) }));
     }
@@ -73,10 +73,9 @@ export const server = createServer(async (req, res) => {
   if (path.startsWith('/api/')) return api(req, res, path, url.searchParams);
   if (path.endsWith('/')) path += 'index.html';
   const file = join(web, normalize(path));
-  if (!file.startsWith(web)) return res.writeHead(403).end();
+  if (!file.startsWith(web)) { res.writeHead(403); return res.end(); }
   try {
-    const data = await readFile(file);
-    res.writeHead(200, { 'Content-Type': TYPES[extname(file)] || 'application/octet-stream' }).end(data);
+    res.writeHead(200, { 'Content-Type': TYPES[extname(file)] || 'application/octet-stream' }).end(await readFile(file));
   } catch { res.writeHead(404).end('not found'); }
 });
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {

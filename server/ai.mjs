@@ -5,7 +5,7 @@
 //   transcribe()  speech -> Taiwan traditional text (Muse ASR + one quick cleanup pass)
 // Exhibits come from public/exhibits/index.json + <id>/manifest.json, the same manifest the browser loads. Every model answer is checked against it.
 import { readFileSync } from 'node:fs';
-import { formats, recordsOfKind, decodeMaskToSVGPath } from '@meta-sam/parser';
+import * as SAM from '@meta-sam/parser';
 import { chat, sam, asr } from './meta.mjs';
 
 const DIR = new URL('../public/exhibits/', import.meta.url);
@@ -52,15 +52,16 @@ export async function segment({ image, mime, exhibit: id, parts }) {
   return { exhibit: e.id, results: out.filter((r) => r.status === 'fulfilled' && r.value.masks.length).map((r) => r.value) };
 }
 export function parseMasks(text) {
-  // bound the raster before the parser allocates it
-  const sizes = [...text.matchAll(/<\|mask;[^|]*?data\s*=\s*(\d+)\s*,\s*(\d+)\s*,/g)];
-  if (sizes.length > 16 || sizes.some(([, h, w]) => h * w > 1024 * 1024)) throw fail('SAM mask too large', 502);
-  const parser = formats.segmentation.image().createParser();
-  parser.push(text);
-  const { result } = parser.finish({ status: 'completed' });
-  if (result.diagnostics.length) throw fail('SAM returned an invalid mask', 502);
-  return recordsOfKind(result.records, 'mask').map((r) => ({ bounds: r.bounds, width: r.mask.width, height: r.mask.height, path: decodeMaskToSVGPath(r.mask) }))
-    .filter((m) => m.path && [m.bounds.left, m.bounds.top, m.bounds.right, m.bounds.bottom].every(Number.isFinite) && m.bounds.right > m.bounds.left && m.bounds.bottom > m.bounds.top);
+  // read each mask's H×W before decoding, so a hostile payload can't make us allocate a huge raster (NaN fails too)
+  const dims = text.split('data=').slice(1).map((d) => d.split(',', 2).map(Number));
+  if (dims.length > 16 || dims.some(([h, w]) => !(h * w <= 1 << 20))) throw fail('SAM mask too large', 502);
+  const reader = SAM.formats.segmentation.image().createParser();
+  reader.push(text);
+  const out = reader.finish({ status: 'completed' }).result;
+  if (out.diagnostics.length) throw fail('SAM returned an invalid mask', 502);
+  return SAM.recordsOfKind(out.records, 'mask')
+    .map(({ bounds, mask }) => ({ bounds, width: mask.width, height: mask.height, path: SAM.decodeMaskToSVGPath(mask) }))
+    .filter(({ path, bounds: b }) => path && [b.left, b.top, b.right, b.bottom].every(Number.isFinite) && b.right > b.left && b.bottom > b.top);
 }
 
 // ---------- question -> timed demonstration ----------

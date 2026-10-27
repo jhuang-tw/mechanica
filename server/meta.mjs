@@ -3,7 +3,7 @@
 const env = (k, d = '') => (process.env[k] || '').trim() || d;
 const base = () => env('META_BASE_URL', 'https://api.meta.ai/v1').replace(/\/$/, '');
 export const configured = () => !!env('META_API_KEY');
-const fail = (message, status = 502) => Object.assign(new Error(message), { status });
+const fail = (message, status = 502) => { const e = new Error(message); e.status = status; return e; };
 
 async function call(path, init, ms) {
   if (!configured()) throw fail('META_API_KEY not set', 503);
@@ -21,11 +21,11 @@ export async function chat({ system, messages, tools, json, maxTokens = 400, qui
     messages: [{ role: 'system', content: system }, ...messages.map((m) => ({ role: m.role,
       content: m.image ? [{ type: 'text', text: m.content }, { type: 'image_url', image_url: { url: `data:${m.image.mime};base64,${m.image.data}` } }] : m.content }))],
     ...(tools ? { tools: tools.map((t) => ({ type: 'function', function: t })), tool_choice: 'auto' } : {}),
-    ...(json && !tools ? { response_format: { type: 'json_object' } } : {}),
+    ...(json && !tools && { response_format: { type: 'json_object' } }),
   }, ms);
-  const msg = r.choices?.[0]?.message || {};
-  const calls = (msg.tool_calls || []).flatMap((t) => { try { return [{ name: t.function.name, args: JSON.parse(t.function.arguments || '{}') }]; } catch { return []; } });
-  return { text: typeof msg.content === 'string' ? msg.content.trim() : '', calls, model: r.model };
+  const [{ message: reply = {} } = {}] = r.choices || [];
+  const calls = (reply.tool_calls || []).flatMap((t) => { try { return [{ name: t.function.name, args: JSON.parse(t.function.arguments || '{}') }]; } catch { return []; } });
+  return { text: typeof reply.content === 'string' ? reply.content.trim() : '', calls, model: r.model };
 }
 
 // SAM 3.1: one text prompt + one image -> the provider's mask text (parsed by segment.mjs)
