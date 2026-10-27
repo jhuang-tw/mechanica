@@ -12,7 +12,8 @@ const cache = new Map();   // url -> Promise<gltf>
 export const preload = (url) => (cache.has(url) || cache.set(url, loader.loadAsync(url)), cache.get(url));
 
 export class Viewer {
-  constructor(canvas, { onPick } = {}) {
+  constructor(canvas, { onPick, panel } = {}) {
+    this.panel = panel;   // the element covering the right side, if any: the view is centred on what's left
     const r = this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
     r.setPixelRatio(Math.min(devicePixelRatio, 2));
     r.toneMapping = THREE.ACESFilmicToneMapping;
@@ -49,7 +50,10 @@ export class Viewer {
   resize() {
     const { clientWidth: w, clientHeight: h } = this.renderer.domElement.parentElement;
     this.renderer.setSize(w, h, false);
-    this.camera.aspect = w / h; this.camera.updateProjectionMatrix();
+    this.camera.aspect = w / h;
+    const left = this.panel?.getBoundingClientRect().left ?? w;
+    if (left > w * 0.3 && left < w - 1) this.camera.setViewOffset(w, h, (w - left) / 2, 0, w, h); else this.camera.clearViewOffset();
+    this.camera.updateProjectionMatrix();
   }
 
   async load(manifest, base) {

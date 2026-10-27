@@ -32,7 +32,7 @@ async function open(id) {
   $('title').textContent = ex.title;
   say('', '載入中…', true);
   const { Viewer } = await viewerModule;
-  viewer ||= new Viewer($('c'), { onPick: pick });
+  viewer ||= new Viewer($('c'), { onPick: pick, panel: $('sheet') });
   if (import.meta.env.DEV) window.viewer = viewer;   // dev: poke at it from the console
   viewer.resize();
   rig = await viewer.load(ex, `${BASE}${id}/`);

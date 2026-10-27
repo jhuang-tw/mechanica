@@ -22,7 +22,7 @@
   .tile img { display:block; width:100%; aspect-ratio:1; object-fit:cover; background:#18212b; }
   .tile span { display:block; padding:10px 12px; font-weight:600; }
   .big { width:min(560px,100%); padding:16px; font-size:18px; font-weight:600; border-radius:16px; }
-  #home-photo { background:var(--accent); color:#1a1205; border:0; }
+  #home-photo { background:var(--accent); color:#1a1205; border:0; position:sticky; bottom:calc(12px + env(safe-area-inset-bottom)); z-index:1; box-shadow:0 6px 24px #000a; }
   #home-vr { background:#24364a; }
   #home .how { width:min(560px,100%); margin:0; padding:0; list-style:none; color:var(--dim); font-size:14px; display:grid; gap:4px; }
 
@@ -44,12 +44,12 @@
   .row { display:flex; gap:8px; align-items:center; }
   body.lesson #chips, body.lesson #controls { display:none; }
   #chips { display:flex; gap:8px; overflow-x:auto; padding-bottom:2px; scrollbar-width:none; }
-  .chip { flex:none; padding:8px 13px; font-size:14px; border-radius:999px; background:var(--panel); white-space:nowrap; }
+  .chip { flex:none; min-height:44px; padding:8px 14px; font-size:14px; border-radius:999px; background:var(--panel); white-space:nowrap; }
   .chip.ai { border-color:#4b6d8f; }
   .chip.lesson { border-color:#7a5a24; }
   #controls .icon { flex:none; }
   #explode { flex:1; display:flex; align-items:center; gap:8px; height:44px; padding:0 12px; background:var(--panel); border:1px solid var(--line); border-radius:12px; font-size:14px; color:var(--dim); }
-  #explode input { flex:1; accent-color:var(--accent); }
+  #explode input { flex:1; height:44px; margin:0; accent-color:var(--accent); }
   #mic { width:56px; height:56px; border-radius:50%; background:var(--accent); color:#1a1205; border:0; font-size:24px; }
   #mic.rec { background:var(--bad); color:#fff; box-shadow:0 0 0 6px rgba(255,107,94,.3); }
   #ask { display:flex; gap:8px; }
@@ -57,13 +57,15 @@
   #ask button { padding:0 16px; background:var(--accent); color:#1a1205; border:0; font-weight:700; }
   #lesson { justify-content:space-between; background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:4px; }
   #lesson span { font-size:14px; color:var(--dim); }
-  #lesson button { width:40px; height:40px; padding:0; border:0; background:none; font-size:18px; }
+  #lesson button { width:44px; height:44px; padding:0; border:0; background:none; font-size:18px; }
   #quiz { display:grid; gap:8px; }
   #quiz button { padding:12px; text-align:left; background:var(--panel); }
   #quiz button.right { border-color:var(--ok); background:#173323; }
   #quiz button.wrong { border-color:var(--bad); background:#3a1a18; }
   #toast { position:fixed; left:50%; top:calc(64px + env(safe-area-inset-top)); transform:translateX(-50%); padding:8px 14px; background:var(--panel); border-radius:999px; font-size:14px; }
   @media (min-width:900px) { #sheet { left:auto; right:16px; margin:0; width:420px; } }
+  /* phone on its side: the sheet moves to the right so the model keeps the full height */
+  @media (orientation:landscape) and (max-height:500px) { #sheet { left:auto; right:0; top:0; margin:0; width:min(400px,50vw); justify-content:flex-end; padding:calc(64px + env(safe-area-inset-top)) calc(10px + env(safe-area-inset-right)) calc(10px + env(safe-area-inset-bottom)) 10px; overflow-y:auto; } }
 </style>
 </head>
 <body>
