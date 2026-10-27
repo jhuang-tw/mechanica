@@ -112,8 +112,9 @@ def lights_camera(res, engine):
         sc.cycles.samples = 48; sc.cycles.use_denoising = True
         try:   # Jim's PC: AMD GPU through HIP
             prefs = bpy.context.preferences.addons['cycles'].preferences; prefs.compute_device_type = 'HIP'; prefs.get_devices()
-            for d in prefs.devices: d.use = True
-            sc.cycles.device = 'GPU'
+            gpus = [d for d in prefs.devices if d.type == 'HIP' and 'RX' in d.name]   # the RX 6800 XT only: not the iGPU or the CPU
+            for d in prefs.devices: d.use = d in gpus
+            sc.cycles.device = 'GPU' if gpus else 'CPU'; print('Cycles on', [d.name for d in gpus] or 'CPU')
         except Exception as e: print('GPU unavailable, CPU render:', e)
     if not sc.camera:
         w = bpy.data.worlds.new('w'); w.use_nodes = True; bg = w.node_tree.nodes['Background']   # light grey studio
