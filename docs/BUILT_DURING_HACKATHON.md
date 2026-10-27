@@ -42,6 +42,7 @@ None of its code, models or media are in this repository; everything here was re
 | Car body from a Tripo3D shell: aligned to the CAD axles, Tripo wheels cut away, decimated to ~18k triangles, split into hood, four doors, trunk and body with hinge pivots; metallic-roughness map derived from the colour texture; seats and dashboard modelled in Blender | — | `2367db0` | 2026-10-28 |
 | Turbofan from scratch: CAD-revolved nacelle (inlet, hinged fan-cowl doors, thrust-reverser sleeve), fan case and core casings cut away over one quadrant, spinner, rotor drums, exhaust plug and a bevel pair to the radial drive shaft; lofted wide-chord fan, booster, 9-stage HP compressor, HP and 4-stage LP turbine blade rows with stators, annular combustor with 20 fuel nozzles, accessory gearbox, display stand | — | `335d000` | 2026-10-28 |
 | Dive watch from scratch: CAD-revolved 42 mm case, coin-edge bezel and display case back, crown and stem; going train with real tooth counts (84T barrel, 75/80/84T wheels, 20-tooth club escape wheel, 60:1 seconds, 12:1 motion works), pallet fork, balance with hairspring, bridges with jewels and blued screws, half-moon rotor; lume dial and hands, rubber strap with buckle | — | `a598bec` | 2026-10-28 |
+| Steam locomotive shell from a Tripo3D mesh: aligned to the CAD axles and narrowed to the CAD gauge, Tripo wheels, motion, frames and buffer beams cut away, unbaked cab texture and stray faces repaired, decimated to ~22k triangles with a 2048 texture, split into footplate, boiler cladding, smokebox, hinged smokebox door, side tanks, cab and hinged cab roof; buffer beams and boiler internals moved to fit it; Cycles previews pinned to the discrete GPU | — | `f237245` | 2026-10-28 |
 
 ## Third-party (unmodified dependencies, used under their licenses)
 | Package | License |
@@ -58,5 +59,6 @@ None of its code, models or media are in this repository; everything here was re
 |---|---|---|
 | Bicycle model | `tools/exhibits/bike/cad.py` (build123d) + `build.py` (Blender) + `tools/optimize-glb.mjs` | Ours |
 | Car body shell (in `public/exhibits/car/model.glb`) | Tripo3D Multiview to 3D from Codex-generated reference views (`tools/exhibits/car/tripo-ref`), generated 2026-10-27, then processed by `tools/exhibits/car/build.py` | Generated on Jim's Tripo3D account; open-source use needs a paid plan, to be confirmed |
+| Steam locomotive shell (in `public/exhibits/steam/model.glb`) | Tripo3D Multiview to 3D from Codex-generated reference views (`tools/exhibits/steam/tripo-ref`), generated 2026-10-27, then processed by `tools/exhibits/steam/build.py` | Generated on Jim's Tripo3D account; open-source use needs a paid plan, to be confirmed |
 | Voice-over | `<Jim / TTS service>` | `<terms>` |
 | Music | `<source>` | Royalty-free |

@@ -112,7 +112,11 @@ def lights_camera(res, engine):
         sc.cycles.samples = 48; sc.cycles.use_denoising = True
         try:   # Jim's PC: AMD GPU through HIP
             prefs = bpy.context.preferences.addons['cycles'].preferences; prefs.compute_device_type = 'HIP'; prefs.get_devices()
-            for d in prefs.devices: d.use = True
+            hip = [d for d in prefs.devices if d.type == 'HIP']
+            best = [d for d in hip if 'RX' in d.name] or hip                 # the discrete card only: no CPU, no iGPU
+            for d in prefs.devices: d.use = d in best
+            assert best, 'no HIP device'
+            print('Cycles on', [d.name for d in best])
             sc.cycles.device = 'GPU'
         except Exception as e: print('GPU unavailable, CPU render:', e)
     if not sc.camera:
@@ -154,6 +158,8 @@ def run(script, build, views, thumb_view):
     if '--preview' in sys.argv:   # look first, export later; `--hide a,b` leaves those parts out of the shots
         hide = sys.argv[sys.argv.index('--hide') + 1].split(',') if '--hide' in sys.argv else []
         for pid in hide: bpy.data.objects[pid].hide_render = True
+        if '--explode' in sys.argv:
+            for pid, p in PARTS.items(): bpy.data.objects[pid].location += p['explode']
         preview(os.path.join(here, 'preview'), views); return
     os.makedirs(out, exist_ok=True)
     bpy.ops.export_scene.gltf(filepath=os.path.join(here, 'model.raw.glb'), export_format='GLB', export_extras=True, export_yup=True,
