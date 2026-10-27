@@ -7,8 +7,8 @@
 
 You are generating reference images for Tripo3D "Multiview to 3D". Each set of four images becomes one 3D object (mostly the outer body of a vehicle or device) in a public, open-source educational app about machines. The engines, gears, wheels, rotors and other mechanisms are modelled separately in CAD and placed inside later, so draw only the object named below, alone, as one closed object.
 
-Write files only under `C:\AI\mme-models\tools\exhibits\<exhibit>\tripo-ref\` and do not run any git command.
-For each vehicle save exactly four PNGs: `front.png`, `back.png`, `left.png`, `right.png`.
+Write files only under `C:\AI\mme-models\tools\exhibits\<exhibit>\tripo-ref\<object>\` (the folder is given with each object below) and do not run any git command.
+For each object save exactly four PNGs: `front.png`, `back.png`, `left.png`, `right.png`.
 
 Rules for every image:
 - 1024×1024 PNG, plain pure-white background (#FFFFFF), no floor, no ground shadow, no people, no props, no scenery.
@@ -36,9 +36,8 @@ When finished, print the list of written files.
 
 ## 交給 Tripo3D 的方式
 
-- 每台用 **Multiview to 3D**，四張依 front／left／back／right 放進對應欄位，**不要貼圖**（no texture，每次約 20 點）。顏色和材質我在 Blender 裡用頂點色和共用材質套，貼圖反而會被換掉，也比較重。
-- 100 點的分配：car 20、moto 20、steam 20、heli 20，共 80；留 20 點給四台裡面最差的那台重做一次。
-- 輸出 GLB，放到 `C:\AI\mme-models\tools\exhibits\<exhibit>\tripo\shell.glb`。
+- 每組用 **Multiview to 3D**，四張依 front／left／back／right 放進對應欄位，**不要貼圖**。顏色和材質我在 Blender 裡用共用材質套，貼圖反而會被換掉，也比較重。
+- 輸出 GLB，放到 `C:\AI\mme-models\tools\exhibits\<exhibit>\tripo\<object>.glb`，例如 `car\tripo\body.glb`、`car\tripo\seat.glb`、`quest\tripo\shell.glb`。
 - **授權要先確認**：Tripo 免費方案產出的模型版權歸 Tripo（只能非商業使用），付費方案的使用者才擁有產出、可以修改、散布和商用。這個 repo 要公開開源，所以生成前要在付費方案下產，或至少確認目前帳號是付費方案。
 
 ## 外殼怎麼跟 CAD 機構合在一起（每個展品仍可完整拆解）
