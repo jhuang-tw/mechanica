@@ -150,3 +150,13 @@ test('jet: HP spool turns 3× the LP spool, cowls open outward, the reverser sli
   assert.ok(Math.abs(part('thrust_reverser').offset.x + 0.4) < 1e-6);
   rig.stop(); rig.update(0); assert.equal(part('thrust_reverser').offset.x, 0);
 });
+
+test('watch: seconds hand 60x and hour hand 1/12 of the minute hand; the fork flicks 10 deg at twice the balance rate', async () => {
+  const m = exhibit('watch'), rig = new Rig(await loadModel('watch'), m), part = (id) => rig.parts.get(id);
+  rig.drive('run', 1); rig.update(1);
+  const min = part('minute_hand').angle;
+  assert.ok(Math.abs(part('seconds_hand').angle / min - 60) < 1e-9 && Math.abs(part('hour_hand').angle / min - 1 / 12) < 1e-9 && Math.abs(part('escape_wheel').angle / min - 720) < 1e-9);
+  rig.reset(); rig.drive('tick', 1); rig.update(0.25);   // a quarter of the fork's 1 s period: its peak
+  assert.ok(Math.abs(part('pallet_fork').angle - (10 * Math.PI) / 180) < 1e-6);
+  assert.ok(Math.abs(part('balance').angle - (270 * Math.PI) / 180 * Math.sin(Math.PI / 4)) < 1e-6);
+});

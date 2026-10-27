@@ -1,0 +1,559 @@
+{
+ "id": "watch",
+ "name": "機械錶",
+ "title": "自動上鍊機械潛水錶",
+ "model": "model.glb",
+ "thumb": "thumb.jpg",
+ "view": [
+  0.35,
+  1,
+  0.7
+ ],
+ "intro": "這是一支自動上鍊的機械錶，不用電池。拆開（🧩）就看得到發條、齒輪、擺輪和擒縱。問我「發條怎麼讓指針走」。",
+ "suggest": [
+  "發條怎麼讓指針走？",
+  "滴答聲是怎麼來的？",
+  "自動錶怎麼上鍊？"
+ ],
+ "looksLike": "手錶、機械錶、腕錶、潛水錶、錶",
+ "parts": [
+  {
+   "id": "case",
+   "name": "錶殼",
+   "en": "watch case",
+   "info": "包住整個機芯的金屬殼，直徑 42 毫米，要防水、防灰塵。",
+   "aliases": [
+    "外殼",
+    "殼"
+   ]
+  },
+  {
+   "id": "crystal",
+   "name": "錶鏡",
+   "en": "watch crystal",
+   "info": "最上面那片透明的藍寶石玻璃，很難刮傷。",
+   "aliases": [
+    "玻璃",
+    "鏡面"
+   ]
+  },
+  {
+   "id": "case_back",
+   "name": "底蓋",
+   "en": "watch case back",
+   "info": "錶背的蓋子，鎖緊後靠墊圈防水。打開就看到機芯。",
+   "aliases": [
+    "背蓋",
+    "後蓋"
+   ]
+  },
+  {
+   "id": "bezel",
+   "name": "旋轉錶圈",
+   "en": "watch rotating bezel",
+   "info": "潛水錶的外圈，只能逆時針轉（一圈 120 格）。下水時把 0 對準分針，就能看出潛了幾分鐘；就算不小心碰到，也只會讓時間看起來更長，比較安全。",
+   "aliases": [
+    "錶圈",
+    "外圈"
+   ]
+  },
+  {
+   "id": "crown",
+   "name": "錶冠",
+   "en": "watch crown",
+   "info": "側邊的小旋鈕。轉它可以手動上鍊；拉出來可以調時間。它接著一根上鍊柄伸進機芯。",
+   "aliases": [
+    "旋鈕",
+    "上鍊柄",
+    "龍頭"
+   ]
+  },
+  {
+   "id": "dial",
+   "name": "錶盤",
+   "en": "watch dial",
+   "info": "有刻度的面盤，指針在上面走。12 點在上、3 點在右。",
+   "aliases": [
+    "面盤",
+    "錶面"
+   ]
+  },
+  {
+   "id": "hour_hand",
+   "name": "時針",
+   "en": "watch hour hand",
+   "info": "最短的指針，12 小時走一圈，是分針速度的 1/12。",
+   "aliases": [
+    "時針",
+    "短針"
+   ]
+  },
+  {
+   "id": "minute_hand",
+   "name": "分針",
+   "en": "watch minute hand",
+   "info": "一小時走一圈。它直接裝在中心輪的軸上。",
+   "aliases": [
+    "分針",
+    "長針"
+   ]
+  },
+  {
+   "id": "seconds_hand",
+   "name": "秒針",
+   "en": "watch seconds hand",
+   "info": "一分鐘走一圈，裝在四輪的軸上。仔細看它是一小格一小格跳的，每秒跳 8 下。",
+   "aliases": [
+    "秒針"
+   ]
+  },
+  {
+   "id": "mainplate",
+   "name": "主夾板",
+   "en": "watch mainplate",
+   "info": "機芯的底板，所有齒輪的軸都插在它和上面的夾板之間。",
+   "aliases": [
+    "底板",
+    "夾板"
+   ]
+  },
+  {
+   "id": "barrel",
+   "name": "發條盒",
+   "en": "watch mainspring barrel",
+   "info": "裡面捲著一條發條，是整支錶的動力來源。發條慢慢放開，帶著外圈 84 齒的齒輪轉，大約 7 小時轉一圈。",
+   "aliases": [
+    "發條",
+    "發條盒",
+    "動力"
+   ]
+  },
+  {
+   "id": "barrel_bridge",
+   "name": "發條盒夾板",
+   "en": "watch barrel bridge",
+   "info": "壓住發條盒的夾板，旁邊通常是上鍊的齒輪。",
+   "aliases": [
+    "夾板"
+   ]
+  },
+  {
+   "id": "center_wheel",
+   "name": "中心輪",
+   "en": "watch center wheel",
+   "info": "位在正中央，一小時轉一圈，分針就裝在它的軸上。",
+   "aliases": [
+    "二輪",
+    "中心輪"
+   ]
+  },
+  {
+   "id": "third_wheel",
+   "name": "三輪",
+   "en": "watch third wheel",
+   "info": "把中心輪的轉速放大 7.5 倍，傳給四輪。",
+   "aliases": [
+    "三輪",
+    "過輪"
+   ]
+  },
+  {
+   "id": "fourth_wheel",
+   "name": "四輪",
+   "en": "watch fourth wheel",
+   "info": "一分鐘轉一圈，秒針就裝在它的軸上。",
+   "aliases": [
+    "四輪",
+    "秒輪"
+   ]
+  },
+  {
+   "id": "escape_wheel",
+   "name": "擒縱輪",
+   "en": "watch escape wheel",
+   "info": "形狀像鋸齒的輪子。它想一直轉下去，卻被擒縱叉一次只放一齒，所以齒輪組一格一格前進。",
+   "aliases": [
+    "擒縱輪",
+    "逃輪"
+   ]
+  },
+  {
+   "id": "pallet_fork",
+   "name": "擒縱叉",
+   "en": "watch pallet fork",
+   "info": "像船錨的小零件，兩端有紅寶石。擺輪每擺一下，它就左右撥一次，放擒縱輪走一齒，同時順手推擺輪一把，補回損失的能量。",
+   "aliases": [
+    "擒縱叉",
+    "叉",
+    "錨"
+   ]
+  },
+  {
+   "id": "balance",
+   "name": "擺輪",
+   "en": "watch balance wheel",
+   "info": "錶的心臟。帶著細細的游絲來回擺動，每秒 8 次（4 赫茲），擺動的節奏決定了錶走得準不準。",
+   "aliases": [
+    "擺輪",
+    "游絲",
+    "心臟",
+    "擺"
+   ]
+  },
+  {
+   "id": "balance_cock",
+   "name": "擺輪夾板",
+   "en": "watch balance cock",
+   "info": "只從一邊撐住擺輪的夾板，讓擺輪可以自由擺動。",
+   "aliases": [
+    "擺夾板",
+    "夾板"
+   ]
+  },
+  {
+   "id": "train_bridge",
+   "name": "輪系夾板",
+   "en": "watch train bridge",
+   "info": "壓住中心輪、三輪、四輪和擒縱輪上端軸心的夾板。",
+   "aliases": [
+    "夾板"
+   ]
+  },
+  {
+   "id": "minute_wheel",
+   "name": "跨輪",
+   "en": "watch minute wheel",
+   "info": "在錶盤下面，和中心輪、時輪一起把轉速再降 12 倍給時針。",
+   "aliases": [
+    "跨輪",
+    "時輪"
+   ]
+  },
+  {
+   "id": "rotor",
+   "name": "自動盤",
+   "en": "watch rotor",
+   "info": "半圓形的重錘。手腕一動，它就靠重量轉起來，不管往哪個方向都能把發條捲緊，這就是「自動上鍊」。",
+   "aliases": [
+    "擺陀",
+    "自動錘",
+    "重錘",
+    "自動上鍊"
+   ]
+  },
+  {
+   "id": "strap_top",
+   "name": "上錶帶",
+   "en": "watch top strap",
+   "info": "12 點那一側的錶帶。",
+   "aliases": [
+    "錶帶"
+   ]
+  },
+  {
+   "id": "strap_bottom",
+   "name": "下錶帶",
+   "en": "watch bottom strap",
+   "info": "6 點那一側的錶帶。",
+   "aliases": [
+    "錶帶"
+   ]
+  }
+ ],
+ "drives": [
+  {
+   "id": "run",
+   "name": "走時（齒輪組、指針）",
+   "rpm": 0.25,
+   "moves": [
+    {
+     "part": "center_wheel",
+     "ratio": 1
+    },
+    {
+     "part": "minute_hand",
+     "ratio": 1
+    },
+    {
+     "part": "barrel",
+     "ratio": 0.14285714285714285
+    },
+    {
+     "part": "third_wheel",
+     "ratio": 7.5
+    },
+    {
+     "part": "fourth_wheel",
+     "ratio": 60
+    },
+    {
+     "part": "seconds_hand",
+     "ratio": 60
+    },
+    {
+     "part": "escape_wheel",
+     "ratio": 720
+    },
+    {
+     "part": "minute_wheel",
+     "ratio": 0.3333333333333333
+    },
+    {
+     "part": "hour_hand",
+     "ratio": 0.08333333333333333
+    }
+   ]
+  },
+  {
+   "id": "tick",
+   "name": "擺輪和擒縱叉擺動（放慢 8 倍）",
+   "swing": 270,
+   "period": 2,
+   "moves": [
+    {
+     "part": "balance",
+     "ratio": 1
+    },
+    {
+     "part": "pallet_fork",
+     "ratio": 0.037037037037037035,
+     "period": 1
+    }
+   ]
+  },
+  {
+   "id": "rotor",
+   "name": "自動盤擺動",
+   "swing": 160,
+   "period": 3,
+   "moves": [
+    {
+     "part": "rotor",
+     "ratio": 1
+    }
+   ]
+  },
+  {
+   "id": "crown",
+   "name": "轉錶冠上鍊",
+   "rpm": 30,
+   "moves": [
+    {
+     "part": "crown",
+     "ratio": 1
+    }
+   ]
+  },
+  {
+   "id": "bezel",
+   "name": "逆時針轉錶圈",
+   "rpm": 3,
+   "moves": [
+    {
+     "part": "bezel",
+     "ratio": 1
+    }
+   ]
+  }
+ ],
+ "lessons": [
+  {
+   "id": "train",
+   "title": "發條怎麼讓指針走",
+   "steps": [
+    {
+     "say": "發條盒裡捲著發條，它慢慢放開，帶著發條盒轉，大約 7 小時一圈。",
+     "parts": [
+      "barrel"
+     ],
+     "drive": "run",
+     "speed": 1
+    },
+    {
+     "say": "發條盒推中心輪，中心輪一小時轉一圈，分針就裝在它上面。",
+     "parts": [
+      "barrel",
+      "center_wheel",
+      "minute_hand"
+     ],
+     "drive": "run",
+     "speed": 1
+    },
+    {
+     "say": "三輪再把速度放大，帶四輪一分鐘轉一圈，那就是秒針。",
+     "parts": [
+      "third_wheel",
+      "fourth_wheel",
+      "seconds_hand"
+     ],
+     "drive": "run",
+     "speed": 1,
+     "quiz": {
+      "q": "秒針為什麼比分針快 60 倍？",
+      "options": [
+       [
+        "齒輪一級一級把轉速放大",
+        true,
+        "中心輪到三輪、三輪到四輪，大齒輪推小齒輪，每一級都變快，乘起來剛好 60 倍。"
+       ],
+       [
+        "秒針有自己的發條",
+        false,
+        "整支錶只有一條發條，所有指針都靠同一組齒輪。"
+       ],
+       [
+        "秒針比較輕所以轉得快",
+        false,
+        "轉速是齒數比決定的，跟重量無關。"
+       ]
+      ]
+     }
+    },
+    {
+     "say": "錶盤下面，跨輪再把分針的速度降 12 倍，給時針。",
+     "parts": [
+      "minute_wheel",
+      "hour_hand",
+      "minute_hand"
+     ],
+     "drive": "run",
+     "speed": 1,
+     "quiz": {
+      "q": "分針走一圈，時針走多少？",
+      "options": [
+       [
+        "一圈的 1/12，也就是一小時一格",
+        true,
+        "分針轉 12 圈，時針才轉 1 圈，所以時針走過一個數字剛好一小時。"
+       ],
+       [
+        "一樣一圈",
+        false,
+        "那時針和分針會疊在一起走，就看不出幾點了。"
+       ],
+       [
+        "半圈",
+        false,
+        "半圈是 6 小時，時針一小時只走一格。"
+       ]
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "id": "escapement",
+   "title": "滴答聲：擺輪和擒縱",
+   "steps": [
+    {
+     "say": "如果只有發條和齒輪，發條幾秒就會全部放完。擒縱輪就是負責「踩煞車」的。",
+     "parts": [
+      "escape_wheel",
+      "fourth_wheel"
+     ],
+     "drive": "run",
+     "speed": 1
+    },
+    {
+     "say": "擺輪帶著游絲來回擺，每秒 8 次。現在放慢了 8 倍。",
+     "parts": [
+      "balance"
+     ],
+     "drive": "tick",
+     "speed": 1
+    },
+    {
+     "say": "擺輪每擺一下，擒縱叉就左右撥一次，放擒縱輪走一齒，再把它卡住。滴答聲就是這樣來的。",
+     "parts": [
+      "pallet_fork",
+      "balance",
+      "escape_wheel"
+     ],
+     "drive": "tick",
+     "speed": 1,
+     "quiz": {
+      "q": "機械錶走得準不準，主要看哪個零件？",
+      "options": [
+       [
+        "擺輪",
+        true,
+        "擺輪和游絲擺動的節奏固定，像節拍器；擒縱叉照這個節奏放齒輪走，所以時間由擺輪決定。"
+       ],
+       [
+        "發條",
+        false,
+        "發條只提供力量；力量大小改變，擺輪的節奏幾乎不變。"
+       ],
+       [
+        "秒針",
+        false,
+        "秒針只是把時間顯示出來。"
+       ]
+      ]
+     }
+    },
+    {
+     "say": "擒縱叉放行的時候也會順手推擺輪一下，補回摩擦損失的能量，所以擺輪不會停。",
+     "parts": [
+      "pallet_fork",
+      "balance"
+     ],
+     "drive": "tick",
+     "speed": 1
+    }
+   ]
+  },
+  {
+   "id": "winding",
+   "title": "上鍊：手動和自動",
+   "steps": [
+    {
+     "say": "轉動錶冠，經上鍊柄把發條捲緊，這是手動上鍊。",
+     "parts": [
+      "crown",
+      "barrel"
+     ],
+     "drive": "crown",
+     "speed": 1
+    },
+    {
+     "say": "背面那個半圓形的自動盤，手腕一動就靠重量轉，也能捲緊發條。",
+     "parts": [
+      "rotor",
+      "barrel"
+     ],
+     "drive": "rotor",
+     "speed": 1,
+     "quiz": {
+      "q": "自動錶放在桌上兩三天沒戴，會怎樣？",
+      "options": [
+       [
+        "發條放完，錶就停了",
+        true,
+        "自動盤要靠手腕的動作才會轉；放著不動就沒人上鍊，發條一般撐 40 小時左右。"
+       ],
+       [
+        "永遠不會停",
+        false,
+        "自動錶不是永動機，沒有動作就沒有上鍊。"
+       ],
+       [
+        "會自己用電上鍊",
+        false,
+        "機械錶裡沒有電池或馬達。"
+       ]
+      ]
+     }
+    },
+    {
+     "say": "外圈的錶圈只能逆時針轉，潛水時用來計時。",
+     "parts": [
+      "bezel"
+     ],
+     "drive": "bezel",
+     "speed": 1
+    }
+   ]
+  }
+ ]
+}

@@ -91,7 +91,7 @@ export class Rig {
       if (!p) continue;
       if (!d.swing) { this.spin(mv.part, speed ? (d.rpm / 60) * TAU * speed * mv.ratio : 0); continue; }
       // a move with `slide` (metres, at full swing) slides back and forth instead of turning, like the lenses on an IPD rail
-      if (speed) this.swings.set(mv.part, { amp: (d.swing * mv.ratio * Math.sign(speed) * Math.PI) / 180, w: (TAU / (d.period || 4)) * Math.abs(speed), t: 0, oneWay: !!d.oneWay, slide: mv.slide && new THREE.Vector3(...mv.slide).multiplyScalar(Math.sign(speed)) });
+      if (speed) this.swings.set(mv.part, { amp: (d.swing * mv.ratio * Math.sign(speed) * Math.PI) / 180, w: (TAU / (mv.period || d.period || 4)) * Math.abs(speed), t: 0, oneWay: !!d.oneWay, slide: mv.slide && new THREE.Vector3(...mv.slide).multiplyScalar(Math.sign(speed)) });
       else if (this.swings.delete(mv.part)) { p.angle = 0; if (mv.slide) p.offset.set(0, 0, 0); }
     }
     return true;
