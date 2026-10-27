@@ -1,6 +1,7 @@
 # Codex prompt：整台載具外觀的 Tripo 多視角參考圖
 
-把 `---` 之間的整段貼給 Codex。四台載具一次產完，每台四張。
+把 `---` 之間的整段貼給 Codex。四台載具（car、moto、steam、heli）一次產完，每台四張。
+其餘四個展品（bike、jet 渦扇引擎、watch、quest）整個用 CAD 和 Blender 做，不需要參考圖。
 
 ---
 
@@ -21,10 +22,10 @@ Rules for every image:
 
 Vehicles:
 
-1. `jet` — small single-engine propeller trainer aircraft (low wing, tricycle landing gear, two-seat bubble canopy), white with a deep blue stripe. Length about 8 m, wingspan about 10 m. Clear engine cowling panel lines at the nose.
-2. `moto` — naked street motorcycle, inline-four engine area left visible, matte dark grey tank and red side panels, round headlight, no rider. Length about 2.1 m. Draw the fuel tank, seat, side covers and front fairing as clearly separate pieces.
-3. `car` — compact four-door sedan, metallic silver paint, dark tinted windows, simple five-spoke wheels. Length about 4.6 m. Hood, doors and trunk lid with clear panel gaps.
-4. `steam` — small tank steam locomotive, black boiler with dark red cab and buffer beams, 0-4-0 wheel arrangement, single chimney, side water tanks. Length about 8 m. Smokebox door and cab clearly separated from the boiler.
+1. `car` — compact four-door sedan, metallic silver paint, dark tinted windows, simple five-spoke wheels. Length about 4.6 m. Hood, doors and trunk lid with clear panel gaps.
+2. `moto` — naked street motorcycle (mid-size parallel-twin class), engine area left open, matte dark grey tank and red side panels, round headlight, no rider. Length about 2.1 m. Fuel tank, seat, side covers and headlight cowl drawn as clearly separate pieces.
+3. `steam` — small 0-6-0 tank steam locomotive with two outside cylinders, black boiler, dark red cab and buffer beams, single chimney, side water tanks. Length about 8 m. Smokebox door, cab and side tanks clearly separated from the boiler. Draw the cylinders and coupling rods simply; they are replaced by CAD parts.
+4. `heli` — light single-engine civil helicopter, five-seat cabin, skid landing gear, two-blade main rotor and tail rotor, white body with a blue lower band. Length about 10 m without rotors. Cabin doors and the engine cowling behind the main rotor mast with clear panel lines.
 
 When finished, print the list of written files.
 
@@ -33,7 +34,7 @@ When finished, print the list of written files.
 ## 交給 Tripo3D 的方式
 
 - 每台用 **Multiview to 3D**，四張依 front／left／back／right 放進對應欄位，**不要貼圖**（no texture，每次約 20 點）。顏色和材質我在 Blender 裡用頂點色和共用材質套，貼圖反而會被換掉，也比較重。
-- 100 點的分配：jet 20、moto 20、car 20、steam 20，共 80；留 20 點給四台裡面最差的那台重做一次。
+- 100 點的分配：car 20、moto 20、steam 20、heli 20，共 80；留 20 點給四台裡面最差的那台重做一次。
 - 輸出 GLB，放到 `C:\AI\mme-models\tools\exhibits\<exhibit>\tripo\shell.glb`。
 - **授權要先確認**：Tripo 免費方案產出的模型版權歸 Tripo（只能非商業使用），付費方案的使用者才擁有產出、可以修改、散布和商用。這個 repo 要公開開源，所以生成前要在付費方案下產，或至少確認目前帳號是付費方案。
 
@@ -41,11 +42,26 @@ When finished, print the list of written files.
 
 1. **外殼只是一層皮**：Tripo 的 GLB 匯入 Blender 後先清理（合併重複點、補洞、刪內部面），再減面到手機預算，整個外殼約 1.5–2.5 萬面。
 2. **沿面板縫切開**：依參考圖畫的面板線把外殼切成可拆件，每塊都是 manifest 裡有語意 id 的節點，例如：
-   - jet：`cowling`（引擎罩）、`canopy`、`fuselage`、`wing_l`、`wing_r`、`tail`
-   - moto：`tank`、`seat`、`side_cover_l/r`、`fairing`
+   - heli：`cowling`（引擎罩）、`door_l/r`、`cabin`、`tail_boom`
+   - moto：`tank`、`seat`、`side_cover_l/r`、`headlight_cowl`
    - car：`hood`、`door_fl/fr/rl/rr`、`trunk`、`body`
    - steam：`smokebox_door`、`cab`、`tank_l/r`、`boiler_shell`
    每塊的原點放在鉸鏈或拆卸方向上，帶 `explode` 位移，拆解時能一片一片掀開或拿走。
-3. **內部全是 CAD**：引擎、曲軸、活塞、變速箱、輪子、懸吊、螺旋槳、蒸汽缸和連桿，跟單車一樣用 build123d 建、Blender 組，有各自的旋轉軸和 pivot，可以單獨驅動和拆開。外殼裡被機構佔用的空間我會挖空，避免穿模。
-4. **對位**：先定 CAD 底盤的基準點（輪軸、引擎座、旋翼／螺旋槳軸），再把外殼縮放和平移到這些點上。Tripo 給的比例不準，所以以 CAD 尺寸為準。
-5. 輪子、螺旋槳這類 Tripo 也會長出來的東西，一律刪掉換成 CAD 件，因為要轉動和拆解。
+3. **內部全是 CAD**：引擎、曲軸、活塞、變速箱、輪子、懸吊、旋翼和斜盤、蒸汽缸和閥動連桿，跟單車一樣用 build123d 建、Blender 組，有各自的旋轉軸和 pivot，可以單獨驅動和拆開。外殼裡被機構佔用的空間我會挖空，避免穿模。
+4. **對位**：先定 CAD 底盤的基準點（輪軸、引擎座、旋翼軸），再把外殼縮放和平移到這些點上。Tripo 給的比例不準，所以以 CAD 尺寸為準。
+5. 輪子、旋翼這類 Tripo 也會長出來的東西，一律刪掉換成 CAD 件，因為要轉動和拆解。
+
+## 八個展品的分工和順序
+
+| 順序 | 展品 | 外觀 | 機構 |
+|---|---|---|---|
+| 1 | bike | CAD + Blender（已完成） | CAD |
+| 2 | car | Tripo 外殼 | CAD：引擎、變速箱、差速器、轉向、懸吊 |
+| 3 | steam | Tripo 外殼 | CAD：汽缸、Walschaerts 閥動連桿、動輪 |
+| 4 | heli | Tripo 外殼 | CAD：主旋翼、斜盤、尾旋翼傳動 |
+| 5 | moto | Tripo 外殼 | CAD：雙缸引擎、離合器、鏈條 |
+| 6 | jet（渦扇引擎） | CAD 旋轉體短艙 | CAD：風扇、壓縮機、渦輪、反推 |
+| 7 | watch | CAD | CAD：擒縱、齒輪系、自動盤 |
+| 8 | quest | CAD + Blender | CAD：鏡片、IPD 調整、電路板 |
+
+前四個優先，示範時先拿得出三到四個完整的展品。每個都在活動期間從零重做，舊專案只當參考。
