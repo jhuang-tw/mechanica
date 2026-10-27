@@ -108,11 +108,11 @@ def engine():
     ex = part('exhaust_headers', explode=(0.35, 0, -0.25))
     for y in CYL_Y:
         p0 = DECK + CD * 0.035 + CF * 0.085 + V((0, y, 0))
-        bend = [p0, p0 + CF * 0.035 - CD * 0.005, p0 + CF * 0.06 - CD * 0.04, p0 + CF * 0.065 - CD * 0.10]
+        bend = [p0, p0 + CF * 0.04 - CD * 0.01, p0 + CF * 0.065 - CD * 0.06]
         low = CRANK.z - 0.16
         run = [V((0.27, y * 0.9, CRANK.z - 0.06)), V((0.25, y * 0.8, low + 0.03)), V((0.19, y * 0.6, low)), V((0.08, y * 0.3 - 0.02, low - 0.01)),
                V((-0.05, -0.04, low - 0.01)), V((-0.17, -0.05, low + 0.01))]
-        ex.sweep(bend + run, 0.021, 'chrome', 14)
+        ex.sweep(smooth(bend + run, 8), 0.021, 'chrome', 16)
 
 # ---------------------------------------------------------------- gearbox and chain
 def gearbox():

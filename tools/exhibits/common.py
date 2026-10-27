@@ -80,6 +80,27 @@ class Mesh:
         vs = [self.bm.verts.new(c + rot @ V((x, y, z))) for x in (-sx, sx) for y in (-sy, sy) for z in (-sz, sz)]
         for f in ((0, 1, 3, 2), (4, 6, 7, 5), (0, 4, 5, 1), (2, 3, 7, 6), (0, 2, 6, 4), (1, 5, 7, 3)): self.face([vs[i] for i in f], mat)
 
+def rbox(m, c, size, r, mat, rot=Matrix.Identity(3)):
+    """Box with rounded edges (radius r)."""
+    t = bmesh.new(); bmesh.ops.create_cube(t, size=1.0)
+    bmesh.ops.scale(t, vec=V(size), verts=t.verts)
+    bmesh.ops.bevel(t, geom=t.edges[:], offset=r, segments=3, affect='EDGES', profile=0.5)
+    bmesh.ops.transform(t, matrix=Matrix.Translation(c) @ rot.to_4x4(), verts=t.verts)
+    me = bpy.data.meshes.new('t'); t.to_mesh(me); t.free()
+    n = len(m.bm.faces); m.bm.from_mesh(me); m.bm.faces.ensure_lookup_table()
+    for f in m.bm.faces[n:]: f.material_index = m.mi(mat); f.smooth = True
+    bpy.data.meshes.remove(me)
+
+def smooth(pts, n=6):
+    """Catmull-Rom resample of an open control polyline (gentle bends for swept tubes)."""
+    P = [pts[0]] + pts + [pts[-1]]; out = []
+    for i in range(len(P) - 3):
+        p0, p1, p2, p3 = P[i:i + 4]
+        for k in range(n):
+            t = k / n
+            out.append(0.5 * (2 * p1 + (p2 - p0) * t + (2 * p0 - 5 * p1 + 4 * p2 - p3) * t * t + (3 * p1 - p0 - 3 * p2 + p3) * t ** 3))
+    return out + [pts[-1]]
+
 PARTS = {}   # id -> dict(m=Mesh, pivot, parent, axis, explode)
 
 def part(pid, pivot=None, parent=None, axis=None, explode=(0, 0, 0)):
@@ -87,6 +108,82 @@ def part(pid, pivot=None, parent=None, axis=None, explode=(0, 0, 0)):
     return PARTS[pid]['m']
 
 def g(v): return [round(v.x, 5), round(v.z, 5), round(-v.y, 5)]   # Blender -> glTF axes
+
+# ---------------------------------------------------------------- Tripo3D shells (tools/exhibits/<id>/tripo/body.glb, kept out of git)
+def shell_material(img, name='body_paint', tex=2048):
+    """Tripo colour texture plus a metallic-roughness map derived from it: bright, unsaturated paint is metallic,
+    dark glass and trim stay satin, saturated lamps and paint glossy."""
+    import numpy as np, tempfile
+    img.scale(tex, tex); img.file_format = 'JPEG'
+    px = np.array(img.pixels[:], dtype=np.float32).reshape(-1, 4)
+    v = px[:, :3].max(1); sat = (v - px[:, :3].min(1)) / np.maximum(v, 1e-4)
+    paint = np.clip((v - 0.45) / 0.20, 0, 1) * np.clip((0.25 - sat) / 0.15, 0, 1)
+    metal = 0.55 * paint
+    rough = 0.62 - 0.27 * paint - 0.3 * np.clip((sat - 0.4) / 0.3, 0, 1)
+    mr = bpy.data.images.new(name + '_mr', tex, tex)
+    mr.pixels.foreach_set(np.stack([np.ones_like(v), np.clip(rough, 0.05, 1), metal, np.ones_like(v)], 1).ravel())
+    mr.scale(tex // 2, tex // 2)                                                      # the exporter only keeps saved pixels: write, reload
+    path = os.path.join(tempfile.gettempdir(), name + '_mr.jpg')
+    mr.filepath_raw = path; mr.file_format = 'JPEG'; mr.save(); bpy.data.images.remove(mr)
+    mr = bpy.data.images.load(path); mr.name = name + '_mr'
+    m = bpy.data.materials.new(name); m.use_nodes = True; nt = m.node_tree; b = nt.nodes['Principled BSDF']
+    tc = nt.nodes.new('ShaderNodeTexImage'); tc.image = img; nt.links.new(tc.outputs['Color'], b.inputs['Base Color'])
+    tm = nt.nodes.new('ShaderNodeTexImage'); tm.image = mr; mr.colorspace_settings.name = 'Non-Color'
+    sep = nt.nodes.new('ShaderNodeSeparateColor'); nt.links.new(tm.outputs['Color'], sep.inputs['Color'])
+    nt.links.new(sep.outputs['Green'], b.inputs['Roughness']); nt.links.new(sep.outputs['Blue'], b.inputs['Metallic'])
+
+def tripo_shell(path, axle_x, cut, tris, classify, nodes, turn=pi / 2, mat='body_paint'):
+    """Import a Tripo GLB as exhibit parts. It is turned so its nose is +x, scaled so the lowest points of its two tyres land on
+    axle_x = (front, rear), grounded at z = 0 and centred on y; faces for which cut(points) is true are deleted (the
+    wheels the CAD replaces), the rest is decimated to `tris` and split by classify(centre, normal) -> part id;
+    nodes[id] = (pivot, axis, explode, parent). Returns False when the GLB is absent."""
+    if not os.path.exists(path): print('no Tripo shell, skipped:', path); return False
+    bpy.ops.import_scene.gltf(filepath=path)
+    ob = next(o for o in bpy.context.selected_objects if o.type == 'MESH'); me = ob.data
+    me.transform(Matrix.Rotation(turn, 4, 'Z') @ ob.matrix_world)
+    for o in list(bpy.context.selected_objects):
+        if o != ob: bpy.data.objects.remove(o)
+    ob.parent = None; ob.matrix_world = Matrix.Identity(4)
+    zs = [v.co.z for v in me.vertices]; z0 = min(zs); h = max(zs) - z0
+    low = sorted((v.co for v in me.vertices if v.co.z < z0 + 0.03 * h), key=lambda c: c.x)   # the bottoms of both tyres
+    gap = max(range(1, len(low)), key=lambda i: low[i].x - low[i - 1].x)
+    xr, xf = (min(cl, key=lambda c: c.z).x for cl in (low[:gap], low[gap:]))          # lowest point of each tyre sits under its axle
+    k = (axle_x[0] - axle_x[1]) / (xf - xr); ym = sum(v.co.y for v in me.vertices) / len(me.vertices)
+    me.transform(Matrix.Translation(V(((axle_x[0] + axle_x[1]) / 2, 0, 0))) @ Matrix.Scale(k, 4) @ Matrix.Translation(V((-(xf + xr) / 2, -ym, -z0))))
+    xs = [v.co.x for v in me.vertices]
+    print(f'Tripo shell: scale {k:.3f}, length {max(xs) - min(xs):.2f} m')
+    bm = bmesh.new(); bm.from_mesh(me)
+    bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=0.0004)
+    bmesh.ops.delete(bm, geom=[f for f in bm.faces if cut([v.co for v in f.verts])], context='FACES')
+    bm.to_mesh(me); bm.free()
+    dec = ob.modifiers.new('d', 'DECIMATE'); dec.ratio = min(1, tris / len(me.polygons)); dec.use_collapse_triangulate = True
+    bpy.context.view_layer.objects.active = ob; bpy.ops.object.modifier_apply(modifier='d')
+    shell_material(next(n.image for n in me.materials[0].node_tree.nodes if n.type == 'TEX_IMAGE'), mat)
+    me.polygons.foreach_set('use_smooth', [True] * len(me.polygons))
+    label = [classify(f.center, f.normal) for f in me.polygons]
+    nbr = [[] for _ in me.polygons]; by_edge = {}
+    for f in me.polygons:
+        for ek in f.edge_keys: by_edge.setdefault(ek, []).append(f.index)
+    for fs in by_edge.values():
+        for a in fs: nbr[a] += [b for b in fs if b != a]
+    for _ in range(4):   # majority vote smooths the ragged panel edges a per-face rule leaves on a decimated mesh
+        new = label[:]
+        for i, ns in enumerate(nbr):
+            if ns:
+                top = max(set(label[j] for j in ns), key=lambda l: sum(label[j] == l for j in ns))
+                if sum(label[j] == top for j in ns) > len(ns) / 2: new[i] = top
+        label = new
+    groups = {}
+    for i, l in enumerate(label): groups.setdefault(l, []).append(i)
+    for pid, faces in sorted(groups.items()):
+        piv, ax, ex, parent = nodes[pid]
+        m = part(pid, pivot=piv, axis=ax, explode=ex, parent=parent); m.mats = [mat]
+        keep = set(faces); b2 = bmesh.new(); b2.from_mesh(me)
+        bmesh.ops.delete(b2, geom=[f for f in b2.faces if f.index not in keep], context='FACES')
+        m.bm.free(); m.bm = b2
+        print(pid, len(faces), 'faces')
+    bpy.data.objects.remove(ob)
+    return True
 
 def make_objects():
     obs = {}
@@ -112,12 +209,9 @@ def lights_camera(res, engine):
         sc.cycles.samples = 48; sc.cycles.use_denoising = True
         try:   # Jim's PC: AMD GPU through HIP
             prefs = bpy.context.preferences.addons['cycles'].preferences; prefs.compute_device_type = 'HIP'; prefs.get_devices()
-            hip = [d for d in prefs.devices if d.type == 'HIP']
-            best = [d for d in hip if 'RX' in d.name] or hip                 # the discrete card only: no CPU, no iGPU
-            for d in prefs.devices: d.use = d in best
-            assert best, 'no HIP device'
-            print('Cycles on', [d.name for d in best])
-            sc.cycles.device = 'GPU'
+            gpus = [d for d in prefs.devices if d.type == 'HIP' and 'RX' in d.name]   # the RX 6800 XT only: not the iGPU or the CPU
+            for d in prefs.devices: d.use = d in gpus
+            sc.cycles.device = 'GPU' if gpus else 'CPU'; print('Cycles on', [d.name for d in gpus] or 'CPU')
         except Exception as e: print('GPU unavailable, CPU render:', e)
     if not sc.camera:
         w = bpy.data.worlds.new('w'); w.use_nodes = True; bg = w.node_tree.nodes['Background']   # light grey studio
