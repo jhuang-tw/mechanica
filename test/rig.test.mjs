@@ -116,3 +116,13 @@ test('heli: collective lifts both plates and pitches both blades alike; forward 
   rig.reset(); rig.drive('power', 1); rig.update(1);
   assert.ok(Math.abs(part('mast').angle / part('input_shaft').angle - 0.0669) < 1e-9);
 });
+
+test('quest: the IPD wheel turns while both eye modules slide apart and back; stop puts them back', async () => {
+  const m = exhibit('quest'), rig = new Rig(await loadModel('quest'), m), part = (id) => rig.parts.get(id);
+  const gap = () => part('eye_carriage_r').obj.position.z - part('eye_carriage_l').obj.position.z, g0 = gap();
+  rig.drive('ipd', 1); rig.update(1);   // a quarter of the 4 s period: fully wide
+  assert.ok(Math.abs(gap() - g0 - 0.008) < 1e-6, 'IPD +8 mm');
+  assert.ok(Math.abs(part('ipd_wheel').angle - Math.PI) < 1e-6, 'wheel half a turn');
+  rig.stop(); rig.update(0);
+  assert.ok(Math.abs(gap() - g0) < 1e-9);
+});

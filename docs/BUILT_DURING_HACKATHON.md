@@ -20,6 +20,7 @@ None of its code, models or media are in this repository; everything here was re
 | Car exhibit app side: manifest (62 parts, 4 lessons with quiz), slider-crank engine, steering, camera glides to the parts in a lesson | — | `1121b07` | 2026-10-27 |
 | Steam exhibit app side: manifest (33 parts, 3 lessons with quiz), slider-crank generalised to any crank axis and slide direction (crossheads, coupling rods, valves 90° ahead) | — | `3027350` | 2026-10-27 |
 | Helicopter exhibit app side: manifest (27 parts, 3 lessons with quiz), swashplate linkage (collective lifts plates and pitches both blades; cyclic tilts plates, per-blade sin(azimuth) pitch, teetering disc tilts toward the stick), lesson steps can run several drives | — | `9ac7238` | 2026-10-27 |
+| VR headset exhibit app side: manifest (28 parts, 3 lessons with quiz), sliding drives (IPD wheel turns while both eye modules slide), camera focus scaled to small models | — | (this commit) | 2026-10-27 |
 | ⛓ Cause-and-effect lessons and ❓ guess-first quiz (from the manifest) | — | `44fe640` | 2026-10-27 |
 | Voice and text questions in the app, spoken answers, AI demo playback | Muse Spark, Muse Voice Transcribe (via server) | `44fe640` | 2026-10-27 |
 | Bicycle exhibit: manifest (18 parts, 2 drives, 2 lessons with quiz), placeholder model script | — | `7dcf6c0` | 2026-10-27 |

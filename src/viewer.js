@@ -79,13 +79,14 @@ export class Viewer {
     for (const id of ids) { const p = this.rig.parts.get(id); if (p) box.expandByObject(p.obj); }
     if (box.isEmpty()) return;
     // look from the side those parts are on (an engine at the front is seen from the front, not through a wheel)
-    const out = box.getCenter(new THREE.Vector3()).sub(new THREE.Box3().setFromObject(this.model).getCenter(new THREE.Vector3())).setY(0);
+    const all = new THREE.Box3().setFromObject(this.model), size = all.getSize(new THREE.Vector3()).length();
+    const out = box.getCenter(new THREE.Vector3()).sub(all.getCenter(new THREE.Vector3())).setY(0);
     const dir = this.camera.position.clone().sub(this.controls.target).normalize();
-    if (out.length() > 0.1) dir.addScaledVector(out.normalize(), 1.5).setY(0.5).normalize();
-    this.fit(box, dir);
+    if (out.length() > size * 0.05) dir.addScaledVector(out.normalize(), 1.5).setY(0.5).normalize();
+    this.fit(box, dir, size * 0.15);
   }
-  fit(box, dir) {
-    const c = box.getCenter(new THREE.Vector3()), s = Math.max(box.getSize(new THREE.Vector3()).length(), 0.3);
+  fit(box, dir, min = 0) {
+    const c = box.getCenter(new THREE.Vector3()), s = Math.max(box.getSize(new THREE.Vector3()).length(), min);   // not closer than a share of the whole model
     // far enough that the bounding sphere fits the narrower field of view (portrait phones: the horizontal one)
     const v = THREE.MathUtils.degToRad(this.camera.fov), fov = Math.min(v, 2 * Math.atan(Math.tan(v / 2) * this.camera.aspect));
     const target = c.clone(); target.y -= this.camera.aspect < 1 ? s * 0.22 : 0;   // portrait: the model sits above the bottom sheet

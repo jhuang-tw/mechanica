@@ -1,0 +1,513 @@
+{
+ "id": "quest",
+ "name": "VR 頭戴裝置",
+ "title": "VR 頭戴裝置（一體機）",
+ "model": "model.glb",
+ "thumb": "thumb.jpg",
+ "intro": "這是一台一體式 VR 頭戴裝置拆開來的樣子：顯示器、鏡片、追蹤鏡頭、處理器和散熱。問我「它怎麼知道我在哪」。",
+ "suggest": [
+  "它怎麼知道我在哪？",
+  "為什麼要有鏡片？",
+  "瞳距是什麼？"
+ ],
+ "looksLike": "VR 頭戴裝置、VR 眼鏡、虛擬實境頭盔、MR 頭戴裝置",
+ "parts": [
+  {
+   "id": "front_cover",
+   "name": "前蓋",
+   "en": "VR headset front cover",
+   "info": "最外面的面板，後面藏著鏡頭和散熱出風口。",
+   "aliases": [
+    "外殼",
+    "面板"
+   ]
+  },
+  {
+   "id": "housing",
+   "name": "外殼",
+   "en": "VR headset housing",
+   "info": "主體外殼，把所有零件包起來，也決定重量分布。",
+   "aliases": [
+    "機殼",
+    "殼"
+   ]
+  },
+  {
+   "id": "midframe",
+   "name": "中框",
+   "en": "VR headset midframe",
+   "info": "內部的骨架，主機板、鏡片模組和電池都鎖在上面，保持彼此的位置精準。",
+   "aliases": [
+    "骨架",
+    "框架"
+   ]
+  },
+  {
+   "id": "mainboard",
+   "name": "主機板",
+   "en": "VR headset mainboard",
+   "info": "整台機器的電路板，處理器、記憶體、儲存和無線晶片都焊在上面。",
+   "aliases": [
+    "主板",
+    "電路板"
+   ]
+  },
+  {
+   "id": "soc",
+   "name": "處理器（SoC）",
+   "en": "VR headset system on chip",
+   "info": "把 CPU、GPU 和 AI 運算放在一顆晶片上。每秒要畫兩張畫面 90 次以上，還要同時算出你的頭在哪裡。",
+   "aliases": [
+    "處理器",
+    "晶片",
+    "CPU",
+    "GPU"
+   ]
+  },
+  {
+   "id": "memory",
+   "name": "記憶體",
+   "en": "VR headset memory (RAM)",
+   "info": "處理器正在用的資料放這裡，速度很快，關機就清空。",
+   "aliases": [
+    "RAM",
+    "記憶體"
+   ]
+  },
+  {
+   "id": "storage",
+   "name": "儲存空間",
+   "en": "VR headset storage",
+   "info": "裝 App、遊戲和影片，關機也不會不見。",
+   "aliases": [
+    "硬碟",
+    "快閃記憶體"
+   ]
+  },
+  {
+   "id": "wifi",
+   "name": "無線網路晶片",
+   "en": "VR headset Wi-Fi and Bluetooth chip",
+   "info": "連網路、下載 App、連手把，不需要線。",
+   "aliases": [
+    "Wi-Fi",
+    "藍牙",
+    "無線"
+   ]
+  },
+  {
+   "id": "heatsink",
+   "name": "散熱片",
+   "en": "VR headset heatsink",
+   "info": "貼在處理器上的金屬片，把熱很快導開，再交給風扇吹走。",
+   "aliases": [
+    "散熱器"
+   ]
+  },
+  {
+   "id": "fan",
+   "name": "風扇",
+   "en": "VR headset fan housing",
+   "info": "把散熱片的熱空氣抽出機身。",
+   "aliases": [
+    "散熱風扇"
+   ]
+  },
+  {
+   "id": "fan_rotor",
+   "name": "風扇葉片",
+   "en": "VR headset fan rotor",
+   "info": "高速旋轉的小葉片。處理器越忙，轉得越快。",
+   "aliases": [
+    "扇葉",
+    "葉片"
+   ]
+  },
+  {
+   "id": "cameras",
+   "name": "追蹤鏡頭",
+   "en": "VR headset tracking cameras",
+   "info": "前面的幾顆鏡頭一直看著房間，從畫面裡的特徵點算出你的頭在哪裡、朝哪裡看，也用來追蹤手。",
+   "aliases": [
+    "鏡頭",
+    "攝影機",
+    "相機"
+   ]
+  },
+  {
+   "id": "depth_sensor",
+   "name": "深度感測器",
+   "en": "VR headset depth sensor",
+   "info": "量出房間裡東西有多遠，讓虛擬物件可以放在真的桌子上、被真的牆擋住。",
+   "aliases": [
+    "深度",
+    "感測器"
+   ]
+  },
+  {
+   "id": "battery",
+   "name": "電池",
+   "en": "VR headset battery",
+   "info": "放在機身裡的鋰電池，大約玩兩小時。",
+   "aliases": [
+    "電池",
+    "電力"
+   ]
+  },
+  {
+   "id": "flex_cables",
+   "name": "軟排線",
+   "en": "VR headset flex cables",
+   "info": "很薄、可以彎的排線，把顯示器、鏡頭和按鍵接到主機板。",
+   "aliases": [
+    "排線"
+   ]
+  },
+  {
+   "id": "ipd_rail",
+   "name": "瞳距滑軌",
+   "en": "VR headset IPD rail",
+   "info": "兩個鏡片模組在這條滑軌上左右滑，對準每個人不同的兩眼距離。",
+   "aliases": [
+    "滑軌",
+    "瞳距"
+   ]
+  },
+  {
+   "id": "eye_carriage_l",
+   "name": "左鏡片模組",
+   "en": "VR headset left eye module",
+   "info": "左眼的顯示器和鏡片裝在一起的模組，在瞳距滑軌上滑動。",
+   "aliases": [
+    "鏡片模組",
+    "左眼"
+   ]
+  },
+  {
+   "id": "eye_carriage_r",
+   "name": "右鏡片模組",
+   "en": "VR headset right eye module",
+   "info": "右眼的顯示器和鏡片裝在一起的模組，在瞳距滑軌上滑動。",
+   "aliases": [
+    "鏡片模組",
+    "右眼"
+   ]
+  },
+  {
+   "id": "lens_l",
+   "name": "左鏡片",
+   "en": "VR headset left lens",
+   "info": "螢幕離眼睛只有幾公分，眼睛對不了焦。鏡片把它變成好像在一公尺多外的大螢幕。",
+   "aliases": [
+    "鏡片",
+    "透鏡"
+   ]
+  },
+  {
+   "id": "lens_r",
+   "name": "右鏡片",
+   "en": "VR headset right lens",
+   "info": "和左鏡片一樣，讓近在眼前的螢幕看起來在遠處。",
+   "aliases": [
+    "鏡片",
+    "透鏡"
+   ]
+  },
+  {
+   "id": "display_l",
+   "name": "左顯示器",
+   "en": "VR headset left display",
+   "info": "只給左眼看的畫面。和右眼的畫面角度差一點點，大腦就把它們合成立體。",
+   "aliases": [
+    "螢幕",
+    "顯示器"
+   ]
+  },
+  {
+   "id": "display_r",
+   "name": "右顯示器",
+   "en": "VR headset right display",
+   "info": "只給右眼看的畫面。",
+   "aliases": [
+    "螢幕",
+    "顯示器"
+   ]
+  },
+  {
+   "id": "ipd_wheel",
+   "name": "瞳距滾輪",
+   "en": "VR headset IPD wheel",
+   "info": "轉動它，兩個鏡片模組就一起往外或往內滑，對準你的瞳孔。",
+   "aliases": [
+    "滾輪",
+    "瞳距調整"
+   ]
+  },
+  {
+   "id": "face_cushion",
+   "name": "面罩",
+   "en": "VR headset face cushion",
+   "info": "貼著臉的軟墊，擋光也讓戴起來舒服。",
+   "aliases": [
+    "面墊",
+    "海綿"
+   ]
+  },
+  {
+   "id": "side_arms",
+   "name": "側臂",
+   "en": "VR headset side arms",
+   "info": "從機身往後延伸，接上頭帶，也裝著喇叭。",
+   "aliases": [
+    "側邊",
+    "支架"
+   ]
+  },
+  {
+   "id": "speakers",
+   "name": "喇叭",
+   "en": "VR headset speakers",
+   "info": "在耳朵旁邊但不蓋住耳朵，聲音會跟著你轉頭改變方向（空間音效）。",
+   "aliases": [
+    "喇叭",
+    "聲音",
+    "揚聲器"
+   ]
+  },
+  {
+   "id": "buttons",
+   "name": "按鍵",
+   "en": "VR headset buttons",
+   "info": "電源和音量按鍵。",
+   "aliases": [
+    "按鈕",
+    "電源鍵"
+   ]
+  },
+  {
+   "id": "strap",
+   "name": "頭帶",
+   "en": "VR headset head strap",
+   "info": "把重量分散到頭上，讓機身不會壓著鼻子。",
+   "aliases": [
+    "綁帶",
+    "帶子"
+   ]
+  }
+ ],
+ "drives": [
+  {
+   "id": "cooling",
+   "name": "散熱風扇",
+   "rpm": 300,
+   "moves": [
+    {
+     "part": "fan_rotor",
+     "ratio": 1
+    }
+   ]
+  },
+  {
+   "id": "ipd",
+   "name": "調整瞳距（58–70 mm）",
+   "swing": 180,
+   "period": 4,
+   "moves": [
+    {
+     "part": "ipd_wheel",
+     "ratio": 1
+    },
+    {
+     "part": "eye_carriage_l",
+     "ratio": 1,
+     "slide": [
+      0,
+      0,
+      -0.004
+     ]
+    },
+    {
+     "part": "eye_carriage_r",
+     "ratio": 1,
+     "slide": [
+      0,
+      0,
+      0.004
+     ]
+    }
+   ]
+  }
+ ],
+ "lessons": [
+  {
+   "id": "see",
+   "title": "怎麼看到立體畫面",
+   "steps": [
+    {
+     "say": "左右眼各有一個顯示器，畫面角度差一點點，就像兩眼看真實世界一樣。",
+     "parts": [
+      "display_l",
+      "display_r"
+     ],
+     "quiz": {
+      "q": "為什麼兩隻眼睛要看不一樣的畫面？",
+      "options": [
+       [
+        "大腦用兩張畫面的差別算出距離",
+        true,
+        "這叫雙眼視差。兩張畫面差越多，東西看起來越近。"
+       ],
+       [
+        "讓畫面比較亮",
+        false,
+        "亮度靠顯示器，跟兩張畫面不同無關。"
+       ],
+       [
+        "省電",
+        false,
+        "畫兩張反而更耗電，為的是立體感。"
+       ]
+      ]
+     }
+    },
+    {
+     "say": "螢幕離眼睛只有幾公分，鏡片把它推到好像一公尺多以外，眼睛才對得了焦。",
+     "parts": [
+      "display_l",
+      "display_r",
+      "lens_l",
+      "lens_r"
+     ],
+     "quiz": {
+      "q": "拿掉鏡片直接看螢幕，會怎樣？",
+      "options": [
+       [
+        "太近了，眼睛對不了焦，一片模糊",
+        true,
+        "眼睛最近大約只能對焦到 10 公分左右，鏡片讓畫面看起來在遠處。"
+       ],
+       [
+        "畫面會變大",
+        false,
+        "會變得模糊，不是變大。"
+       ],
+       [
+        "沒有差別",
+        false,
+        "差很多，幾公分的距離眼睛對不了焦。"
+       ]
+      ]
+     }
+    },
+    {
+     "say": "每個人兩眼距離不一樣。轉瞳距滾輪，兩個鏡片模組一起往外或往內滑，對準瞳孔。",
+     "parts": [
+      "ipd_wheel",
+      "ipd_rail",
+      "eye_carriage_l",
+      "eye_carriage_r",
+      "display_l",
+      "display_r",
+      "lens_l",
+      "lens_r"
+     ],
+     "drive": "ipd",
+     "speed": 1
+    }
+   ]
+  },
+  {
+   "id": "track",
+   "title": "它怎麼知道你在哪",
+   "steps": [
+    {
+     "say": "前面的追蹤鏡頭一直看著房間，記住牆角、桌邊這些特徵點。",
+     "parts": [
+      "cameras",
+      "depth_sensor"
+     ],
+     "quiz": {
+      "q": "頭戴裝置不用外接感應器，怎麼知道你往前走了一步？",
+      "options": [
+       [
+        "鏡頭看到房間的特徵點往後移",
+        true,
+        "特徵點怎麼移動，反推回去就是你怎麼移動，叫做 inside-out 追蹤。"
+       ],
+       [
+        "靠 GPS",
+        false,
+        "室內收不到 GPS，精度也只有幾公尺。"
+       ],
+       [
+        "靠 Wi-Fi 訊號",
+        false,
+        "Wi-Fi 是用來連網路，精度不夠追蹤頭。"
+       ]
+      ]
+     }
+    },
+    {
+     "say": "處理器每秒幾百次把鏡頭畫面和動作感測器合起來，算出頭的位置和方向，再畫出這個角度看到的畫面。",
+     "parts": [
+      "cameras",
+      "soc",
+      "mainboard",
+      "memory"
+     ]
+    },
+    {
+     "say": "深度感測器量出房間的形狀，虛擬的東西就能放在真的桌上。",
+     "parts": [
+      "depth_sensor",
+      "front_cover"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "cool",
+   "title": "為什麼要風扇",
+   "steps": [
+    {
+     "say": "處理器同時畫兩張畫面又要追蹤，非常耗電，電都變成熱。",
+     "parts": [
+      "soc",
+      "battery",
+      "mainboard"
+     ]
+    },
+    {
+     "say": "散熱片把熱從晶片導開，風扇再把熱空氣吹出機身。",
+     "parts": [
+      "heatsink",
+      "fan",
+      "fan_rotor"
+     ],
+     "drive": "cooling",
+     "speed": 1,
+     "quiz": {
+      "q": "如果散熱不夠，最先會發生什麼？",
+      "options": [
+       [
+        "處理器自動降速，畫面開始掉格",
+        true,
+        "晶片太熱會自己降頻保護，畫面更新變慢，人就容易暈。"
+       ],
+       [
+        "電池爆炸",
+        false,
+        "有好幾層保護，會先降速、再關機。"
+       ],
+       [
+        "畫面變黑白",
+        false,
+        "顏色不會變，是畫面變卡。"
+       ]
+      ]
+     }
+    }
+   ]
+  }
+ ]
+}

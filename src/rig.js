@@ -90,13 +90,14 @@ export class Rig {
       const p = this.parts.get(mv.part);
       if (!p) continue;
       if (!d.swing) { this.spin(mv.part, speed ? (d.rpm / 60) * TAU * speed * mv.ratio : 0); continue; }
-      if (speed) this.swings.set(mv.part, { amp: (d.swing * mv.ratio * Math.sign(speed) * Math.PI) / 180, w: (TAU / (d.period || 4)) * Math.abs(speed), t: 0 });
-      else if (this.swings.delete(mv.part)) p.angle = 0;
+      // a move with `slide` (metres, at full swing) slides back and forth instead of turning, like the lenses on an IPD rail
+      if (speed) this.swings.set(mv.part, { amp: (d.swing * mv.ratio * Math.sign(speed) * Math.PI) / 180, w: (TAU / (d.period || 4)) * Math.abs(speed), t: 0, slide: mv.slide && new THREE.Vector3(...mv.slide).multiplyScalar(Math.sign(speed)) });
+      else if (this.swings.delete(mv.part)) { p.angle = 0; if (mv.slide) p.offset.set(0, 0, 0); }
     }
     return true;
   }
   spin(id, rad) { if (rad) this.spins.set(id, rad); else this.spins.delete(id); }
-  stop() { this.spins.clear(); for (const id of this.swings.keys()) this.parts.get(id).angle = 0; this.swings.clear(); }
+  stop() { this.spins.clear(); for (const [id, s] of this.swings) { const p = this.parts.get(id); p.angle = 0; if (s.slide) p.offset.set(0, 0, 0); } this.swings.clear(); }
   setExplode(t) { this.explodeTarget = Math.min(1, Math.max(0, t)); }
 
   reset() {
@@ -110,7 +111,7 @@ export class Rig {
   update(dt) {
     this.tweens = this.tweens.filter((w) => { w.t += dt; const k = Math.min(1, w.t / w.dur); w.set(w.from + (w.to - w.from) * ease(k)); return k < 1; });
     for (const [id, w] of this.spins) this.parts.get(id).angle += w * dt;
-    for (const [id, s] of this.swings) this.parts.get(id).angle = s.amp * Math.sin((s.t += dt) * s.w);
+    for (const [id, s] of this.swings) { const k = Math.sin((s.t += dt) * s.w), p = this.parts.get(id); if (s.slide) p.offset.copy(s.slide).multiplyScalar(k); else p.angle = s.amp * k; }
     this.explode += (this.explodeTarget - this.explode) * Math.min(1, dt * 6);
     const q = new THREE.Quaternion();
     for (const p of this.parts.values()) {
