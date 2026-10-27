@@ -32,6 +32,7 @@ None of its code, models or media are in this repository; everything here was re
 | Helicopter mechanisms from scratch: CAD main gearbox (bevel + planetary), swashplate, teetering hub, turboshaft casing, tail gears; lofted blades, servos, controls, skids | — | `09ad2dd` | 2026-10-27 |
 | Mixed-reality headset from scratch: lofted front cover with sensor windows, mainboard with SoC, heatsink and heat pipe, blower fan with spinning rotor, cameras and depth sensor, battery, pancake lenses and displays on sliding IPD carriages with a thumb wheel, face cushion, speakers, strap | — | `56efaf2` | 2026-10-27 |
 | Car body from a Tripo3D shell: aligned to the CAD axles, Tripo wheels cut away, decimated to ~18k triangles, split into hood, four doors, trunk and body with hinge pivots; metallic-roughness map derived from the colour texture; seats and dashboard modelled in Blender | — | `2367db0` | 2026-10-28 |
+| Turbofan from scratch: CAD-revolved nacelle (inlet, hinged fan-cowl doors, thrust-reverser sleeve), fan case and core casings cut away over one quadrant, spinner, rotor drums, exhaust plug and a bevel pair to the radial drive shaft; lofted wide-chord fan, booster, 9-stage HP compressor, HP and 4-stage LP turbine blade rows with stators, annular combustor with 20 fuel nozzles, accessory gearbox, display stand | — | `335d000` | 2026-10-28 |
 
 ## Third-party (unmodified dependencies, used under their licenses)
 | Package | License |
