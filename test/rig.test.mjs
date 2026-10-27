@@ -10,6 +10,9 @@ import { Choreo, cleanSteps } from '../src/choreo.js';
 
 const read = (f) => readFileSync(new URL(`../public/exhibits/${f}`, import.meta.url));
 const exhibit = (id) => JSON.parse(read(`${id}/manifest.json`));
+// Node has no image decoder: textures load as 1×1 stand-ins (the rig only needs nodes and materials)
+globalThis.self ??= globalThis;
+globalThis.createImageBitmap ??= async () => ({ width: 1, height: 1, close() {} });
 const loadModel = (id) => { const b = read(`${id}/model.glb`); return new Promise((ok, no) => new GLTFLoader().setMeshoptDecoder(MeshoptDecoder).parse(b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength), '', (g) => ok(g.scene), no)); };
 const manifest = exhibit('bike'), load = () => loadModel('bike');
 const run = (rig, s, dt = 0.05) => { for (let t = 0; t < s; t += dt) rig.update(dt); };
@@ -115,6 +118,16 @@ test('heli: collective lifts both plates and pitches both blades alike; forward 
   }
   rig.reset(); rig.drive('power', 1); rig.update(1);
   assert.ok(Math.abs(part('mast').angle / part('input_shaft').angle - 0.0669) < 1e-9);
+});
+
+test('car: the doors swing out one way (front-left outward to -z) and close again', async () => {
+  const m = exhibit('car'), rig = new Rig(await loadModel('car'), m), door = rig.parts.get('door_fl'), hood = rig.parts.get('hood');
+  const edge = () => new THREE.Vector3(-1, 0, 0).applyQuaternion(door.obj.quaternion);   // the door's rear edge, from its hinge
+  rig.drive('open', 1);
+  for (const t of [0.5, 1, 1, 0.5]) { rig.update(t); assert.ok(edge().z <= 1e-9, 'never into the car'); }   // 3 s = half the 6 s period: fully open
+  assert.ok(Math.abs(door.angle + (70 * Math.PI) / 180) < 1e-6 && edge().z < -0.9);
+  assert.ok(new THREE.Vector3(1, 0, 0).applyQuaternion(hood.obj.quaternion).y > 0.5, 'hood front lifts');
+  rig.update(3); assert.ok(Math.abs(door.angle) < 1e-6, 'closed after a full period');
 });
 
 test('quest: the IPD wheel turns while both eye modules slide apart and back; stop puts them back', async () => {

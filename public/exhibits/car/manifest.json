@@ -4,11 +4,12 @@
  "title": "汽車機構（1.8 L 四缸、五速手排）",
  "model": "model.glb",
  "thumb": "thumb.jpg",
- "intro": "這是一台前輪驅動汽車的機構：引擎、變速箱、差速器、轉向和煞車。點零件看它是什麼，或問我「活塞怎麼讓輪子轉」。",
+ "intro": "這是一台前輪驅動汽車：外面是車身，拆開（🧩）就看得到引擎、變速箱、差速器、轉向和煞車。點零件看它是什麼，或問我「活塞怎麼讓輪子轉」。",
  "suggest": [
   "活塞怎麼讓輪子轉？",
   "為什麼凸輪軸轉得比曲軸慢？",
-  "轉彎時差速器在做什麼？"
+  "轉彎時差速器在做什麼？",
+  "看看車身裡面有什麼？"
  ],
  "looksLike": "汽車、轎車、休旅車、汽車引擎、輪胎、煞車碟盤、方向盤、變速箱",
  "parts": [
@@ -602,6 +603,120 @@
    "aliases": [
     "油桶"
    ]
+  },
+  {
+   "id": "body",
+   "name": "車身",
+   "en": "car body shell",
+   "info": "整個外殼。鋼板做成的車身同時是骨架：碰撞時前後會先變形吸收力量，中間的座艙保持完整。拆開（🧩）它會整片升起，露出裡面的機構。",
+   "aliases": [
+    "外殼",
+    "車殼",
+    "車體"
+   ]
+  },
+  {
+   "id": "hood",
+   "name": "引擎蓋",
+   "en": "car hood",
+   "info": "蓋住引擎室。鉸鏈在靠擋風玻璃那一邊，打開時前緣往上抬。",
+   "aliases": [
+    "前蓋",
+    "機蓋"
+   ]
+  },
+  {
+   "id": "door_fl",
+   "name": "左前門（駕駛座）",
+   "en": "car front left door",
+   "info": "鉸鏈在門的前緣，車子往前開時風會把門壓緊，不會被吹開。門裡有防撞樑保護側面。",
+   "aliases": [
+    "車門",
+    "門"
+   ]
+  },
+  {
+   "id": "door_fr",
+   "name": "右前門",
+   "en": "car front right door",
+   "info": "鉸鏈在門的前緣，車子往前開時風會把門壓緊，不會被吹開。門裡有防撞樑保護側面。",
+   "aliases": [
+    "車門",
+    "門"
+   ]
+  },
+  {
+   "id": "door_rl",
+   "name": "左後門",
+   "en": "car rear left door",
+   "info": "鉸鏈在門的前緣，車子往前開時風會把門壓緊，不會被吹開。門裡有防撞樑保護側面。",
+   "aliases": [
+    "車門",
+    "門"
+   ]
+  },
+  {
+   "id": "door_rr",
+   "name": "右後門",
+   "en": "car rear right door",
+   "info": "鉸鏈在門的前緣，車子往前開時風會把門壓緊，不會被吹開。門裡有防撞樑保護側面。",
+   "aliases": [
+    "車門",
+    "門"
+   ]
+  },
+  {
+   "id": "trunk",
+   "name": "行李廂蓋",
+   "en": "car trunk lid",
+   "info": "鉸鏈在後擋風玻璃下緣，往上掀開。",
+   "aliases": [
+    "後車廂",
+    "行李箱",
+    "尾門"
+   ]
+  },
+  {
+   "id": "seat_fl",
+   "name": "駕駛座",
+   "en": "car driver's seat",
+   "info": "左駕車，駕駛座在左邊，正對方向盤和踏板。",
+   "aliases": [
+    "駕駛座",
+    "座椅",
+    "前座"
+   ]
+  },
+  {
+   "id": "seat_fr",
+   "name": "副駕駛座",
+   "en": "car front passenger seat",
+   "info": "前排右邊的座椅。",
+   "aliases": [
+    "副駕",
+    "座椅",
+    "前座"
+   ]
+  },
+  {
+   "id": "seat_rear",
+   "name": "後座",
+   "en": "car rear bench seat",
+   "info": "後排的長椅，坐在後輪軸的前面。",
+   "aliases": [
+    "後排",
+    "座椅"
+   ]
+  },
+  {
+   "id": "dashboard",
+   "name": "儀表板",
+   "en": "car dashboard",
+   "info": "方向盤後面的儀表顯示車速和轉速，中間是空調和音響。底下藏著轉向柱和很多線路。",
+   "aliases": [
+    "儀表",
+    "中控台"
+   ]
   }
  ],
  "drives": [
@@ -732,6 +847,39 @@
     {
      "part": "knuckle_fr",
      "ratio": 0.0667
+    }
+   ]
+  },
+  {
+   "id": "open",
+   "name": "開門、引擎蓋、行李廂",
+   "swing": 70,
+   "period": 6,
+   "oneWay": true,
+   "moves": [
+    {
+     "part": "door_fl",
+     "ratio": -1
+    },
+    {
+     "part": "door_rl",
+     "ratio": -1
+    },
+    {
+     "part": "door_fr",
+     "ratio": 1
+    },
+    {
+     "part": "door_rr",
+     "ratio": 1
+    },
+    {
+     "part": "hood",
+     "ratio": -0.8
+    },
+    {
+     "part": "trunk",
+     "ratio": 0.8
     }
    ]
   }
