@@ -129,7 +129,7 @@ export class VR {
     if (pa && pb && a.fist && b.fist) {
       if (!this.hold) this.hold = twoHandStart(pa, pb, { explode: this.v.rig.explodeTarget, ...this.place });
       const o = twoHand(this.hold, pa, pb, { x: 0, y: 0, z: -1 });
-      if (o.mode === 'explode') this.v.rig.setExplode(o.explode);
+      if (o.mode === 'spread') this.v.rig.setExplode(o.explode);
       Object.assign(this.place, { yaw: o.yaw, dist: o.dist, height: o.height }); this.applyPlace();
     } else this.hold = null;
     // subtitle: under your gaze, fades after a few seconds

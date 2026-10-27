@@ -32,11 +32,11 @@ test('palm normal points out of the palm, mirrored for the left hand', () => {
 test('two fists: one action per hold — pulling apart explodes, twisting turns, moving pushes away', () => {
   const L = v(-0.2, 1.2, -0.3), R = v(0.2, 1.2, -0.3), base = { explode: 0, yaw: 0, dist: 1, height: 0 }, fwd = v(0, 0, -1);
   let s = twoHandStart(L, R, base), o = twoHand(s, v(-0.35, 1.2, -0.3), v(0.35, 1.2, -0.3), fwd);
-  assert.equal(o.mode, 'explode'); assert.ok(o.explode > 0.3 && o.yaw === 0 && o.dist === 1);
+  assert.equal(o.mode, 'spread'); assert.ok(o.explode > 0.3 && o.yaw === 0 && o.dist === 1);
   s = twoHandStart(L, R, base); o = twoHand(s, v(-0.17, 1.2, -0.1), v(0.17, 1.2, -0.5), fwd);
-  assert.equal(o.mode, 'rotate'); assert.ok(o.yaw !== 0 && o.explode === 0);
+  assert.equal(o.mode, 'twist'); assert.ok(o.yaw !== 0 && o.explode === 0);
   s = twoHandStart(L, R, base); o = twoHand(s, v(-0.2, 1.2, -0.5), v(0.2, 1.2, -0.5), fwd);
-  assert.equal(o.mode, 'move'); assert.ok(o.dist > 1.3, 'pushed away');
+  assert.equal(o.mode, 'shift'); assert.ok(o.dist > 1.3, 'pushed away');
   o = twoHand(s, v(-0.4, 1.2, -0.5), v(0.4, 1.2, -0.5), fwd);
-  assert.equal(o.mode, 'move', 'stays locked'); assert.equal(o.explode, 0);
+  assert.equal(o.mode, 'shift', 'stays locked'); assert.equal(o.explode, 0);
 });
