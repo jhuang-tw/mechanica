@@ -17,11 +17,12 @@ None of its code, models or media are in this repository; everything here was re
 |---|---|---|---|
 | Mobile-first app shell (phone + Quest via IWSDK) | Meta IWSDK | `<range>` | `<date>` |
 | Bicycle exhibit: drivetrain, gears, derailleurs, brakes, freehub, removable parts | — | `<range>` | `<date>` |
-| Photo → machine recognition | Muse Spark vision | `<range>` | `<date>` |
-| Photo → part masks linked to 3D parts | SAM 3.1 | `<range>` | `<date>` |
-| Q&A agent that drives the exhibit | Muse Spark tool calling | `<range>` | `<date>` |
-| AI-choreographed part demos | Muse Spark structured output | `<range>` | `<date>` |
-| Voice questions | Muse Voice Transcribe | `<range>` | `<date>` |
+| Photo → machine recognition | Muse Spark vision | `468ce33` (server) | 2026-10-27 |
+| Photo → part masks linked to 3D parts | SAM 3.1 | `468ce33` (server); 3D link `<range>` | 2026-10-27 |
+| Q&A agent that drives the exhibit | Muse Spark tool calling | `468ce33` (server) | 2026-10-27 |
+| AI-choreographed part demos (server checks every step against the manifest) | Muse Spark tool calling | `468ce33` (server) | 2026-10-27 |
+| Voice questions (+ one Muse Spark pass: simplified → traditional, part-name fixes) | Muse Voice Transcribe, Muse Spark | `468ce33` (server) | 2026-10-27 |
+| Daily spend caps for the public demo | — | `468ce33` (server) | 2026-10-27 |
 
 ## Third-party (unmodified dependencies, used under their licenses)
 | Package | License |
@@ -29,6 +30,7 @@ None of its code, models or media are in this repository; everything here was re
 | @iwsdk/core | `<license>` |
 | three (super-three) | MIT |
 | Vite | MIT |
+| @meta-sam/parser (official SAM 3.1 mask parser) | SAM License (see its LICENSE) |
 | `<others>` | |
 
 ## Assets
