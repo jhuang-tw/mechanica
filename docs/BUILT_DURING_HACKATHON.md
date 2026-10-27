@@ -29,7 +29,7 @@ None of its code, models or media are in this repository; everything here was re
 | Bicycle model from scratch: CAD drivetrain (build123d), Blender build with one node per manifest part, phone GLB optimizer | — | `1b8f2dd` | 2026-10-27 |
 | Car exhibit mechanisms from scratch: CAD inline-four engine, 5-speed gearbox, differential, wheels and brakes; Blender chassis, steering, suspension | — | `ba0aa36` | 2026-10-27 |
 | Steam locomotive mechanisms from scratch: CAD spoked wheelsets, cutaway cylinders, pistons, valves, crossheads; Walschaerts valve gear, boiler tubes, firebox, steam pipes | — | `14c8ce8` | 2026-10-27 |
-| Helicopter mechanisms from scratch: CAD main gearbox (bevel + planetary), swashplate, teetering hub, turboshaft casing, tail gears; lofted blades, servos, controls, skids | — | `HELI` | 2026-10-27 |
+| Helicopter mechanisms from scratch: CAD main gearbox (bevel + planetary), swashplate, teetering hub, turboshaft casing, tail gears; lofted blades, servos, controls, skids | — | `09ad2dd` | 2026-10-27 |
 
 ## Third-party (unmodified dependencies, used under their licenses)
 | Package | License |
