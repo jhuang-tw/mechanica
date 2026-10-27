@@ -22,7 +22,9 @@
   .tile img { display:block; width:100%; aspect-ratio:1; object-fit:cover; background:#18212b; }
   .tile span { display:block; padding:10px 12px; font-weight:600; }
   .big { width:min(560px,100%); padding:16px; font-size:18px; font-weight:600; border-radius:16px; }
-  #home-photo { background:var(--accent); color:#1a1205; border:0; position:sticky; bottom:calc(12px + env(safe-area-inset-bottom)); z-index:1; box-shadow:0 6px 24px #000a; }
+  .tile small { display:block; padding:0 12px 10px; margin-top:-6px; color:var(--dim); font-size:13px; }
+  /* photo is an extra, not the way in: a quiet text button under the grid */
+  #home-photo { width:auto; min-height:44px; padding:10px 16px; font-size:15px; font-weight:500; background:none; border:1px solid #ffffff22; color:var(--dim); }
   #home-vr { background:#24364a; }
   #home .how { width:min(560px,100%); margin:0; padding:0; list-style:none; color:var(--dim); font-size:14px; display:grid; gap:4px; }
 
@@ -71,15 +73,15 @@
 <body>
 <section id="home">
   <h1>Mechanica</h1>
-  <p class="tag">拆開來，看懂機械怎麼動。問 AI，它會動給你看。</p>
+  <p class="tag">互動機械教室：挑一台機器，跟著課程拆開來、看它動、答小測驗。</p>
   <div id="tiles"></div>
-  <button id="home-photo" class="big" type="button">📷 拍一台真的機器</button>
-  <button id="home-vr" class="big" type="button" hidden>🥽 用 VR 看</button>
   <ul class="how">
-    <li>點零件：看它叫什麼、做什麼</li>
-    <li>按住 🎤 問問題：AI 會挑零件動給你看</li>
-    <li>⛓ 因果連動、❓ 先猜再看：一步一步看懂</li>
+    <li>📘 課程：一步一步帶你看，每一步先猜再看答案</li>
+    <li>👆 點零件：看它叫什麼、做什麼</li>
+    <li>🎤 問問題：AI 老師會挑零件動給你看</li>
   </ul>
+  <button id="home-vr" class="big" type="button" hidden>🥽 用 VR 上課</button>
+  <button id="home-photo" class="big" type="button">📷 看到真的機器？拍下來找對應的展品</button>
 </section>
 
 <section id="app" hidden>

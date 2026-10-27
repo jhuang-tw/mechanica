@@ -15,8 +15,9 @@ const list = (await (await fetch(`${BASE}index.json`)).json()).exhibits;
 await Promise.all(list.map(async (id) => (exhibits[id] = await (await fetch(`${BASE}${id}/manifest.json`)).json())));
 $('tiles').replaceChildren(...list.map((id) => {
   const e = exhibits[id], b = Object.assign(document.createElement('button'), { className: 'tile', type: 'button' });
-  b.innerHTML = `<img alt="" src="${BASE}${id}/${e.thumb}" onerror="this.style.visibility='hidden'"><span></span>`;
+  b.innerHTML = `<img alt="" src="${BASE}${id}/${e.thumb}" onerror="this.style.visibility='hidden'"><span></span><small></small>`;
   b.querySelector('span').textContent = e.title;
+  b.querySelector('small').textContent = `${e.lessons?.length || 0} 堂課`;
   b.onpointerdown = () => viewerModule.then((m) => m.preload(BASE + id + '/' + e.model));   // start the model download on touch
   b.onclick = () => open(id);
   return b;
