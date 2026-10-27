@@ -32,6 +32,7 @@ None of its code, models or media are in this repository; everything here was re
 | Helicopter mechanisms from scratch: CAD main gearbox (bevel + planetary), swashplate, teetering hub, turboshaft casing, tail gears; lofted blades, servos, controls, skids | — | `09ad2dd` | 2026-10-27 |
 | Mixed-reality headset from scratch: lofted front cover with sensor windows, mainboard with SoC, heatsink and heat pipe, blower fan with spinning rotor, cameras and depth sensor, battery, pancake lenses and displays on sliding IPD carriages with a thumb wheel, face cushion, speakers, strap | — | `56efaf2` | 2026-10-27 |
 | Car body from a Tripo3D shell: aligned to the CAD axles, Tripo wheels cut away, decimated to ~18k triangles, split into hood, four doors, trunk and body with hinge pivots; metallic-roughness map derived from the colour texture; seats and dashboard modelled in Blender | — | `2367db0` | 2026-10-28 |
+| Steam locomotive shell from a Tripo3D mesh: aligned to the CAD axles and narrowed to the CAD gauge, Tripo wheels, motion, frames and buffer beams cut away, unbaked cab texture and stray faces repaired, decimated to ~22k triangles with a 2048 texture, split into footplate, boiler cladding, smokebox, hinged smokebox door, side tanks, cab and hinged cab roof; buffer beams and boiler internals moved to fit it; Cycles previews pinned to the discrete GPU | — | (this commit) | 2026-10-28 |
 
 ## Third-party (unmodified dependencies, used under their licenses)
 | Package | License |
@@ -48,5 +49,6 @@ None of its code, models or media are in this repository; everything here was re
 |---|---|---|
 | Bicycle model | `tools/exhibits/bike/cad.py` (build123d) + `build.py` (Blender) + `tools/optimize-glb.mjs` | Ours |
 | Car body shell (in `public/exhibits/car/model.glb`) | Tripo3D Multiview to 3D from Codex-generated reference views (`tools/exhibits/car/tripo-ref`), generated 2026-10-27, then processed by `tools/exhibits/car/build.py` | Generated on Jim's Tripo3D account; open-source use needs a paid plan, to be confirmed |
+| Steam locomotive shell (in `public/exhibits/steam/model.glb`) | Tripo3D Multiview to 3D from Codex-generated reference views (`tools/exhibits/steam/tripo-ref`), generated 2026-10-27, then processed by `tools/exhibits/steam/build.py` | Generated on Jim's Tripo3D account; open-source use needs a paid plan, to be confirmed |
 | Voice-over | `<Jim / TTS service>` | `<terms>` |
 | Music | `<source>` | Royalty-free |
