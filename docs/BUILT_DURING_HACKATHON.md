@@ -22,7 +22,7 @@ None of its code, models or media are in this repository; everything here was re
 | Helicopter exhibit app side: manifest (27 parts, 3 lessons with quiz), swashplate linkage (collective lifts plates and pitches both blades; cyclic tilts plates, per-blade sin(azimuth) pitch, teetering disc tilts toward the stick), lesson steps can run several drives | — | `9ac7238` | 2026-10-27 |
 | VR headset exhibit app side: manifest (28 parts, 3 lessons with quiz), sliding drives (IPD wheel turns while both eye modules slide), camera focus scaled to small models | — | `46d6965` | 2026-10-27 |
 | VR mode: wrist-gear menu (exhibits, lessons, quiz, explode, reset, ask by voice, exit), joint-node hands with grip/pinch colours, two-fist explode/turn/move, poke and ray panels, fading one-line subtitle, lesson and quiz panel; IWER emulator for dev (`?xr`) | — | `282a078` | 2026-10-27 |
-| Car body app side: 11 shell, door, seat and dashboard parts, one-way swing drives (doors, hood and trunk open and close), Node tests load textured models | — | (this commit) | 2026-10-28 |
+| Car body app side: 11 shell, door, seat and dashboard parts, one-way swing drives (doors, hood and trunk open and close), Node tests load textured models | — | `68901e8` | 2026-10-28 |
 | ⛓ Cause-and-effect lessons and ❓ guess-first quiz (from the manifest) | — | `44fe640` | 2026-10-27 |
 | Voice and text questions in the app, spoken answers, AI demo playback | Muse Spark, Muse Voice Transcribe (via server) | `44fe640` | 2026-10-27 |
 | Bicycle exhibit: manifest (18 parts, 2 drives, 2 lessons with quiz), placeholder model script | — | `7dcf6c0` | 2026-10-27 |
