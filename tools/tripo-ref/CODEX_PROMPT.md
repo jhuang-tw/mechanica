@@ -34,7 +34,7 @@ When finished, print the list of written files.
 ## 交給 Tripo3D 的方式
 
 - 每組用 **Multiview to 3D**，四張依 front／left／back／right 放進對應欄位，**不要貼圖**。顏色和材質我在 Blender 裡用共用材質套，貼圖反而會被換掉，也比較重。
-- 輸出 GLB，放到 `C:\AI\mme-models\tools\exhibits\<exhibit>\tripo\<object>.glb`，例如 `car\tripo\body.glb`、`quest\tripo\shell.glb`。
+- 輸出 GLB，放到 `C:\AI\mme-models\tools\exhibits\<exhibit>\tripo\<object>.glb`，例如 `car\tripo\body.glb`。
 - **授權要先確認**：Tripo 免費方案產出的模型版權歸 Tripo（只能非商業使用），付費方案的使用者才擁有產出、可以修改、散布和商用。這個 repo 要公開開源，所以生成前要在付費方案下產，或至少確認目前帳號是付費方案。
 
 ## 外殼怎麼跟 CAD 機構合在一起（每個展品仍可完整拆解）
