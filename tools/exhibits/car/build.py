@@ -2,7 +2,8 @@
 #   "C:\Program Files\Blender Foundation\Blender 5.2\blender.exe" -b --factory-startup -t 4 -P tools/exhibits/car/build.py -- public/exhibits/car [--preview]
 # Run tools/exhibits/car/cad.py first (engine, gearbox, differential, wheels and discs come from its STLs).
 # Model frame (Blender): metres, ground z = 0, front = +x, car's left = +y. glTF export: front +x, up +y, car's right = +z.
-# Node origins are rotation centres; spin axes are written as extras.axis (glTF axes). Front wheels hang on their steering
+# Node origins are rotation centres; spin axes are written as extras.axis (glTF axes); shafts across the car spin about
+# glTF -z (Blender +y), so a positive turn rolls the wheels forward. Front wheels hang on their steering
 # knuckle (knuckle turns about the kingpin, the wheel spins inside it); brake discs hang on their wheel.
 # The body shell, seats and dashboard come from Tripo (tools/tripo-ref) and are added when those GLBs exist.
 import sys, os
@@ -85,24 +86,24 @@ def band(m, centres, y, width, mat):
 def engine():
     for pid, mat, ex in (('block', 'alu', (0, 0, 0)), ('head', 'alu', (0, 0, 0.35)), ('valve_cover', 'black', (0, 0, 0.6)), ('oil_pan', 'cast', (0, 0, -0.35))):
         part(pid, explode=ex).stl(pid, mat, at(CRANK))
-    m = part('crankshaft', pivot=CRANK, axis=V((0, -1, 0)), explode=(0, 0, -0.55))
+    m = part('crankshaft', pivot=CRANK, axis=Y, explode=(0, 0, -0.55))
     m.stl('crankshaft', 'steel', at(CRANK, NY, pi / 2))                       # throw 0 (cylinders 1, 4) points up
-    fw = part('flywheel', pivot=CRANK + V((0, -0.218, 0)), axis=V((0, -1, 0)), explode=(0, -0.3, 0))
+    fw = part('flywheel', pivot=CRANK + V((0, -0.218, 0)), axis=Y, explode=(0, -0.3, 0))
     fw.stl('flywheel', 'steel', at(CRANK + V((0, -0.218, 0)), NY))
     for i, (y, up) in enumerate(zip(CYL_Y, TDC), 1):
         pin_z = CRANK.z + (STROKE / 2 if up else -STROKE / 2)
         pin = V((CRANK.x, y, pin_z)); wrist = pin + V((0, 0, ROD))
         p = part(f'piston_{i}', pivot=wrist, explode=(0, 0, 0.9))
         p.stl('piston', 'alu', at(wrist, S, pi / 2))
-        r = part(f'conrod_{i}', pivot=pin, axis=V((0, -1, 0)), explode=(0, 0, 0.6))
+        r = part(f'conrod_{i}', pivot=pin, axis=Y, explode=(0, 0, 0.6))
         r.stl('conrod', 'steel', at(pin, NY))
     for pid, dx, ex in (('camshaft_intake', -0.035, (-0.1, 0, 0.75)), ('camshaft_exhaust', 0.035, (0.1, 0, 0.75))):
         c = V((CRANK.x + dx, CRANK.y, CAM_Z))
-        m = part(pid, pivot=c, axis=V((0, -1, 0)), explode=ex)
+        m = part(pid, pivot=c, axis=Y, explode=ex)
         m.stl('cam_in' if dx < 0 else 'cam_ex', 'steel', at(c, NY))
         m.tube(c + V((0, 0.19, 0)), V((c.x, PULLEY_Y, c.z)), 0.012, 'steel', 10)
         m.stl('pulley_cam', 'black', at(V((c.x, PULLEY_Y, c.z)), NY))
-    m = part('crank_pulley', pivot=V((CRANK.x, PULLEY_Y, CRANK.z)), parent='crankshaft', axis=V((0, -1, 0)), explode=(0, 0.25, 0))
+    m = part('crank_pulley', pivot=V((CRANK.x, PULLEY_Y, CRANK.z)), parent='crankshaft', axis=Y, explode=(0, 0.25, 0))
     m.stl('pulley_crank', 'black', at(V((CRANK.x, PULLEY_Y, CRANK.z)), NY))
     m = part('timing_belt', explode=(0, 0.45, 0.1))
     idler = (CRANK.x + 0.075, (CRANK.z + CAM_Z) / 2 - 0.02, 0.028)
@@ -141,19 +142,19 @@ def transmission():
     c = (I + OUT_AX + DIFF) / 3
     m.box(V((c.x, -0.235, c.z)), (0.30, 0.17, 0.30), 'alu')
     m.disc(V((DIFF.x, -0.33, DIFF.z)), Y, 0.11, 0.10, 'alu', 32)
-    inp = part('input_shaft', pivot=I + V((0, fy, 0)), axis=V((0, -1, 0)), explode=(0.15, -0.6, 0.3))
+    inp = part('input_shaft', pivot=I + V((0, fy, 0)), axis=Y, explode=(0.15, -0.6, 0.3))
     inp.tube(I + V((0, fy, 0)), I + V((0, GEAR_Y[-1] - 0.03, 0)), 0.012, 'steel', 12)
-    out = part('output_shaft', pivot=OUT_AX + V((0, GEAR_Y[0] + 0.03, 0)), axis=V((0, -1, 0)), explode=(-0.05, -0.6, -0.15))
+    out = part('output_shaft', pivot=OUT_AX + V((0, GEAR_Y[0] + 0.03, 0)), axis=Y, explode=(-0.05, -0.6, -0.15))
     out.tube(OUT_AX + V((0, GEAR_Y[0] + 0.03, 0)), OUT_AX + V((0, DIFF.y - 0.03, 0)), 0.014, 'steel', 12)
     out.stl('pinion', 'steel', at(OUT_AX + V((0, DIFF.y, 0)), NY))
     for k, y in enumerate(GEAR_Y, 1):
         inp.stl(f'gear_in_{k}', 'steel', at(I + V((0, y, 0)), NY))
-        g = part(f'gear_{k}', pivot=OUT_AX + V((0, y, 0)), axis=V((0, -1, 0)), explode=(-0.1, -0.6 - 0.05 * k, -0.25))
+        g = part(f'gear_{k}', pivot=OUT_AX + V((0, y, 0)), axis=Y, explode=(-0.1, -0.6 - 0.05 * k, -0.25))
         g.stl(f'gear_out_{k}', 'brass' if k == 3 else 'steel', at(OUT_AX + V((0, y, 0)), NY))   # 3rd is engaged at rest
-    d = part('differential', pivot=DIFF, axis=V((0, -1, 0)), explode=(-0.2, -0.5, -0.2))
+    d = part('differential', pivot=DIFF, axis=Y, explode=(-0.2, -0.5, -0.2))
     d.stl('diff', 'steel', at(DIFF, NY))
     for pid, y0, y1 in (('driveshaft_l', DIFF.y + 0.06, 0.62), ('driveshaft_r', DIFF.y - 0.06, -0.62)):
-        s = part(pid, pivot=V((FA, y0, WR)), axis=V((0, -1, 0)), explode=(0, 0.3 if y1 > 0 else -0.3, -0.3))
+        s = part(pid, pivot=V((FA, y0, WR)), axis=Y, explode=(0, 0.3 if y1 > 0 else -0.3, -0.3))
         a, b = V((FA, y0, WR)), V((FA, y1, WR)); dy = 1 if y1 > y0 else -1
         s.tube(a + V((0, dy * 0.04, 0)), b - V((0, dy * 0.04, 0)), 0.013, 'steel', 12)
         for e in (a + V((0, dy * 0.035, 0)), b - V((0, dy * 0.035, 0))):
@@ -162,10 +163,10 @@ def transmission():
 
 # ---------------------------------------------------------------- wheels, brakes, suspension, steering
 def wheel(pid, c, side, parent, ex):
-    w = part(pid, pivot=c, parent=parent, axis=V((0, -1, 0)), explode=ex)
+    w = part(pid, pivot=c, parent=parent, axis=Y, explode=ex)
     w.stl('rim', 'alu', at(c, NY if side > 0 else PY))                        # mounting face towards the car's centre
     w.torus(c, Y, WR - 0.056, 0.055, 'rubber', 64, 12, squash=1.45)
-    d = part(pid.replace('wheel', 'disc'), pivot=c, parent=pid, axis=V((0, -1, 0)), explode=(0, -side * 0.2, 0))
+    d = part(pid.replace('wheel', 'disc'), pivot=c, parent=pid, axis=Y, explode=(0, -side * 0.2, 0))
     hub = c - V((0, side * 0.05, 0))
     d.stl('disc', 'cast', at(hub, NY if side > 0 else PY))
     cal = part(pid.replace('wheel', 'caliper'), parent=parent and parent, explode=(0, -side * 0.15, 0.25))
