@@ -120,21 +120,27 @@ export class Rig {
     for (const l of this.linkages) this.sliderCrank(l);
   }
 
-  // engine: each piston slides along `up` and its rod swings from the crankpin to the wrist pin.
-  // Pin offsets turn with the crank itself, so the motion follows the crank's axis and direction.
+  // engine: each piston (and anything in `slides`, like a crosshead) moves along `up`; the rod swings from the crankpin
+  // to the wrist pin; parts in `follow` (coupling rods) move with the crankpin without turning; an optional valve
+  // slides `valveAmp` metres, `valveLead` radians ahead of the crank. Pin offsets turn with the crank itself,
+  // so the motion follows the crank's axis and direction.
   sliderCrank(l) {
     const crank = this.parts.get(l.crank), up = new THREE.Vector3(...(l.up || [0, 1, 0]));
     const axis = crank.axis.clone().applyQuaternion(crank.base.quat), r = l.r, L = l.L;
     const pin = (a) => up.clone().applyAxisAngle(axis, a).multiplyScalar(r);   // crankpin, from the crank centre
     const wrist = (a) => { const q = pin(a), along = q.dot(up), side = q.clone().addScaledVector(up, -along); return up.clone().multiplyScalar(along + Math.sqrt(L * L - side.lengthSq())); };
+    const rodDir = (a) => wrist(a).sub(pin(a)).normalize();
     for (const c of l.cylinders) {
-      const a0 = c.phase || 0, a = crank.angle + a0, piston = this.parts.get(c.piston), rod = this.parts.get(c.rod);
-      if (piston) piston.obj.position.addScaledVector(up, wrist(a).dot(up) - wrist(a0).dot(up));
+      const a0 = c.phase || 0, a = crank.angle + a0, slide = wrist(a).dot(up) - wrist(a0).dot(up), move = pin(a).sub(pin(a0));
+      for (const id of [c.piston, ...(c.slides || [])]) this.parts.get(id)?.obj.position.addScaledVector(up, slide);
+      for (const id of c.follow || []) this.parts.get(id)?.obj.position.add(move);
+      const rod = this.parts.get(c.rod);
       if (rod) {
-        rod.obj.position.add(pin(a).sub(pin(a0)));
-        const dir = wrist(a).sub(pin(a)).normalize();
-        rod.obj.quaternion.copy(new THREE.Quaternion().setFromUnitVectors(up, dir)).multiply(rod.base.quat);
+        rod.obj.position.add(move);
+        rod.obj.quaternion.copy(new THREE.Quaternion().setFromUnitVectors(rodDir(a0), rodDir(a))).multiply(rod.base.quat);
       }
+      const valve = this.parts.get(c.valve);
+      if (valve) valve.obj.position.addScaledVector(up, c.valveAmp * (Math.sin(a + c.valveLead) - Math.sin(a0 + c.valveLead)));
     }
   }
 }

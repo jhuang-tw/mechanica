@@ -80,3 +80,17 @@ test('choreography plays steps on time and stops a timed drive', async () => {
   c.update(0.6); assert.ok(rig.spins.size > 0);
   c.update(1.0); assert.equal(rig.spins.size, 0); assert.equal(c.playing, false);
 });
+
+test('steam: crossheads keep the rod length, coupling rods stay level, right crank leads left by 90°', async () => {
+  const m = exhibit('steam'), rig = new Rig(await loadModel('steam'), m), L = m.linkages[0], wheel = rig.parts.get('wheelset_2');
+  const part = (id) => rig.parts.get(id);
+  for (const a of [0, 0.8, 2.5, 4.4]) {
+    wheel.angle = a; rig.update(0);
+    for (const s of 'lr') {
+      const d = part(`crosshead_${s}`).obj.position.clone().sub(part(`connecting_rod_${s}`).obj.position).setZ(0).length();
+      assert.ok(Math.abs(d - L.L) < 1e-6, `${s} rod length at ${a}`);
+      assert.ok(part(`coupling_rod_${s}`).obj.quaternion.angleTo(part(`coupling_rod_${s}`).base.quat) < 1e-9, 'coupling rod does not turn');
+      assert.equal(part(`crosshead_${s}`).obj.position.x, part(`piston_${s}`).obj.position.x - part(`piston_${s}`).base.pos.x + part(`crosshead_${s}`).base.pos.x);
+    }
+  }
+});

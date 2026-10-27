@@ -1,0 +1,661 @@
+{
+ "id": "steam",
+ "name": "蒸汽火車",
+ "title": "蒸汽火車頭（0-6-0 水櫃式）",
+ "model": "model.glb",
+ "thumb": "thumb.jpg",
+ "intro": "這是一台 0-6-0 蒸汽火車頭的機構：火箱、煙管、汽缸、連桿和華氏閥動裝置。問我「蒸汽怎麼讓輪子轉」。",
+ "suggest": [
+  "蒸汽怎麼讓輪子轉？",
+  "為什麼左右兩邊的曲柄差 90 度？",
+  "蒸汽火車怎麼倒車？"
+ ],
+ "looksLike": "火車、蒸汽火車、火車頭、蒸汽機、鐵道車輛、鐵軌",
+ "parts": [
+  {
+   "id": "wheelset_1",
+   "name": "前動輪組",
+   "en": "steam locomotive leading driving wheelset",
+   "info": "最前面的一對動輪。0-6-0 的三對輪子都用聯結桿連在一起，全部都出力。",
+   "aliases": [
+    "前輪",
+    "動輪",
+    "輪子"
+   ]
+  },
+  {
+   "id": "wheelset_2",
+   "name": "主動輪組",
+   "en": "steam locomotive main driving wheelset",
+   "info": "主連桿直接推的那一對輪子，再經聯結桿帶動前後兩對。輪軸上還有偏心曲柄帶動閥動裝置。",
+   "aliases": [
+    "主動輪",
+    "動輪",
+    "輪子"
+   ]
+  },
+  {
+   "id": "wheelset_3",
+   "name": "後動輪組",
+   "en": "steam locomotive trailing driving wheelset",
+   "info": "最後面的一對動輪，被聯結桿帶著一起轉。",
+   "aliases": [
+    "後輪",
+    "動輪",
+    "輪子"
+   ]
+  },
+  {
+   "id": "cylinder_l",
+   "name": "左汽缸",
+   "en": "steam locomotive left cylinder",
+   "info": "高壓蒸汽輪流進到活塞的前面和後面，把活塞推過來推過去。外側上方切開了，看得到活塞和閥。",
+   "aliases": [
+    "汽缸"
+   ]
+  },
+  {
+   "id": "piston_l",
+   "name": "左活塞",
+   "en": "steam locomotive left piston and piston rod",
+   "info": "被蒸汽推著在汽缸裡前後跑，經活塞桿推動十字頭。",
+   "aliases": [
+    "活塞",
+    "活塞桿"
+   ]
+  },
+  {
+   "id": "crosshead_l",
+   "name": "左十字頭",
+   "en": "steam locomotive left crosshead",
+   "info": "在滑軌上直線滑動，把活塞的直線推力交給會擺動的主連桿，活塞桿就不會被扳彎。",
+   "aliases": [
+    "十字頭",
+    "滑塊"
+   ]
+  },
+  {
+   "id": "connecting_rod_l",
+   "name": "左主連桿",
+   "en": "steam locomotive left main connecting rod",
+   "info": "一端接十字頭、一端接主動輪的曲柄銷，把前後推拉變成輪子的旋轉。",
+   "aliases": [
+    "主連桿",
+    "連桿"
+   ]
+  },
+  {
+   "id": "coupling_rod_l",
+   "name": "左聯結桿",
+   "en": "steam locomotive left coupling rod",
+   "info": "把三對動輪的曲柄銷連在一起，所以三對輪子一起轉、一起出力。它只平移，不會轉。",
+   "aliases": [
+    "聯結桿",
+    "連結桿"
+   ]
+  },
+  {
+   "id": "valve_l",
+   "name": "左滑閥",
+   "en": "steam locomotive left piston valve",
+   "info": "決定蒸汽這一刻進活塞前面還是後面，同時讓另一邊用過的蒸汽排出去。",
+   "aliases": [
+    "閥",
+    "汽閥",
+    "活塞閥"
+   ]
+  },
+  {
+   "id": "eccentric_rod_l",
+   "name": "左偏心桿",
+   "en": "steam locomotive left eccentric rod",
+   "info": "由主動輪上的回轉曲柄帶動，讓月牙板前後擺。這是華氏閥動裝置的「時間」來源。",
+   "aliases": [
+    "偏心桿"
+   ]
+  },
+  {
+   "id": "expansion_link_l",
+   "name": "左月牙板",
+   "en": "steam locomotive left expansion link",
+   "info": "彎彎的擺動板。半徑桿的滑塊放在上半或下半，決定火車往前還是往後；放得越靠中間，截汽越早。",
+   "aliases": [
+    "月牙板",
+    "擺動板"
+   ]
+  },
+  {
+   "id": "radius_rod_l",
+   "name": "左半徑桿",
+   "en": "steam locomotive left radius rod",
+   "info": "從月牙板把擺動送到合併槓桿；逆轉機就是拉高壓低它。",
+   "aliases": [
+    "半徑桿"
+   ]
+  },
+  {
+   "id": "combination_lever_l",
+   "name": "左合併槓桿",
+   "en": "steam locomotive left combination lever",
+   "info": "把月牙板的擺動和十字頭的前後運動加在一起，推動滑閥，讓閥的時機準確。",
+   "aliases": [
+    "合併槓桿"
+   ]
+  },
+  {
+   "id": "union_link_l",
+   "name": "左聯動板",
+   "en": "steam locomotive left union link",
+   "info": "把十字頭接到合併槓桿下端。",
+   "aliases": [
+    "聯動板"
+   ]
+  },
+  {
+   "id": "cylinder_r",
+   "name": "右汽缸",
+   "en": "steam locomotive right cylinder",
+   "info": "高壓蒸汽輪流進到活塞的前面和後面，把活塞推過來推過去。外側上方切開了，看得到活塞和閥。",
+   "aliases": [
+    "汽缸"
+   ]
+  },
+  {
+   "id": "piston_r",
+   "name": "右活塞",
+   "en": "steam locomotive right piston and piston rod",
+   "info": "被蒸汽推著在汽缸裡前後跑，經活塞桿推動十字頭。",
+   "aliases": [
+    "活塞",
+    "活塞桿"
+   ]
+  },
+  {
+   "id": "crosshead_r",
+   "name": "右十字頭",
+   "en": "steam locomotive right crosshead",
+   "info": "在滑軌上直線滑動，把活塞的直線推力交給會擺動的主連桿，活塞桿就不會被扳彎。",
+   "aliases": [
+    "十字頭",
+    "滑塊"
+   ]
+  },
+  {
+   "id": "connecting_rod_r",
+   "name": "右主連桿",
+   "en": "steam locomotive right main connecting rod",
+   "info": "一端接十字頭、一端接主動輪的曲柄銷，把前後推拉變成輪子的旋轉。",
+   "aliases": [
+    "主連桿",
+    "連桿"
+   ]
+  },
+  {
+   "id": "coupling_rod_r",
+   "name": "右聯結桿",
+   "en": "steam locomotive right coupling rod",
+   "info": "把三對動輪的曲柄銷連在一起，所以三對輪子一起轉、一起出力。它只平移，不會轉。",
+   "aliases": [
+    "聯結桿",
+    "連結桿"
+   ]
+  },
+  {
+   "id": "valve_r",
+   "name": "右滑閥",
+   "en": "steam locomotive right piston valve",
+   "info": "決定蒸汽這一刻進活塞前面還是後面，同時讓另一邊用過的蒸汽排出去。",
+   "aliases": [
+    "閥",
+    "汽閥",
+    "活塞閥"
+   ]
+  },
+  {
+   "id": "eccentric_rod_r",
+   "name": "右偏心桿",
+   "en": "steam locomotive right eccentric rod",
+   "info": "由主動輪上的回轉曲柄帶動，讓月牙板前後擺。這是華氏閥動裝置的「時間」來源。",
+   "aliases": [
+    "偏心桿"
+   ]
+  },
+  {
+   "id": "expansion_link_r",
+   "name": "右月牙板",
+   "en": "steam locomotive right expansion link",
+   "info": "彎彎的擺動板。半徑桿的滑塊放在上半或下半，決定火車往前還是往後；放得越靠中間，截汽越早。",
+   "aliases": [
+    "月牙板",
+    "擺動板"
+   ]
+  },
+  {
+   "id": "radius_rod_r",
+   "name": "右半徑桿",
+   "en": "steam locomotive right radius rod",
+   "info": "從月牙板把擺動送到合併槓桿；逆轉機就是拉高壓低它。",
+   "aliases": [
+    "半徑桿"
+   ]
+  },
+  {
+   "id": "combination_lever_r",
+   "name": "右合併槓桿",
+   "en": "steam locomotive right combination lever",
+   "info": "把月牙板的擺動和十字頭的前後運動加在一起，推動滑閥，讓閥的時機準確。",
+   "aliases": [
+    "合併槓桿"
+   ]
+  },
+  {
+   "id": "union_link_r",
+   "name": "右聯動板",
+   "en": "steam locomotive right union link",
+   "info": "把十字頭接到合併槓桿下端。",
+   "aliases": [
+    "聯動板"
+   ]
+  },
+  {
+   "id": "frames",
+   "name": "車架",
+   "en": "steam locomotive frames",
+   "info": "左右兩片鋼板做的主車架，鍋爐、汽缸和輪軸都裝在上面。",
+   "aliases": [
+    "底盤"
+   ]
+  },
+  {
+   "id": "firebox",
+   "name": "火箱",
+   "en": "steam locomotive firebox",
+   "info": "燒煤的地方。火和熱氣從這裡往前穿過鍋爐裡的煙管。",
+   "aliases": [
+    "火爐",
+    "爐"
+   ]
+  },
+  {
+   "id": "boiler_tubes",
+   "name": "煙管",
+   "en": "steam locomotive boiler fire tubes",
+   "info": "上百根細管穿過鍋爐的水，熱氣在管裡跑、水在管外被加熱成蒸汽。管子越多，接觸面積越大，水燒得越快。",
+   "aliases": [
+    "鍋爐",
+    "煙管",
+    "火管"
+   ]
+  },
+  {
+   "id": "steam_pipes",
+   "name": "蒸汽管",
+   "en": "steam locomotive steam pipes",
+   "info": "把鍋爐頂部的蒸汽經調節閥送到兩邊的汽缸。",
+   "aliases": [
+    "汽管"
+   ]
+  },
+  {
+   "id": "blastpipe",
+   "name": "噴汽管",
+   "en": "steam locomotive blastpipe",
+   "info": "汽缸用過的蒸汽從這裡往煙囪噴出，把煙箱裡的空氣抽走，火箱就吸進更多空氣、燒得更旺。這就是「噗、噗」的聲音。",
+   "aliases": [
+    "排汽管",
+    "煙囪"
+   ]
+  },
+  {
+   "id": "reverser",
+   "name": "逆轉機",
+   "en": "steam locomotive reverser",
+   "info": "司機用它移動月牙板上的滑塊：一邊往前、另一邊往後；越靠中間，每一衝程進的蒸汽越少、越省。",
+   "aliases": [
+    "逆轉",
+    "倒車"
+   ]
+  },
+  {
+   "id": "regulator",
+   "name": "調節閥",
+   "en": "steam locomotive regulator",
+   "info": "火車的「油門」。開得越大，進汽缸的蒸汽越多，力氣越大。",
+   "aliases": [
+    "油門",
+    "節流閥"
+   ]
+  },
+  {
+   "id": "track",
+   "name": "鐵軌",
+   "en": "steam locomotive track",
+   "info": "標準軌距的鐵軌。輪緣在鐵軌內側，所以火車不會滑出去。",
+   "aliases": [
+    "軌道",
+    "鐵路"
+   ]
+  }
+ ],
+ "drives": [
+  {
+   "id": "run",
+   "name": "往前跑（汽缸→主連桿→三對動輪）",
+   "rpm": 20,
+   "moves": [
+    {
+     "part": "wheelset_1",
+     "ratio": 1
+    },
+    {
+     "part": "wheelset_2",
+     "ratio": 1
+    },
+    {
+     "part": "wheelset_3",
+     "ratio": 1
+    }
+   ]
+  }
+ ],
+ "linkages": [
+  {
+   "type": "slider_crank",
+   "crank": "wheelset_2",
+   "r": 0.3,
+   "L": 1.9,
+   "up": [
+    1,
+    0,
+    0
+   ],
+   "cylinders": [
+    {
+     "piston": "piston_l",
+     "slides": [
+      "crosshead_l"
+     ],
+     "rod": "connecting_rod_l",
+     "follow": [
+      "coupling_rod_l"
+     ],
+     "valve": "valve_l",
+     "valveAmp": 0.05,
+     "valveLead": 1.570796,
+     "phase": 0
+    },
+    {
+     "piston": "piston_r",
+     "slides": [
+      "crosshead_r"
+     ],
+     "rod": "connecting_rod_r",
+     "follow": [
+      "coupling_rod_r"
+     ],
+     "valve": "valve_r",
+     "valveAmp": 0.05,
+     "valveLead": 1.570796,
+     "phase": -1.570796
+    }
+   ]
+  }
+ ],
+ "lessons": [
+  {
+   "id": "steam",
+   "title": "蒸汽怎麼讓輪子轉",
+   "steps": [
+    {
+     "say": "火箱燒煤，熱氣穿過鍋爐裡的煙管，把管外的水燒成蒸汽。",
+     "parts": [
+      "firebox",
+      "boiler_tubes"
+     ],
+     "quiz": {
+      "q": "鍋爐裡的煙管，管子裡跑的是什麼？",
+      "options": [
+       [
+        "火和熱氣",
+        true,
+        "這叫火管鍋爐：熱氣在管裡，水在管外，管子越多，水燒得越快。"
+       ],
+       [
+        "水",
+        false,
+        "那是水管鍋爐，用在船和發電廠；火車頭大多是火管鍋爐。"
+       ],
+       [
+        "蒸汽",
+        false,
+        "蒸汽是在鍋爐頂部收集，再經調節閥送去汽缸。"
+       ]
+      ]
+     }
+    },
+    {
+     "say": "打開調節閥，蒸汽經蒸汽管進到兩邊的汽缸。",
+     "parts": [
+      "regulator",
+      "steam_pipes",
+      "cylinder_l",
+      "cylinder_r"
+     ]
+    },
+    {
+     "say": "蒸汽推動活塞，十字頭沿著滑軌直線前後跑。",
+     "parts": [
+      "cylinder_l",
+      "cylinder_r",
+      "piston_l",
+      "piston_r",
+      "crosshead_l",
+      "crosshead_r"
+     ],
+     "drive": "run",
+     "speed": 0.4,
+     "quiz": {
+      "q": "十字頭的用途是？",
+      "options": [
+       [
+        "讓活塞桿只走直線，擺動交給主連桿",
+        true,
+        "主連桿會上下擺，如果直接接活塞桿，活塞桿會被扳彎、汽缸會漏氣。"
+       ],
+       [
+        "讓火車轉彎",
+        false,
+        "火車轉彎靠輪緣和鐵軌，不靠十字頭。"
+       ],
+       [
+        "增加蒸汽壓力",
+        false,
+        "壓力來自鍋爐，十字頭只是傳力的滑塊。"
+       ]
+      ]
+     }
+    },
+    {
+     "say": "主連桿把前後推拉變成主動輪的旋轉，聯結桿再帶動前後兩對輪子。",
+     "parts": [
+      "connecting_rod_l",
+      "connecting_rod_r",
+      "coupling_rod_l",
+      "coupling_rod_r",
+      "wheelset_1",
+      "wheelset_2",
+      "wheelset_3"
+     ],
+     "drive": "run",
+     "speed": 0.4,
+     "quiz": {
+      "q": "右邊的曲柄比左邊領先 90 度，為什麼？",
+      "options": [
+       [
+        "這樣任何位置都至少有一邊推得動",
+        true,
+        "如果兩邊同相，剛好停在死點（曲柄和連桿成一直線）時就推不動，起步不了。"
+       ],
+       [
+        "為了好看",
+        false,
+        "差 90 度是為了避開死點，跟外觀無關。"
+       ],
+       [
+        "為了讓火車比較快",
+        false,
+        "速度靠蒸汽量和輪徑，相位差是為了起步。"
+       ]
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "id": "valve",
+   "title": "閥動裝置：什麼時候進汽",
+   "steps": [
+    {
+     "say": "主動輪上的回轉曲柄推拉偏心桿，讓月牙板前後擺動。",
+     "parts": [
+      "eccentric_rod_l",
+      "eccentric_rod_r",
+      "expansion_link_l",
+      "expansion_link_r",
+      "wheelset_2"
+     ],
+     "drive": "run",
+     "speed": 0.3
+    },
+    {
+     "say": "半徑桿把擺動送到合併槓桿，加上十字頭的運動，推動滑閥。",
+     "parts": [
+      "radius_rod_l",
+      "radius_rod_r",
+      "combination_lever_l",
+      "combination_lever_r",
+      "union_link_l",
+      "union_link_r",
+      "crosshead_l",
+      "crosshead_r",
+      "valve_l",
+      "valve_r"
+     ],
+     "drive": "run",
+     "speed": 0.3
+    },
+    {
+     "say": "滑閥輪流把蒸汽送到活塞的前面和後面，另一邊用過的蒸汽同時排出。",
+     "parts": [
+      "valve_l",
+      "valve_r",
+      "cylinder_l",
+      "cylinder_r",
+      "piston_l",
+      "piston_r"
+     ],
+     "drive": "run",
+     "speed": 0.3,
+     "quiz": {
+      "q": "活塞往前跑時，蒸汽在活塞的哪一邊？",
+      "options": [
+       [
+        "後面，推著它往前",
+        true,
+        "閥把新蒸汽送到活塞後面，同時讓前面上一趟用過的蒸汽排出去。"
+       ],
+       [
+        "前面",
+        false,
+        "蒸汽在前面的話會把活塞推回來。"
+       ],
+       [
+        "兩邊都有一樣多",
+        false,
+        "兩邊壓力一樣就推不動了。"
+       ]
+      ]
+     }
+    },
+    {
+     "say": "要倒車時，司機用逆轉機把半徑桿移到月牙板的另一半，閥的時機反過來，輪子就往後轉。",
+     "parts": [
+      "reverser",
+      "radius_rod_l",
+      "radius_rod_r",
+      "expansion_link_l",
+      "expansion_link_r"
+     ],
+     "drive": "run",
+     "speed": -0.3,
+     "quiz": {
+      "q": "蒸汽火車要倒車，要怎麼做？",
+      "options": [
+       [
+        "用逆轉機改變閥的時機",
+        true,
+        "滑塊移到月牙板另一半，蒸汽改從另一邊進，活塞就把輪子往反方向推。"
+       ],
+       [
+        "讓輪子反過來掛",
+        false,
+        "輪子不用動，改的是蒸汽什麼時候進。"
+       ],
+       [
+        "火車不能倒車",
+        false,
+        "可以，調車場裡火車頭常常前後來回。"
+       ]
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "id": "puff",
+   "title": "「噗、噗」是什麼",
+   "steps": [
+    {
+     "say": "汽缸用過的蒸汽經噴汽管往煙囪噴出去。",
+     "parts": [
+      "blastpipe",
+      "cylinder_l",
+      "cylinder_r"
+     ],
+     "drive": "run",
+     "speed": 0.4
+    },
+    {
+     "say": "噴出的蒸汽把煙箱裡的空氣抽走，火箱吸進更多新鮮空氣，火燒得更旺。跑得越快，火越旺。",
+     "parts": [
+      "blastpipe",
+      "firebox",
+      "boiler_tubes"
+     ],
+     "drive": "run",
+     "speed": 0.4,
+     "quiz": {
+      "q": "動輪轉一圈，會聽到幾聲「噗」？",
+      "options": [
+       [
+        "4 聲",
+        true,
+        "兩個汽缸、每個汽缸前後兩邊各排一次汽，所以一圈 4 次。"
+       ],
+       [
+        "1 聲",
+        false,
+        "每個汽缸前後都會排汽，不只一次。"
+       ],
+       [
+        "2 聲",
+        false,
+        "只數了兩個汽缸，忘了每個汽缸前後各排一次。"
+       ]
+      ]
+     }
+    }
+   ]
+  }
+ ]
+}
