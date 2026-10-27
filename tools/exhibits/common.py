@@ -91,6 +91,16 @@ def rbox(m, c, size, r, mat, rot=Matrix.Identity(3)):
     for f in m.bm.faces[n:]: f.material_index = m.mi(mat); f.smooth = True
     bpy.data.meshes.remove(me)
 
+def smooth(pts, n=6):
+    """Catmull-Rom resample of an open control polyline (gentle bends for swept tubes)."""
+    P = [pts[0]] + pts + [pts[-1]]; out = []
+    for i in range(len(P) - 3):
+        p0, p1, p2, p3 = P[i:i + 4]
+        for k in range(n):
+            t = k / n
+            out.append(0.5 * (2 * p1 + (p2 - p0) * t + (2 * p0 - 5 * p1 + 4 * p2 - p3) * t * t + (3 * p1 - p0 - 3 * p2 + p3) * t ** 3))
+    return out + [pts[-1]]
+
 PARTS = {}   # id -> dict(m=Mesh, pivot, parent, axis, explode)
 
 def part(pid, pivot=None, parent=None, axis=None, explode=(0, 0, 0)):
