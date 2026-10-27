@@ -1,0 +1,4 @@
+preview/
+cad/out/
+*.raw.glb
+tripo/*.glb
