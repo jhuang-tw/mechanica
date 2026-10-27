@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#10151c">
+<title>Mechanica · 拆開來看懂機械</title>
+<style>
+  :root { --bg:#10151c; --panel:rgba(16,22,30,.88); --line:#2b3644; --text:#eef3f8; --dim:#9aa8b8; --accent:#ffb02e; --blue:#6cb8ff; --ok:#57d18b; --bad:#ff6b5e; }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html, body { margin:0; height:100%; background:var(--bg); color:var(--text); font:16px/1.45 system-ui, -apple-system, "Noto Sans TC", "PingFang TC", sans-serif; overflow:hidden; }
+  button { font:inherit; color:inherit; background:#1d2733; border:1px solid var(--line); border-radius:12px; cursor:pointer; }
+  button:active { transform:scale(.97); }
+  [hidden] { display:none !important; }
+
+  /* landing */
+  #home { position:fixed; inset:0; overflow:auto; padding:calc(28px + env(safe-area-inset-top)) 16px calc(24px + env(safe-area-inset-bottom)); display:flex; flex-direction:column; align-items:center; gap:18px; }
+  #home h1 { margin:0; font-size:34px; letter-spacing:.5px; }
+  #home .tag { margin:-10px 0 0; color:var(--dim); text-align:center; }
+  #tiles { width:min(560px,100%); display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:12px; }
+  .tile { padding:0; overflow:hidden; text-align:left; border-radius:16px; }
+  .tile img { display:block; width:100%; aspect-ratio:1; object-fit:cover; background:#18212b; }
+  .tile span { display:block; padding:10px 12px; font-weight:600; }
+  .big { width:min(560px,100%); padding:16px; font-size:18px; font-weight:600; border-radius:16px; }
+  #home-photo { background:var(--accent); color:#1a1205; border:0; }
+  #home-vr { background:#24364a; }
+  #home .how { width:min(560px,100%); margin:0; padding:0; list-style:none; color:var(--dim); font-size:14px; display:grid; gap:4px; }
+
+  /* exhibit */
+  #app { position:fixed; inset:0; }
+  #view { position:absolute; inset:0; }
+  #view canvas { display:block; width:100%; height:100%; touch-action:none; }
+  header { position:absolute; top:0; left:0; right:0; display:flex; align-items:center; gap:8px; padding:calc(10px + env(safe-area-inset-top)) 12px 8px; pointer-events:none; z-index:1; }
+  header > * { pointer-events:auto; }
+  header h2 { flex:1; margin:0; font-size:17px; text-shadow:0 1px 3px #000; }
+  .icon { width:44px; height:44px; padding:0; font-size:20px; background:var(--panel); }
+  #vr { width:auto; padding:0 14px; font-weight:700; }
+  #sheet { position:absolute; left:0; right:0; bottom:0; margin:0 auto; width:min(640px,100%); padding:0 10px calc(10px + env(safe-area-inset-bottom)); display:flex; flex-direction:column; gap:8px; z-index:1; }
+  #caption { background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:10px 14px; max-height:30vh; overflow:auto; }
+  #caption b { display:block; color:var(--accent); font-size:13px; }
+  #caption p { margin:2px 0 0; }
+  #caption.thinking p::after { content:"…"; animation:blink 1s infinite; }
+  @keyframes blink { 50% { opacity:.2; } }
+  .row { display:flex; gap:8px; align-items:center; }
+  body.lesson #chips, body.lesson #controls { display:none; }
+  #chips { display:flex; gap:8px; overflow-x:auto; padding-bottom:2px; scrollbar-width:none; }
+  .chip { flex:none; padding:8px 13px; font-size:14px; border-radius:999px; background:var(--panel); white-space:nowrap; }
+  .chip.ai { border-color:#4b6d8f; }
+  .chip.lesson { border-color:#7a5a24; }
+  #controls .icon { flex:none; }
+  #explode { flex:1; display:flex; align-items:center; gap:8px; height:44px; padding:0 12px; background:var(--panel); border:1px solid var(--line); border-radius:12px; font-size:14px; color:var(--dim); }
+  #explode input { flex:1; accent-color:var(--accent); }
+  #mic { width:56px; height:56px; border-radius:50%; background:var(--accent); color:#1a1205; border:0; font-size:24px; }
+  #mic.rec { background:var(--bad); color:#fff; box-shadow:0 0 0 6px rgba(255,107,94,.3); }
+  #ask { display:flex; gap:8px; }
+  #ask input { flex:1; min-width:0; padding:12px; font:inherit; color:var(--text); background:#0c1117; border:1px solid var(--line); border-radius:12px; }
+  #ask button { padding:0 16px; background:var(--accent); color:#1a1205; border:0; font-weight:700; }
+  #lesson { justify-content:space-between; background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:4px; }
+  #lesson span { font-size:14px; color:var(--dim); }
+  #lesson button { width:40px; height:40px; padding:0; border:0; background:none; font-size:18px; }
+  #quiz { display:grid; gap:8px; }
+  #quiz button { padding:12px; text-align:left; background:var(--panel); }
+  #quiz button.right { border-color:var(--ok); background:#173323; }
+  #quiz button.wrong { border-color:var(--bad); background:#3a1a18; }
+  #toast { position:fixed; left:50%; top:calc(64px + env(safe-area-inset-top)); transform:translateX(-50%); padding:8px 14px; background:var(--panel); border-radius:999px; font-size:14px; }
+  @media (min-width:900px) { #sheet { left:auto; right:16px; margin:0; width:420px; } }
+</style>
+</head>
+<body>
+<section id="home">
+  <h1>Mechanica</h1>
+  <p class="tag">拆開來，看懂機械怎麼動。問 AI，它會動給你看。</p>
+  <div id="tiles"></div>
+  <button id="home-photo" class="big" type="button">📷 拍一台真的機器</button>
+  <button id="home-vr" class="big" type="button" hidden>🥽 用 VR 看</button>
+  <ul class="how">
+    <li>點零件：看它叫什麼、做什麼</li>
+    <li>按住 🎤 問問題：AI 會挑零件動給你看</li>
+    <li>⛓ 因果連動、❓ 先猜再看：一步一步看懂</li>
+  </ul>
+</section>
+
+<section id="app" hidden>
+  <div id="view"><canvas id="c"></canvas></div>
+  <header>
+    <button id="back" class="icon" type="button" aria-label="回首頁">‹</button>
+    <h2 id="title"></h2>
+    <button id="vr" class="icon" type="button" hidden>VR</button>
+    <button id="reset" class="icon" type="button" aria-label="還原">↩</button>
+  </header>
+  <div id="sheet">
+    <div id="caption"><b id="cap-title"></b><p id="cap-text"></p></div>
+    <div id="quiz" hidden></div>
+    <div id="lesson" class="row" hidden>
+      <button id="l-prev" type="button" aria-label="上一步">⏮</button><span id="l-step"></span>
+      <button id="l-next" type="button" aria-label="下一步">⏭</button><button id="l-stop" type="button" aria-label="結束">✕</button>
+    </div>
+    <div id="chips"></div>
+    <form id="ask" hidden><input id="q" enterkeyhint="send" autocomplete="off" placeholder="問任何問題…"><button type="submit">送出</button></form>
+    <div id="controls" class="row">
+      <label id="explode">🧩<input id="explode-r" type="range" min="0" max="1" step="0.01" value="0" aria-label="拆解"></label>
+      <button id="type" class="icon" type="button" aria-label="打字提問">⌨</button>
+      <button id="photo" class="icon" type="button" aria-label="拍真的機器">📷</button>
+      <button id="mic" type="button" aria-label="按住說話">🎤</button>
+    </div>
+  </div>
+</section>
+<div id="toast" hidden></div>
+<input id="photo-in" type="file" accept="image/*" capture="environment" hidden>
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>

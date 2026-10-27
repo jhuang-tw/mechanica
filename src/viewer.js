@@ -60,9 +60,10 @@ export class Viewer {
   // camera to a three-quarter view of the whole model
   frame() {
     const box = new THREE.Box3().setFromObject(this.model), c = box.getCenter(new THREE.Vector3()), s = box.getSize(new THREE.Vector3()).length();
-    const portrait = this.camera.aspect < 1;
-    this.controls.target.copy(c);
-    this.camera.position.copy(c).add(new THREE.Vector3(0.55, 0.35, 1).normalize().multiplyScalar(s * (portrait ? 1.7 : 1.1)));
+    // far enough that the bounding sphere fits the narrower field of view (portrait phones: the horizontal one)
+    const v = THREE.MathUtils.degToRad(this.camera.fov), fov = Math.min(v, 2 * Math.atan(Math.tan(v / 2) * this.camera.aspect));
+    this.controls.target.copy(c).y -= this.camera.aspect < 1 ? s * 0.22 : 0;   // portrait: the model sits above the bottom sheet
+    this.camera.position.copy(this.controls.target).add(new THREE.Vector3(0.55, 0.35, 1).normalize().multiplyScalar((s / 2) / Math.sin(fov / 2) * 0.95));
     this.controls.update();
   }
 
@@ -89,7 +90,7 @@ export class Viewer {
   async enterVR() {
     const session = await navigator.xr.requestSession('immersive-vr', { optionalFeatures: ['local-floor', 'hand-tracking'] });
     await this.renderer.xr.setSession(session);
-    this.stage.position.set(0, 0.2, -0.9);
+    this.stage.position.set(0, 0, -1.2);   // on the floor, an arm's length past reach
     const ray = new THREE.Raycaster();
     for (const i of [0, 1]) {
       const ctl = this.renderer.xr.getController(i);

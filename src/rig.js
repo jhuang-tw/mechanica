@@ -48,7 +48,7 @@ export class Rig {
     for (const [id, p] of this.parts) {
       const ghost = this.isolated && !this.isolated.has(id), lit = this.lit.has(id);
       for (const { o, base } of p.meshes) {
-        o.material.transparent = ghost || base.transparent;
+        if (o.material.transparent !== (ghost || base.transparent)) { o.material.transparent = ghost || base.transparent; o.material.needsUpdate = true; }
         o.material.opacity = ghost ? GHOST : base.opacity;
         o.material.depthWrite = !ghost;
         if (o.material.emissive) o.material.emissive.copy(lit ? AMBER : base.emissive).multiplyScalar(lit ? 0.45 : 1);
@@ -101,7 +101,7 @@ export class Rig {
     const q = new THREE.Quaternion();
     for (const p of this.parts.values()) {
       p.obj.quaternion.copy(p.base.quat).multiply(q.setFromAxisAngle(p.axis, p.angle));
-      p.obj.position.copy(p.base.pos).add(p.offset).addScaledVector(p.explodeDir, this.explode * this.size * 0.35);
+      p.obj.position.copy(p.base.pos).add(p.offset).addScaledVector(p.explodeDir, this.explode * this.size * 0.2);
     }
   }
 }
