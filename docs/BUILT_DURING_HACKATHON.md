@@ -15,8 +15,11 @@ None of its code, models or media are in this repository; everything here was re
 ## Features → commits
 | Feature | Meta model / tool | Commits | Date |
 |---|---|---|---|
-| Mobile-first app shell (phone + Quest via IWSDK) | Meta IWSDK | `<range>` | `<date>` |
-| Bicycle exhibit: drivetrain, gears, derailleurs, brakes, freehub, removable parts | — | `<range>` | `<date>` |
+| Mobile-first app: landing, exhibit view, tap a part, explode, reset, optional WebXR VR (three.js) | — | `7dcf6c0`, `44fe640` | 2026-10-27 |
+| Manifest-driven part rig: isolate, detach, rotate, real drives (gear ratios), explode | — | `7dcf6c0` | 2026-10-27 |
+| ⛓ Cause-and-effect lessons and ❓ guess-first quiz (from the manifest) | — | `44fe640` | 2026-10-27 |
+| Voice and text questions in the app, spoken answers, AI demo playback | Muse Spark, Muse Voice Transcribe (via server) | `44fe640` | 2026-10-27 |
+| Bicycle exhibit: manifest (18 parts, 2 drives, 2 lessons with quiz), placeholder model script | — | `7dcf6c0` | 2026-10-27 |
 | Photo → machine recognition | Muse Spark vision | `468ce33` (server) | 2026-10-27 |
 | Photo → part masks linked to 3D parts | SAM 3.1 | `468ce33` (server); 3D link `<range>` | 2026-10-27 |
 | Q&A agent that drives the exhibit | Muse Spark tool calling | `468ce33` (server) | 2026-10-27 |
@@ -27,8 +30,7 @@ None of its code, models or media are in this repository; everything here was re
 ## Third-party (unmodified dependencies, used under their licenses)
 | Package | License |
 |---|---|
-| @iwsdk/core | `<license>` |
-| three (super-three) | MIT |
+| three | MIT |
 | Vite | MIT |
 | @meta-sam/parser (official SAM 3.1 mask parser) | SAM License (see its LICENSE) |
 | `<others>` | |
