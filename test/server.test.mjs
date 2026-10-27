@@ -3,12 +3,13 @@ import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
 
 const seen = [];
-let samText = "<0f>0<|box;x1=10;y1=20;x2=39;y2=49;w=100;h=100|><|mask;x=0;y=0;data=3,3,!!!!!'NBR?h!!|>";   // 3×3 one-bit mask, real parser
+// the lossless 27×60 example from @meta-sam/parser's README, decoded by the real parser
+let samText = "<0f>0<|box;x1=211;y1=228;x2=270;y2=254;w=320;h=334|><|mask;x=0;y=0;data=27,60,~!!!!M!0c[0o91w?q1!pIH4pPRVp2B3'7`e.ioeAf6-k/#Xd8%dX9x(|>";
 const meta = createServer(async (req, res) => {
   const chunks = []; for await (const c of req) chunks.push(c);
   const raw = Buffer.concat(chunks), b = /json/.test(req.headers['content-type'] || '') ? JSON.parse(raw) : null;
   seen.push({ url: req.url, auth: req.headers.authorization, b, raw });
-  const msg = (m) => res.end(JSON.stringify({ model: 'muse-spark-1.3', choices: [{ message: m }] }));
+  const msg = (message) => res.end(JSON.stringify({ choices: [{ index: 0, message }], model: 'muse-spark-1.3' }));
   if (req.url === '/v1/asr/transcribe') return res.end(JSON.stringify({ transcript: '链条怎么带动后轮' }));
   if (req.url === '/v1/responses') return res.end(JSON.stringify({ status: 'completed', output: [{ content: [{ type: 'output_text', text: b.input[0].content[0].text === 'bicycle chain' ? '' : samText }] }] }));
   const sys = b.messages[0].content, user = b.messages.at(-1).content;
