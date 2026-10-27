@@ -1,31 +1,34 @@
-# Codex prompt：整台載具外觀的 Tripo 多視角參考圖
+# Codex prompt：Tripo 多視角參考圖（外殼和曲面件）
 
-把 `---` 之間的整段貼給 Codex。四台載具（car、moto、steam、heli）一次產完，每台四張。
-其餘四個展品（bike、jet 渦扇引擎、watch、quest）整個用 CAD 和 Blender 做，不需要參考圖。
+把 `---` 之間的整段貼給 Codex。共 7 組，每組四張：四台載具外殼，加上 Quest 頭顯外殼、汽車座椅、汽車儀表板。
+機構、齒輪、輪子和旋轉體（渦扇短艙、錶殼）用 CAD 做，不需要參考圖。
 
 ---
 
-You are generating reference images for Tripo3D "Multiview to 3D". Each set of four images becomes the outer body (shell) of one vehicle in a public, open-source educational app about machines. The engines, gears, wheels, rotors and other mechanisms are modelled separately in CAD and placed inside the shell later, so draw only the exterior of the vehicle, as one closed object.
+You are generating reference images for Tripo3D "Multiview to 3D". Each set of four images becomes one 3D object (mostly the outer body of a vehicle or device) in a public, open-source educational app about machines. The engines, gears, wheels, rotors and other mechanisms are modelled separately in CAD and placed inside later, so draw only the object named below, alone, as one closed object.
 
 Write files only under `C:\AI\mme-models\tools\exhibits\<exhibit>\tripo-ref\` and do not run any git command.
 For each vehicle save exactly four PNGs: `front.png`, `back.png`, `left.png`, `right.png`.
 
 Rules for every image:
 - 1024×1024 PNG, plain pure-white background (#FFFFFF), no floor, no ground shadow, no people, no props, no scenery.
-- Orthographic-looking side/front camera at the vehicle's mid-height, no perspective tilt, no 3/4 views.
-- Consistent scale: within one vehicle all four views use the same scale, and the longest dimension of the vehicle fills about 85 % of the frame in the left/right views. The front/back views use that same scale (so they look narrower), centred.
+- Orthographic-looking side/front camera at the object's mid-height, no perspective tilt, no 3/4 views.
+- Consistent scale: within one object all four views use the same scale, and the longest dimension of the object fills about 85 % of the frame in the left/right views. The front/back views use that same scale (so they look narrower), centred.
 - Soft, even studio light, identical in all four views. Mostly matte paint, no environment reflections, no motion blur.
 - Generic, original design. No logos, brand names, badges, emblems, text, numbers, licence plates, registration codes, flags, stickers or decals anywhere. It must not resemble any specific real model closely enough to be recognised.
 - The four views must be the same object: same proportions, same colours, same details.
-- View directions: front = looking at the vehicle's nose, back = looking at its tail, left = the vehicle's left side (driver's left), right = its right side.
+- View directions: front = looking at the object's front (a vehicle's nose, the headset's visor, the seat's and dashboard's side that faces forward in the car), back = the opposite side, left / right = the object's own left and right (driver's or wearer's left and right).
 - Keep wheels, rotors and propellers simple and present (they are replaced by CAD parts later), and show clean, closed panel lines where the body opens (doors, engine covers, hoods), because the shell will be cut along them.
 
-Vehicles:
+Objects (folder in brackets):
 
-1. `car` — compact four-door sedan, metallic silver paint, dark tinted windows, simple five-spoke wheels. Length about 4.6 m. Hood, doors and trunk lid with clear panel gaps.
-2. `moto` — naked street motorcycle (mid-size parallel-twin class), engine area left open, matte dark grey tank and red side panels, round headlight, no rider. Length about 2.1 m. Fuel tank, seat, side covers and headlight cowl drawn as clearly separate pieces.
-3. `steam` — small 0-6-0 tank steam locomotive with two outside cylinders, black boiler, dark red cab and buffer beams, single chimney, side water tanks. Length about 8 m. Smokebox door, cab and side tanks clearly separated from the boiler. Draw the cylinders and coupling rods simply; they are replaced by CAD parts.
-4. `heli` — light single-engine civil helicopter, five-seat cabin, skid landing gear, two-blade main rotor and tail rotor, white body with a blue lower band. Length about 10 m without rotors. Cabin doors and the engine cowling behind the main rotor mast with clear panel lines.
+1. `car/tripo-ref/body` — compact four-door sedan, metallic silver paint, dark tinted windows, simple five-spoke wheels. Length about 4.6 m. Hood, doors and trunk lid with clear panel gaps.
+2. `moto/tripo-ref/body` — naked street motorcycle (mid-size parallel-twin class), engine area left open, matte dark grey tank and red side panels, round headlight, no rider. Length about 2.1 m. Fuel tank, seat, side covers and headlight cowl drawn as clearly separate pieces.
+3. `steam/tripo-ref/body` — small 0-6-0 tank steam locomotive with two outside cylinders, black boiler, dark red cab and buffer beams, single chimney, side water tanks. Length about 8 m. Smokebox door, cab and side tanks clearly separated from the boiler. Draw the cylinders and coupling rods simply; they are replaced by CAD parts.
+4. `heli/tripo-ref/body` — light single-engine civil helicopter, five-seat cabin, skid landing gear, two-blade main rotor and tail rotor, white body with a blue lower band. Length about 10 m without rotors. Cabin doors and the engine cowling behind the main rotor mast with clear panel lines.
+5. `quest/tripo-ref/shell` — generic standalone mixed-reality headset front shell, about 184 mm wide, 100 mm tall, 90 mm deep, smooth matte white plastic with three small dark camera/sensor windows on the front, a soft grey fabric face cushion at the back, short stubs where the head strap attaches on each side (no strap). No lenses visible from the front.
+6. `car/tripo-ref/seat` — one front car bucket seat, dark grey fabric, separate headrest on two metal posts, seat base on a simple rail frame. About 0.55 m wide, 1.2 m tall.
+7. `car/tripo-ref/dashboard` — compact sedan dashboard without steering wheel, dark grey soft plastic, a flat instrument cluster hood in front of the driver (left-hand drive, so on the left), central air vents and a plain dark central screen, glovebox lid on the right. About 1.4 m wide. Screens show nothing.
 
 When finished, print the list of written files.
 
@@ -56,12 +59,12 @@ When finished, print the list of written files.
 | 順序 | 展品 | 外觀 | 機構 |
 |---|---|---|---|
 | 1 | bike | CAD + Blender（已完成） | CAD |
-| 2 | car | Tripo 外殼 | CAD：引擎、變速箱、差速器、轉向、懸吊 |
+| 2 | car | Tripo 外殼、座椅、儀表板 | CAD：引擎、變速箱、差速器、轉向、懸吊 |
 | 3 | steam | Tripo 外殼 | CAD：汽缸、Walschaerts 閥動連桿、動輪 |
 | 4 | heli | Tripo 外殼 | CAD：主旋翼、斜盤、尾旋翼傳動 |
 | 5 | moto | Tripo 外殼 | CAD：雙缸引擎、離合器、鏈條 |
 | 6 | jet（渦扇引擎） | CAD 旋轉體短艙 | CAD：風扇、壓縮機、渦輪、反推 |
 | 7 | watch | CAD | CAD：擒縱、齒輪系、自動盤 |
-| 8 | quest | CAD + Blender | CAD：鏡片、IPD 調整、電路板 |
+| 8 | quest | Tripo 外殼 | CAD：鏡片、IPD 調整、電路板 |
 
-前四個優先，示範時先拿得出三到四個完整的展品。每個都在活動期間從零重做，舊專案只當參考。
+bike、car、steam、heli 優先，示範時先拿得出三到四個完整的展品。每個都在活動期間從零重做，舊專案只當參考。
