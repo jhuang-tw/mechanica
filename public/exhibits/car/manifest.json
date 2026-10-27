@@ -1,0 +1,1115 @@
+{
+ "id": "car",
+ "name": "汽車",
+ "title": "汽車機構（1.8 L 四缸、五速手排）",
+ "model": "model.glb",
+ "thumb": "thumb.jpg",
+ "intro": "這是一台前輪驅動汽車的機構：引擎、變速箱、差速器、轉向和煞車。點零件看它是什麼，或問我「活塞怎麼讓輪子轉」。",
+ "suggest": [
+  "活塞怎麼讓輪子轉？",
+  "為什麼凸輪軸轉得比曲軸慢？",
+  "轉彎時差速器在做什麼？"
+ ],
+ "looksLike": "汽車、轎車、休旅車、汽車引擎、輪胎、煞車碟盤、方向盤、變速箱",
+ "parts": [
+  {
+   "id": "block",
+   "name": "汽缸體",
+   "en": "car engine cylinder block",
+   "info": "引擎的主體，裡面有四個汽缸。活塞在汽缸裡上下跑，冷卻水在汽缸外的水套裡流。",
+   "aliases": [
+    "引擎",
+    "缸體",
+    "汽缸"
+   ]
+  },
+  {
+   "id": "head",
+   "name": "汽缸蓋",
+   "en": "car cylinder head",
+   "info": "蓋在汽缸體上面，燃燒室、進排氣門和火星塞都在這裡。",
+   "aliases": [
+    "缸蓋"
+   ]
+  },
+  {
+   "id": "valve_cover",
+   "name": "氣門室蓋",
+   "en": "car valve cover",
+   "info": "蓋住凸輪軸和氣門機構，把機油關在裡面。",
+   "aliases": [
+    "搖臂蓋"
+   ]
+  },
+  {
+   "id": "oil_pan",
+   "name": "油底殼",
+   "en": "car oil pan",
+   "info": "引擎最下面的機油槽。機油從這裡被打上去潤滑曲軸、連桿和活塞。",
+   "aliases": [
+    "機油槽"
+   ]
+  },
+  {
+   "id": "crankshaft",
+   "name": "曲軸",
+   "en": "car crankshaft",
+   "info": "引擎的主軸。四根連桿接在偏心的曲柄銷上，把活塞的上下運動變成旋轉。",
+   "aliases": [
+    "主軸"
+   ]
+  },
+  {
+   "id": "crank_pulley",
+   "name": "曲軸皮帶輪",
+   "en": "car crankshaft pulley",
+   "info": "裝在曲軸前端，帶動正時皮帶和發電機、冷氣壓縮機的皮帶。",
+   "aliases": [
+    "皮帶輪"
+   ]
+  },
+  {
+   "id": "flywheel",
+   "name": "飛輪",
+   "en": "car flywheel",
+   "info": "很重的圓盤，存住轉動的慣性，讓四缸輪流做功時轉得平順；離合器也壓在它上面。",
+   "aliases": []
+  },
+  {
+   "id": "piston_1",
+   "name": "第 1 缸活塞",
+   "en": "car engine piston 1",
+   "info": "第 1 缸的活塞。燃燒的氣體把它往下推，推力經連桿轉動曲軸。",
+   "aliases": [
+    "活塞"
+   ]
+  },
+  {
+   "id": "piston_2",
+   "name": "第 2 缸活塞",
+   "en": "car engine piston 2",
+   "info": "第 2 缸的活塞。燃燒的氣體把它往下推，推力經連桿轉動曲軸。",
+   "aliases": [
+    "活塞"
+   ]
+  },
+  {
+   "id": "piston_3",
+   "name": "第 3 缸活塞",
+   "en": "car engine piston 3",
+   "info": "第 3 缸的活塞。燃燒的氣體把它往下推，推力經連桿轉動曲軸。",
+   "aliases": [
+    "活塞"
+   ]
+  },
+  {
+   "id": "piston_4",
+   "name": "第 4 缸活塞",
+   "en": "car engine piston 4",
+   "info": "第 4 缸的活塞。燃燒的氣體把它往下推，推力經連桿轉動曲軸。",
+   "aliases": [
+    "活塞"
+   ]
+  },
+  {
+   "id": "conrod_1",
+   "name": "第 1 缸連桿",
+   "en": "car engine connecting rod 1",
+   "info": "連接第 1 缸活塞和曲軸。上端跟著活塞直線上下，下端跟著曲柄銷繞圈，所以會左右擺。",
+   "aliases": [
+    "連桿"
+   ]
+  },
+  {
+   "id": "conrod_2",
+   "name": "第 2 缸連桿",
+   "en": "car engine connecting rod 2",
+   "info": "連接第 2 缸活塞和曲軸。上端跟著活塞直線上下，下端跟著曲柄銷繞圈，所以會左右擺。",
+   "aliases": [
+    "連桿"
+   ]
+  },
+  {
+   "id": "conrod_3",
+   "name": "第 3 缸連桿",
+   "en": "car engine connecting rod 3",
+   "info": "連接第 3 缸活塞和曲軸。上端跟著活塞直線上下，下端跟著曲柄銷繞圈，所以會左右擺。",
+   "aliases": [
+    "連桿"
+   ]
+  },
+  {
+   "id": "conrod_4",
+   "name": "第 4 缸連桿",
+   "en": "car engine connecting rod 4",
+   "info": "連接第 4 缸活塞和曲軸。上端跟著活塞直線上下，下端跟著曲柄銷繞圈，所以會左右擺。",
+   "aliases": [
+    "連桿"
+   ]
+  },
+  {
+   "id": "camshaft_intake",
+   "name": "進氣凸輪軸",
+   "en": "car intake camshaft",
+   "info": "軸上的凸輪按順序把進氣門頂開。它的轉速只有曲軸的一半，因為四行程每轉兩圈才進氣一次。",
+   "aliases": [
+    "凸輪軸",
+    "凸輪"
+   ]
+  },
+  {
+   "id": "camshaft_exhaust",
+   "name": "排氣凸輪軸",
+   "en": "car exhaust camshaft",
+   "info": "按順序頂開排氣門，讓燒完的廢氣出去。轉速也是曲軸的一半。",
+   "aliases": [
+    "凸輪軸"
+   ]
+  },
+  {
+   "id": "timing_belt",
+   "name": "正時皮帶",
+   "en": "car timing belt",
+   "info": "有齒的皮帶，讓凸輪軸跟曲軸保持準確的 1:2。斷了氣門和活塞會撞在一起。",
+   "aliases": [
+    "皮帶",
+    "正時"
+   ]
+  },
+  {
+   "id": "intake_manifold",
+   "name": "進氣歧管",
+   "en": "car intake manifold",
+   "info": "把空氣平均分給四個汽缸的管子。",
+   "aliases": [
+    "進氣管"
+   ]
+  },
+  {
+   "id": "exhaust_manifold",
+   "name": "排氣歧管",
+   "en": "car exhaust manifold",
+   "info": "把四個汽缸的廢氣收集到一根排氣管。",
+   "aliases": [
+    "排氣頭"
+   ]
+  },
+  {
+   "id": "exhaust",
+   "name": "排氣管",
+   "en": "car exhaust system",
+   "info": "廢氣經過觸媒轉換器淨化、消音器降低噪音，再從車尾排出。",
+   "aliases": [
+    "排氣",
+    "尾管",
+    "消音器"
+   ]
+  },
+  {
+   "id": "radiator",
+   "name": "水箱",
+   "en": "car radiator",
+   "info": "冷卻水在引擎吸熱後流到這裡，被迎面的風吹冷，再流回引擎。",
+   "aliases": [
+    "散熱器"
+   ]
+  },
+  {
+   "id": "battery",
+   "name": "電瓶",
+   "en": "car battery",
+   "info": "12 伏特電瓶，發動時供電給起動馬達，熄火時供應車上的電。",
+   "aliases": [
+    "電池"
+   ]
+  },
+  {
+   "id": "gearbox",
+   "name": "變速箱",
+   "en": "car gearbox housing",
+   "info": "包住齒輪組的外殼。橫置引擎的變速箱和差速器做在一起。",
+   "aliases": [
+    "變速器",
+    "變速箱殼"
+   ]
+  },
+  {
+   "id": "input_shaft",
+   "name": "輸入軸",
+   "en": "car gearbox input shaft",
+   "info": "離合器接上時跟著引擎轉，上面的齒輪帶動輸出軸上的檔位齒輪。",
+   "aliases": [
+    "主軸"
+   ]
+  },
+  {
+   "id": "output_shaft",
+   "name": "輸出軸",
+   "en": "car gearbox output shaft",
+   "info": "被選中的檔位齒輪帶著轉，再把動力送到差速器。",
+   "aliases": [
+    "副軸"
+   ]
+  },
+  {
+   "id": "gear_1",
+   "name": "一檔齒輪",
+   "en": "car gear 1",
+   "info": "輸出軸上的一檔齒輪：最大，扭力最大、最慢，用來起步。",
+   "aliases": [
+    "齒輪",
+    "一檔"
+   ]
+  },
+  {
+   "id": "gear_2",
+   "name": "二檔齒輪",
+   "en": "car gear 2",
+   "info": "輸出軸上的二檔齒輪：比一檔小一點。",
+   "aliases": [
+    "齒輪",
+    "二檔"
+   ]
+  },
+  {
+   "id": "gear_3",
+   "name": "三檔齒輪",
+   "en": "car gear 3",
+   "info": "輸出軸上的三檔齒輪：現在嚙合的檔位（畫成黃銅色）。",
+   "aliases": [
+    "齒輪",
+    "三檔"
+   ]
+  },
+  {
+   "id": "gear_4",
+   "name": "四檔齒輪",
+   "en": "car gear 4",
+   "info": "輸出軸上的四檔齒輪：接近一比一。",
+   "aliases": [
+    "齒輪",
+    "四檔"
+   ]
+  },
+  {
+   "id": "gear_5",
+   "name": "五檔齒輪",
+   "en": "car gear 5",
+   "info": "輸出軸上的五檔齒輪：最小，轉速低、最省油，用在高速。",
+   "aliases": [
+    "齒輪",
+    "五檔"
+   ]
+  },
+  {
+   "id": "differential",
+   "name": "差速器",
+   "en": "car differential",
+   "info": "大齒圈（59 齒）把轉速再降一次；裡面的小齒輪讓轉彎時外側輪轉得比內側快。",
+   "aliases": [
+    "差速"
+   ]
+  },
+  {
+   "id": "driveshaft_l",
+   "name": "左傳動軸",
+   "en": "car left driveshaft",
+   "info": "把差速器的動力送到左前輪，兩端的等速萬向節讓輪子能上下跳、左右轉。",
+   "aliases": [
+    "傳動軸",
+    "半軸"
+   ]
+  },
+  {
+   "id": "driveshaft_r",
+   "name": "右傳動軸",
+   "en": "car right driveshaft",
+   "info": "把差速器的動力送到右前輪。",
+   "aliases": [
+    "傳動軸",
+    "半軸"
+   ]
+  },
+  {
+   "id": "knuckle_fl",
+   "name": "左前轉向節",
+   "en": "car left front steering knuckle",
+   "info": "左前輪的支架，繞著傾斜的主銷轉動，前輪就轉向了。",
+   "aliases": [
+    "轉向節"
+   ]
+  },
+  {
+   "id": "knuckle_fr",
+   "name": "右前轉向節",
+   "en": "car right front steering knuckle",
+   "info": "右前輪的支架，繞著傾斜的主銷轉動，前輪就轉向了。",
+   "aliases": [
+    "轉向節"
+   ]
+  },
+  {
+   "id": "wheel_fl",
+   "name": "左前輪",
+   "en": "car left front wheel and tire",
+   "info": "左前輪。前輪負責出力和轉向。",
+   "aliases": [
+    "輪胎",
+    "輪子",
+    "車輪"
+   ]
+  },
+  {
+   "id": "disc_fl",
+   "name": "左前煞車碟盤",
+   "en": "car left front brake disc",
+   "info": "跟著左前輪一起轉的鐵盤，煞車時被卡鉗夾住。",
+   "aliases": [
+    "碟盤",
+    "煞車盤"
+   ]
+  },
+  {
+   "id": "caliper_fl",
+   "name": "左前煞車卡鉗",
+   "en": "car left front brake caliper",
+   "info": "踩煞車時油壓推動卡鉗裡的活塞，用煞車片夾住左前碟盤。",
+   "aliases": [
+    "卡鉗",
+    "煞車"
+   ]
+  },
+  {
+   "id": "wheel_fr",
+   "name": "右前輪",
+   "en": "car right front wheel and tire",
+   "info": "右前輪。前輪負責出力和轉向。",
+   "aliases": [
+    "輪胎",
+    "輪子",
+    "車輪"
+   ]
+  },
+  {
+   "id": "disc_fr",
+   "name": "右前煞車碟盤",
+   "en": "car right front brake disc",
+   "info": "跟著右前輪一起轉的鐵盤，煞車時被卡鉗夾住。",
+   "aliases": [
+    "碟盤",
+    "煞車盤"
+   ]
+  },
+  {
+   "id": "caliper_fr",
+   "name": "右前煞車卡鉗",
+   "en": "car right front brake caliper",
+   "info": "踩煞車時油壓推動卡鉗裡的活塞，用煞車片夾住右前碟盤。",
+   "aliases": [
+    "卡鉗",
+    "煞車"
+   ]
+  },
+  {
+   "id": "wheel_rl",
+   "name": "左後輪",
+   "en": "car left rear wheel and tire",
+   "info": "左後輪。後輪只跟著滾，不出力。",
+   "aliases": [
+    "輪胎",
+    "輪子",
+    "車輪"
+   ]
+  },
+  {
+   "id": "disc_rl",
+   "name": "左後煞車碟盤",
+   "en": "car left rear brake disc",
+   "info": "跟著左後輪一起轉的鐵盤，煞車時被卡鉗夾住。",
+   "aliases": [
+    "碟盤",
+    "煞車盤"
+   ]
+  },
+  {
+   "id": "caliper_rl",
+   "name": "左後煞車卡鉗",
+   "en": "car left rear brake caliper",
+   "info": "踩煞車時油壓推動卡鉗裡的活塞，用煞車片夾住左後碟盤。",
+   "aliases": [
+    "卡鉗",
+    "煞車"
+   ]
+  },
+  {
+   "id": "wheel_rr",
+   "name": "右後輪",
+   "en": "car right rear wheel and tire",
+   "info": "右後輪。後輪只跟著滾，不出力。",
+   "aliases": [
+    "輪胎",
+    "輪子",
+    "車輪"
+   ]
+  },
+  {
+   "id": "disc_rr",
+   "name": "右後煞車碟盤",
+   "en": "car right rear brake disc",
+   "info": "跟著右後輪一起轉的鐵盤，煞車時被卡鉗夾住。",
+   "aliases": [
+    "碟盤",
+    "煞車盤"
+   ]
+  },
+  {
+   "id": "caliper_rr",
+   "name": "右後煞車卡鉗",
+   "en": "car right rear brake caliper",
+   "info": "踩煞車時油壓推動卡鉗裡的活塞，用煞車片夾住右後碟盤。",
+   "aliases": [
+    "卡鉗",
+    "煞車"
+   ]
+  },
+  {
+   "id": "strut_fl",
+   "name": "左前避震支柱",
+   "en": "car left front strut",
+   "info": "彈簧加避震器做成一根支柱（麥花臣式），撐住車身又吸收路面震動。",
+   "aliases": [
+    "避震",
+    "支柱"
+   ]
+  },
+  {
+   "id": "control_arm_fl",
+   "name": "左前下控制臂",
+   "en": "car left front lower control arm",
+   "info": "把轉向節下端接到副車架，讓輪子可以上下跳但不會前後亂跑。",
+   "aliases": [
+    "控制臂",
+    "三角架"
+   ]
+  },
+  {
+   "id": "strut_fr",
+   "name": "右前避震支柱",
+   "en": "car right front strut",
+   "info": "彈簧加避震器做成一根支柱（麥花臣式），撐住車身又吸收路面震動。",
+   "aliases": [
+    "避震",
+    "支柱"
+   ]
+  },
+  {
+   "id": "control_arm_fr",
+   "name": "右前下控制臂",
+   "en": "car right front lower control arm",
+   "info": "把轉向節下端接到副車架，讓輪子可以上下跳但不會前後亂跑。",
+   "aliases": [
+    "控制臂",
+    "三角架"
+   ]
+  },
+  {
+   "id": "subframe",
+   "name": "副車架",
+   "en": "car front subframe",
+   "info": "托住引擎、變速箱和前懸吊的框架。",
+   "aliases": [
+    "副架"
+   ]
+  },
+  {
+   "id": "rear_axle",
+   "name": "後軸",
+   "en": "car rear axle beam",
+   "info": "扭力樑式後軸，左右後輪用一根會扭的樑連起來。",
+   "aliases": [
+    "後橋"
+   ]
+  },
+  {
+   "id": "spring_rl",
+   "name": "左後彈簧",
+   "en": "car left rear coil spring",
+   "info": "撐住車重，壓縮再彈回來吸收路面起伏。",
+   "aliases": [
+    "彈簧"
+   ]
+  },
+  {
+   "id": "shock_rl",
+   "name": "左後避震器",
+   "en": "car left rear shock absorber",
+   "info": "讓彈簧不要一直彈：油在裡面流過小孔，把彈跳的能量變成熱。",
+   "aliases": [
+    "避震器"
+   ]
+  },
+  {
+   "id": "spring_rr",
+   "name": "右後彈簧",
+   "en": "car right rear coil spring",
+   "info": "撐住車重，壓縮再彈回來吸收路面起伏。",
+   "aliases": [
+    "彈簧"
+   ]
+  },
+  {
+   "id": "shock_rr",
+   "name": "右後避震器",
+   "en": "car right rear shock absorber",
+   "info": "讓彈簧不要一直彈：油在裡面流過小孔，把彈跳的能量變成熱。",
+   "aliases": [
+    "避震器"
+   ]
+  },
+  {
+   "id": "steering_wheel",
+   "name": "方向盤",
+   "en": "car steering wheel",
+   "info": "轉方向盤，轉向柱帶動轉向機的小齒輪，推動齒條讓前輪轉。",
+   "aliases": [
+    "駕駛盤"
+   ]
+  },
+  {
+   "id": "steering_column",
+   "name": "轉向柱",
+   "en": "car steering column",
+   "info": "從方向盤通到轉向機的軸，中間有萬向節，撞車時會收縮。",
+   "aliases": [
+    "轉向軸"
+   ]
+  },
+  {
+   "id": "steering_rack",
+   "name": "轉向機",
+   "en": "car steering rack",
+   "info": "小齒輪咬著齒條，把方向盤的轉動變成左右推拉，經拉桿推動轉向節。",
+   "aliases": [
+    "齒條",
+    "方向機"
+   ]
+  },
+  {
+   "id": "fuel_tank",
+   "name": "油箱",
+   "en": "car fuel tank",
+   "info": "放在後座下面，裝汽油。油泵把油送到引擎的噴油嘴。",
+   "aliases": [
+    "油桶"
+   ]
+  }
+ ],
+ "drives": [
+  {
+   "id": "engine",
+   "name": "引擎怠速（曲軸、活塞、凸輪軸；空檔）",
+   "rpm": 30,
+   "moves": [
+    {
+     "part": "crankshaft",
+     "ratio": 1
+    },
+    {
+     "part": "flywheel",
+     "ratio": 1
+    },
+    {
+     "part": "camshaft_intake",
+     "ratio": 0.5
+    },
+    {
+     "part": "camshaft_exhaust",
+     "ratio": 0.5
+    },
+    {
+     "part": "input_shaft",
+     "ratio": 1
+    }
+   ]
+  },
+  {
+   "id": "power",
+   "name": "三檔行駛（引擎→變速箱→差速器→前輪）",
+   "rpm": 40,
+   "moves": [
+    {
+     "part": "crankshaft",
+     "ratio": 1
+    },
+    {
+     "part": "flywheel",
+     "ratio": 1
+    },
+    {
+     "part": "camshaft_intake",
+     "ratio": 0.5
+    },
+    {
+     "part": "camshaft_exhaust",
+     "ratio": 0.5
+    },
+    {
+     "part": "input_shaft",
+     "ratio": 1
+    },
+    {
+     "part": "output_shaft",
+     "ratio": -0.7193
+    },
+    {
+     "part": "gear_1",
+     "ratio": -0.3243
+    },
+    {
+     "part": "gear_2",
+     "ratio": -0.5077
+    },
+    {
+     "part": "gear_3",
+     "ratio": -0.7193
+    },
+    {
+     "part": "gear_4",
+     "ratio": -0.9216
+    },
+    {
+     "part": "gear_5",
+     "ratio": -1.1778
+    },
+    {
+     "part": "differential",
+     "ratio": 0.2438
+    },
+    {
+     "part": "driveshaft_l",
+     "ratio": 0.2438
+    },
+    {
+     "part": "driveshaft_r",
+     "ratio": 0.2438
+    },
+    {
+     "part": "wheel_fl",
+     "ratio": 0.2438
+    },
+    {
+     "part": "wheel_fr",
+     "ratio": 0.2438
+    },
+    {
+     "part": "wheel_rl",
+     "ratio": 0.2438
+    },
+    {
+     "part": "wheel_rr",
+     "ratio": 0.2438
+    }
+   ]
+  },
+  {
+   "id": "steer",
+   "name": "左右轉方向盤（前輪跟著轉）",
+   "swing": 180,
+   "period": 4,
+   "moves": [
+    {
+     "part": "steering_wheel",
+     "ratio": 1
+    },
+    {
+     "part": "steering_column",
+     "ratio": 1
+    },
+    {
+     "part": "knuckle_fl",
+     "ratio": 0.0667
+    },
+    {
+     "part": "knuckle_fr",
+     "ratio": 0.0667
+    }
+   ]
+  }
+ ],
+ "linkages": [
+  {
+   "type": "slider_crank",
+   "crank": "crankshaft",
+   "r": 0.044,
+   "L": 0.14,
+   "up": [
+    0,
+    1,
+    0
+   ],
+   "cylinders": [
+    {
+     "piston": "piston_1",
+     "rod": "conrod_1",
+     "phase": 0
+    },
+    {
+     "piston": "piston_2",
+     "rod": "conrod_2",
+     "phase": 3.14159265
+    },
+    {
+     "piston": "piston_3",
+     "rod": "conrod_3",
+     "phase": 3.14159265
+    },
+    {
+     "piston": "piston_4",
+     "rod": "conrod_4",
+     "phase": 0
+    }
+   ]
+  }
+ ],
+ "lessons": [
+  {
+   "id": "engine",
+   "title": "活塞怎麼讓曲軸轉",
+   "steps": [
+    {
+     "say": "汽缸裡的混合氣點燃膨脹，把活塞往下推。",
+     "parts": [
+      "piston_1",
+      "piston_2",
+      "piston_3",
+      "piston_4",
+      "block"
+     ],
+     "drive": "engine",
+     "speed": 0.3,
+     "quiz": {
+      "q": "混合氣在汽缸裡點燃後，活塞會？",
+      "options": [
+       [
+        "被往下推",
+        true,
+        "燃燒的氣體膨脹，把活塞往下推，這是四行程裡唯一出力的一步。"
+       ],
+       [
+        "被往上吸",
+        false,
+        "燃燒是膨脹，不是吸；往上是靠曲軸的慣性推回去。"
+       ]
+      ]
+     }
+    },
+    {
+     "say": "連桿把活塞的上下運動，變成曲軸的旋轉。看連桿下端繞著圈。",
+     "parts": [
+      "piston_1",
+      "piston_2",
+      "piston_3",
+      "piston_4",
+      "conrod_1",
+      "conrod_2",
+      "conrod_3",
+      "conrod_4",
+      "crankshaft"
+     ],
+     "drive": "engine",
+     "speed": 0.3,
+     "quiz": {
+      "q": "第 1、4 缸活塞在最上面時，第 2、3 缸在哪裡？",
+      "options": [
+       [
+        "最下面",
+        true,
+        "曲柄銷兩兩相差 180°，1、4 在上時 2、3 剛好在下，這樣比較平衡。"
+       ],
+       [
+        "也在最上面",
+        false,
+        "四缸一起上下會震得很厲害，所以曲柄銷錯開 180°。"
+       ],
+       [
+        "在正中間",
+        false,
+        "直列四缸的曲柄銷只有兩個方向：上或下。"
+       ]
+      ]
+     }
+    },
+    {
+     "say": "曲軸經正時皮帶帶動兩根凸輪軸，轉速只有一半，按時打開進氣門和排氣門。",
+     "parts": [
+      "crankshaft",
+      "crank_pulley",
+      "timing_belt",
+      "camshaft_intake",
+      "camshaft_exhaust"
+     ],
+     "drive": "engine",
+     "speed": 0.3,
+     "quiz": {
+      "q": "曲軸轉兩圈，凸輪軸轉幾圈？",
+      "options": [
+       [
+        "一圈",
+        true,
+        "四行程是進氣、壓縮、做功、排氣，曲軸要轉兩圈；每個氣門在這段時間只開一次。"
+       ],
+       [
+        "兩圈",
+        false,
+        "那樣每個氣門會開兩次，氣門時機就亂了。"
+       ],
+       [
+        "四圈",
+        false,
+        "凸輪軸比曲軸慢，不是快。"
+       ]
+      ]
+     }
+    },
+    {
+     "say": "飛輪存住慣性，四個汽缸照 1-3-4-2 輪流做功，曲軸每轉半圈就有一缸出力，轉得很平順。",
+     "parts": [
+      "flywheel",
+      "crankshaft",
+      "piston_1",
+      "piston_2",
+      "piston_3",
+      "piston_4"
+     ],
+     "drive": "engine",
+     "speed": 0.3
+    }
+   ]
+  },
+  {
+   "id": "power",
+   "title": "引擎的力氣怎麼到輪子",
+   "steps": [
+    {
+     "say": "引擎轉動曲軸和飛輪，離合器接上後，變速箱的輸入軸跟著轉。",
+     "parts": [
+      "crankshaft",
+      "flywheel",
+      "input_shaft"
+     ],
+     "drive": "power",
+     "speed": 0.4
+    },
+    {
+     "say": "輸入軸帶著現在嚙合的三檔齒輪，再帶動輸出軸，轉速變慢、力氣變大。",
+     "parts": [
+      "input_shaft",
+      "output_shaft",
+      "gear_1",
+      "gear_2",
+      "gear_3",
+      "gear_4",
+      "gear_5"
+     ],
+     "drive": "power",
+     "speed": 0.4,
+     "quiz": {
+      "q": "小齒輪帶動大齒輪，大齒輪會？",
+      "options": [
+       [
+        "轉得慢、力氣大",
+        true,
+        "齒數比就是槓桿比：轉得慢的那邊扭力變大，所以起步用一檔。"
+       ],
+       [
+        "轉得快、力氣大",
+        false,
+        "轉速和扭力只能互換，不能兩個都變大。"
+       ],
+       [
+        "跟小齒輪一樣快",
+        false,
+        "齒數不同，轉速就不同。"
+       ]
+      ]
+     }
+    },
+    {
+     "say": "差速器再減速一次，經左右傳動軸送到兩個前輪。這台是前輪驅動。",
+     "parts": [
+      "output_shaft",
+      "differential",
+      "driveshaft_l",
+      "driveshaft_r",
+      "wheel_fl",
+      "wheel_fr"
+     ],
+     "drive": "power",
+     "speed": 0.4,
+     "quiz": {
+      "q": "這台車是哪兩個輪子出力？",
+      "options": [
+       [
+        "前輪",
+        true,
+        "引擎、變速箱、差速器都在車頭，傳動軸直接接前輪，叫前輪驅動。"
+       ],
+       [
+        "後輪",
+        false,
+        "後面沒有傳動軸，後輪只是跟著滾。"
+       ],
+       [
+        "四個輪子",
+        false,
+        "四輪驅動需要後差速器和傳動軸，這台沒有。"
+       ]
+      ]
+     }
+    },
+    {
+     "say": "轉彎時外側輪要跑比較遠，差速器裡的小齒輪讓外側輪轉得比內側快。",
+     "parts": [
+      "differential",
+      "wheel_fl",
+      "wheel_fr"
+     ],
+     "drive": "power",
+     "speed": 0.4,
+     "quiz": {
+      "q": "轉彎時，外側輪和內側輪誰轉得快？",
+      "options": [
+       [
+        "外側輪",
+        true,
+        "外側的圓弧比較大，同一時間要跑更遠，所以要轉更多圈。"
+       ],
+       [
+        "內側輪",
+        false,
+        "內側的圓弧小，跑的距離短。"
+       ],
+       [
+        "一樣快",
+        false,
+        "一樣快的話輪胎會在地上拖，所以才需要差速器。"
+       ]
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "id": "steer",
+   "title": "方向盤怎麼讓前輪轉",
+   "steps": [
+    {
+     "say": "轉方向盤，轉向柱跟著轉。",
+     "parts": [
+      "steering_wheel",
+      "steering_column"
+     ],
+     "drive": "steer",
+     "speed": 0.5
+    },
+    {
+     "say": "轉向機的小齒輪推動齒條左右移動，經拉桿推著轉向節。",
+     "parts": [
+      "steering_column",
+      "steering_rack",
+      "knuckle_fl",
+      "knuckle_fr"
+     ],
+     "drive": "steer",
+     "speed": 0.5
+    },
+    {
+     "say": "轉向節繞著主銷轉，前輪就轉向了。方向盤轉 15 度，輪子大約轉 1 度。",
+     "parts": [
+      "knuckle_fl",
+      "knuckle_fr",
+      "wheel_fl",
+      "wheel_fr"
+     ],
+     "drive": "steer",
+     "speed": 0.5,
+     "quiz": {
+      "q": "方向盤轉 180 度（半圈），前輪大約轉幾度？",
+      "options": [
+       [
+        "大約 12 度",
+        true,
+        "轉向比約 15:1，180 ÷ 15 = 12 度，這樣小力就能轉動很重的輪子。"
+       ],
+       [
+        "180 度",
+        false,
+        "一比一的話方向盤會很重，而且一點點手抖車就亂轉。"
+       ],
+       [
+        "90 度",
+        false,
+        "輪子最多也只能轉 30 幾度。"
+       ]
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "id": "brake",
+   "title": "踩煞車到輪子停下",
+   "steps": [
+    {
+     "say": "踩下煞車踏板，煞車油把壓力傳到四個卡鉗。",
+     "parts": [
+      "caliper_fl",
+      "caliper_fr",
+      "caliper_rl",
+      "caliper_rr"
+     ]
+    },
+    {
+     "say": "卡鉗裡的活塞推出煞車片，夾住跟著輪子轉的碟盤。",
+     "parts": [
+      "caliper_fl",
+      "disc_fl",
+      "caliper_fr",
+      "disc_fr"
+     ],
+     "drive": "power",
+     "speed": 0.15,
+     "quiz": {
+      "q": "煞車卡鉗夾住的是？",
+      "options": [
+       [
+        "跟著輪子轉的碟盤",
+        true,
+        "碟盤鎖在輪子上，夾住它就等於拉住輪子。"
+       ],
+       [
+        "輪胎",
+        false,
+        "夾輪胎會把胎磨壞，煞車面是碟盤。"
+       ],
+       [
+        "傳動軸",
+        false,
+        "傳動軸只在前面有，而且煞車要四個輪子都能停。"
+       ]
+      ]
+     }
+    },
+    {
+     "say": "摩擦把車子的速度變成熱，碟盤可以熱到好幾百度，所以碟盤是鐵做的、還有通風。",
+     "parts": [
+      "disc_fl",
+      "disc_fr",
+      "disc_rl",
+      "disc_rr"
+     ]
+    }
+   ]
+  }
+ ]
+}

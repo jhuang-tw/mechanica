@@ -1,4 +1,4 @@
-// Rig + choreography on the placeholder bike, in Node (no renderer).
+// Rig + choreography on the real exhibit models, in Node (no renderer).
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -8,21 +8,44 @@ import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import { Rig } from '../src/rig.js';
 import { Choreo, cleanSteps } from '../src/choreo.js';
 
-const manifest = JSON.parse(readFileSync(new URL('../public/exhibits/bike/manifest.json', import.meta.url), 'utf8'));
-const glb = readFileSync(new URL('../public/exhibits/bike/model.glb', import.meta.url));
-const load = () => new Promise((ok, no) => new GLTFLoader().setMeshoptDecoder(MeshoptDecoder).parse(glb.buffer.slice(glb.byteOffset, glb.byteOffset + glb.byteLength), '', (g) => ok(g.scene), no));
+const read = (f) => readFileSync(new URL(`../public/exhibits/${f}`, import.meta.url));
+const exhibit = (id) => JSON.parse(read(`${id}/manifest.json`));
+const loadModel = (id) => { const b = read(`${id}/model.glb`); return new Promise((ok, no) => new GLTFLoader().setMeshoptDecoder(MeshoptDecoder).parse(b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength), '', (g) => ok(g.scene), no)); };
+const manifest = exhibit('bike'), load = () => loadModel('bike');
 const run = (rig, s, dt = 0.05) => { for (let t = 0; t < s; t += dt) rig.update(dt); };
 
-test('manifest: every part, drive move and lesson part exists in the model', async () => {
-  const root = await load();
-  const ids = new Set(manifest.parts.map((p) => p.id));
-  for (const id of ids) assert.ok(root.getObjectByName(id), `model has ${id}`);
-  for (const d of manifest.drives) for (const m of d.moves) assert.ok(ids.has(m.part), `${d.id}: ${m.part}`);
-  for (const l of manifest.lessons) for (const s of l.steps) {
-    for (const p of s.parts) assert.ok(ids.has(p), `${l.id}: ${p}`);
-    if (s.drive) assert.ok(manifest.drives.some((d) => d.id === s.drive));
-    if (s.quiz) assert.equal(s.quiz.options.filter((o) => o[1] === true).length, 1, `${s.quiz.q}: one right answer`);
+for (const id of JSON.parse(read('index.json')).exhibits) {
+  test(`${id}: every part, drive move, linkage and lesson part exists in the model`, async () => {
+    const m = exhibit(id), root = await loadModel(id);
+    const ids = new Set(m.parts.map((p) => p.id));
+    for (const p of ids) assert.ok(root.getObjectByName(p), `model has ${p}`);
+    for (const d of m.drives) for (const mv of d.moves) assert.ok(ids.has(mv.part), `${d.id}: ${mv.part}`);
+    for (const l of m.linkages || []) for (const c of l.cylinders) assert.ok(ids.has(c.piston) && ids.has(c.rod), JSON.stringify(c));
+    for (const l of m.lessons) for (const s of l.steps) {
+      for (const p of s.parts) assert.ok(ids.has(p), `${l.id}: ${p}`);
+      if (s.drive) assert.ok(m.drives.some((d) => d.id === s.drive));
+      if (s.quiz) assert.equal(s.quiz.options.filter((o) => o[1] === true).length, 1, `${s.quiz.q}: one right answer`);
+    }
+  });
+}
+
+test('car: pistons and rods follow the crank (slider-crank), steering swings the knuckles', async () => {
+  const m = exhibit('car'), rig = new Rig(await loadModel('car'), m), L = m.linkages[0];
+  const p1 = rig.parts.get('piston_1'), p2 = rig.parts.get('piston_2'), rod = rig.parts.get('conrod_1'), crank = rig.parts.get('crankshaft');
+  rig.update(0);
+  assert.ok(p1.obj.position.distanceTo(p1.base.pos) < 1e-9, 'at rest the model pose is kept');
+  for (const a of [0.7, Math.PI, 4]) {
+    crank.angle = a; rig.update(0);
+    assert.ok(Math.abs(p1.obj.position.distanceTo(rod.obj.position) - L.L) < 1e-6, `rod length kept at ${a}`);
   }
+  crank.angle = Math.PI; rig.update(0);
+  assert.ok(Math.abs(p1.base.pos.y - p1.obj.position.y - 2 * L.r) < 1e-6, 'cylinder 1 at bottom dead centre');
+  assert.ok(Math.abs(p2.obj.position.y - p2.base.pos.y - 2 * L.r) < 1e-6, 'cylinder 2 at top dead centre');
+  rig.reset(); rig.drive('steer', 1); run(rig, 1);
+  const k = rig.parts.get('knuckle_fl'), w = rig.parts.get('steering_wheel');
+  assert.ok(Math.abs(k.angle) > 0.05 && Math.abs(k.angle / w.angle - 0.0667) < 1e-6);
+  rig.reset(); run(rig, 0.1);
+  assert.equal(k.angle, 0);
 });
 
 test('drive turns the chain of parts at their ratios, reset puts everything back', async () => {

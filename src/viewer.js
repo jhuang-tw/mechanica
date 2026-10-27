@@ -21,7 +21,7 @@ export class Viewer {
     scene.background = new THREE.Color(0x10151c);
     scene.environment = new THREE.PMREMGenerator(r).fromScene(new RoomEnvironment(), 0.04).texture;
     const sun = new THREE.DirectionalLight(0xffffff, 1.6); sun.position.set(2, 4, 3);
-    const floor = new THREE.Mesh(new THREE.CircleGeometry(3, 64).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ color: 0x1b232d, roughness: 0.9 }));
+    const floor = this.floor = new THREE.Mesh(new THREE.CircleGeometry(3, 64).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ color: 0x1b232d, roughness: 0.9 }));
     this.stage = new THREE.Group();   // the exhibit sits on this; VR moves the stage, not the camera
     scene.add(sun, floor, this.stage);
     this.camera = new THREE.PerspectiveCamera(45, 1, 0.02, 100);
@@ -35,6 +35,11 @@ export class Viewer {
     r.setAnimationLoop(() => {
       const dt = Math.min(clock.getDelta(), 0.1);
       this.choreo?.update(dt); this.rig?.update(dt);
+      if (this.goal) {   // glide to a framing, then hand the camera back to the user
+        const k = Math.min(1, dt * 3);
+        this.controls.target.lerp(this.goal.target, k); this.camera.position.lerp(this.goal.pos, k);
+        if (this.camera.position.distanceTo(this.goal.pos) < 0.005) this.goal = null;
+      }
       this.controls.update();
       r.render(scene, this.camera);
     });
@@ -52,6 +57,7 @@ export class Viewer {
     this.model = gltf.scene;   // kept: the rig resets it on every visit
     this.stage.add(this.model);
     this.rig = new Rig(this.model, manifest);
+    this.rig.onIsolate = (ids) => this.focus(ids);
     this.choreo = new Choreo(this.rig);
     this.frame();
     return this.rig;
@@ -59,12 +65,31 @@ export class Viewer {
 
   // camera to a three-quarter view of the whole model
   frame() {
-    const box = new THREE.Box3().setFromObject(this.model), c = box.getCenter(new THREE.Vector3()), s = box.getSize(new THREE.Vector3()).length();
+    this.goal = null;
+    const box = new THREE.Box3().setFromObject(this.model), s = box.getSize(new THREE.Vector3()).length();
+    Object.assign(this.controls, { minDistance: s * 0.05, maxDistance: s * 4 });
+    this.floor.scale.setScalar(Math.max(1, s / 2.5));
+    this.fit(box, new THREE.Vector3(0.55, 0.35, 1).normalize());
+    this.camera.position.copy(this.goal.pos); this.controls.target.copy(this.goal.target); this.goal = null;
+    this.controls.update();
+  }
+  // glide to the given parts, keeping the current viewing direction
+  focus(ids) {
+    const box = new THREE.Box3();
+    for (const id of ids) { const p = this.rig.parts.get(id); if (p) box.expandByObject(p.obj); }
+    if (box.isEmpty()) return;
+    // look from the side those parts are on (an engine at the front is seen from the front, not through a wheel)
+    const out = box.getCenter(new THREE.Vector3()).sub(new THREE.Box3().setFromObject(this.model).getCenter(new THREE.Vector3())).setY(0);
+    const dir = this.camera.position.clone().sub(this.controls.target).normalize();
+    if (out.length() > 0.1) dir.addScaledVector(out.normalize(), 1.5).setY(0.5).normalize();
+    this.fit(box, dir);
+  }
+  fit(box, dir) {
+    const c = box.getCenter(new THREE.Vector3()), s = Math.max(box.getSize(new THREE.Vector3()).length(), 0.3);
     // far enough that the bounding sphere fits the narrower field of view (portrait phones: the horizontal one)
     const v = THREE.MathUtils.degToRad(this.camera.fov), fov = Math.min(v, 2 * Math.atan(Math.tan(v / 2) * this.camera.aspect));
-    this.controls.target.copy(c).y -= this.camera.aspect < 1 ? s * 0.22 : 0;   // portrait: the model sits above the bottom sheet
-    this.camera.position.copy(this.controls.target).add(new THREE.Vector3(0.55, 0.35, 1).normalize().multiplyScalar((s / 2) / Math.sin(fov / 2) * 0.95));
-    this.controls.update();
+    const target = c.clone(); target.y -= this.camera.aspect < 1 ? s * 0.22 : 0;   // portrait: the model sits above the bottom sheet
+    this.goal = { target, pos: target.clone().addScaledVector(dir, (s / 2) / Math.sin(fov / 2) * 0.95) };
   }
 
   // a tap (not a drag) on a part

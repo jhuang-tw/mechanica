@@ -16,6 +16,8 @@
 | `looksLike` | 真實世界裡像什麼（拍照比對用） |
 | `parts[]` | `{id, name, en, info, aliases[], axis?}`。`id` 就是模型的節點名稱；`en` 是給 SAM 的完整英文描述（"bicycle chain"）；`axis` 是零件自己的轉軸（零件本身座標），有 axis 的零件可以自由旋轉 |
 | `drives[]` | 真實機構 `{id, name, rpm, moves:[{part, ratio}]}`：速度 1 時第一個零件轉 rpm，其他乘 ratio |
+| `drives[].swing` | 有 `swing`（度）就是來回擺動（方向盤），`period` 秒一個來回；ratio 乘在角度上 |
+| `linkages[]` | 曲柄滑塊（引擎）`{type:"slider_crank", crank, r, L, up, cylinders:[{piston, rod, phase}]}`：活塞沿 `up` 滑動、連桿從曲柄銷擺到活塞銷，跟著 `crank` 的角度 |
 | `lessons[]` | 因果連動 `{id, title, steps:[{say, parts[], drive?, speed?, quiz?}]}`；`quiz` = `{q, options:[[文字, 是否正確, 為什麼]]}`，只有一個正確 |
 
 `test/rig.test.mjs` 會檢查 manifest 裡提到的每個零件都在模型裡。
@@ -24,6 +26,7 @@
 
 - 每個零件一個節點，名稱 = `parts[].id`，節點原點放在它的旋轉中心。
 - 公尺；+x 往前、+y 往上；自行車的輪軸沿 z，驅動側在 +z。
+- 節點 extras 可帶 `axis`（轉軸）和 `explode`（爆炸圖位移，公尺）；manifest 有寫的話以 manifest 為準。
 - 子零件跟著父零件動（自行車：`pedal_l`、`pedal_r` 是 `crank` 的子節點）。爆炸圖只移動最上層的零件。
 - 參考：`tools/placeholder-bike.mjs`（用幾何體做的暫用模型，完全照這份約定）。
 
