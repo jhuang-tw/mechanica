@@ -47,11 +47,11 @@ class Mesh:
     def sweep(self, pts, rad, mat, seg=10, caps=True):
         """Tube along a polyline; rad = number or per-point list."""
         rad = rad if isinstance(rad, list) else [rad] * len(pts)
-        rings, ref = [], None
+        rings, d0 = [], None
         for i, p in enumerate(pts):
             t = (pts[min(i + 1, len(pts) - 1)] - pts[max(i - 1, 0)]).normalized()
-            if ref is None: ref = Y if abs(t.dot(Y)) < 0.9 else V((1, 0, 0))
-            rings.append(self.ring(p, t, rad[i], seg, ref)); ref = (rings[-1][0].co - p).normalized()
+            ref = (Y if abs(t.dot(Y)) < 0.9 else V((1, 0, 0))) if d0 is None else d0.cross(t)   # keeps vertex 0 on the same side: no twist
+            rings.append(self.ring(p, t, rad[i], seg, ref)); d0 = (rings[-1][0].co - p).normalized()
         for a, b in zip(rings, rings[1:]): self.bridge(a, b, mat)
         if caps: self.cap(rings[0], mat, True); self.cap(rings[-1], mat)
 
