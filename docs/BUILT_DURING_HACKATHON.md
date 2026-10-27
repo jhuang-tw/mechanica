@@ -27,6 +27,7 @@ None of its code, models or media are in this repository; everything here was re
 | Watch exhibit app side: manifest (24 parts, 3 lessons with quiz), going train at the real ratios (seconds 60×, hour 1/12), balance ±270° with the pallet fork flicking ±10° at twice its rate (new per-move swing `period`), rotor, crown and bezel drives | — | `deeb1fe` | 2026-10-28 |
 | Steam shell app side: 8 shell parts with explanations, one-way open drive (smokebox door swings out, cab roof lifts), a smokebox-door step in the blastpipe lesson | — | `321cff6` | 2026-10-28 |
 | Moto exhibit app side: manifest (39 parts, 4 lessons with quiz), 270-degree parallel twin on the slider-crank linkage along the 15-degree bore, cams at half crank, primary 32/58, 1st and 6th gear through the 15/43 chain to both wheels, steering about the raked axis, swingarm | — | `823404b` | 2026-10-28 |
+| Heli shell app side: 10 shell parts with explanations, one-way open drive (four cabin doors swing out 70 degrees), intro points to explode | — | `160d3b1` | 2026-10-28 |
 | ⛓ Cause-and-effect lessons and ❓ guess-first quiz (from the manifest) | — | `44fe640` | 2026-10-27 |
 | Voice and text questions in the app, spoken answers, AI demo playback | Muse Spark, Muse Voice Transcribe (via server) | `44fe640` | 2026-10-27 |
 | Bicycle exhibit: manifest (18 parts, 2 drives, 2 lessons with quiz), placeholder model script | — | `7dcf6c0` | 2026-10-27 |
