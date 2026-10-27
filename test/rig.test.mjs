@@ -160,3 +160,10 @@ test('watch: seconds hand 60x and hour hand 1/12 of the minute hand; the fork fl
   assert.ok(Math.abs(part('pallet_fork').angle - (10 * Math.PI) / 180) < 1e-6);
   assert.ok(Math.abs(part('balance').angle - (270 * Math.PI) / 180 * Math.sin(Math.PI / 4)) < 1e-6);
 });
+
+test('steam: the smokebox door swings out to the front and the cab roof lifts at the back', async () => {
+  const rig = new Rig(await loadModel('steam'), exhibit('steam')), q = (id) => rig.parts.get(id).obj.quaternion;
+  rig.drive('open', 1); rig.update(3);   // half the 6 s period: fully open
+  assert.ok(new THREE.Vector3(0, 0, -1).applyQuaternion(q('smokebox_door')).x > 0.9, 'door edge swings forward');
+  assert.ok(new THREE.Vector3(-1, 0, 0).applyQuaternion(q('cab_roof')).y > 0.5, 'roof rear edge lifts');
+});

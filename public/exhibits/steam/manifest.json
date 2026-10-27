@@ -4,11 +4,12 @@
  "title": "蒸汽火車頭（0-6-0 水櫃式）",
  "model": "model.glb",
  "thumb": "thumb.jpg",
- "intro": "這是一台 0-6-0 蒸汽火車頭的機構：火箱、煙管、汽缸、連桿和華氏閥動裝置。問我「蒸汽怎麼讓輪子轉」。",
+ "intro": "這是一台 0-6-0 水櫃式蒸汽火車頭。拆開（🧩）就看得到火箱、煙管、汽缸、連桿和華氏閥動裝置。問我「蒸汽怎麼讓輪子轉」。",
  "suggest": [
   "蒸汽怎麼讓輪子轉？",
   "為什麼左右兩邊的曲柄差 90 度？",
-  "蒸汽火車怎麼倒車？"
+  "蒸汽火車怎麼倒車？",
+  "煙箱門打開裡面是什麼？"
  ],
  "looksLike": "火車、蒸汽火車、火車頭、蒸汽機、鐵道車輛、鐵軌",
  "parts": [
@@ -335,6 +336,90 @@
     "軌道",
     "鐵路"
    ]
+  },
+  {
+   "id": "footplate",
+   "name": "走板",
+   "en": "steam locomotive footplate",
+   "info": "車架上面那一圈平台，司爐和檢修人員可以沿著它走到車頭。",
+   "aliases": [
+    "平台",
+    "踏板"
+   ]
+  },
+  {
+   "id": "boiler_cladding",
+   "name": "鍋爐外殼",
+   "en": "steam locomotive boiler cladding",
+   "info": "包在鍋爐外面的薄鐵皮，裡面墊著隔熱層，讓熱留在鍋爐裡。拆開（🧩）就看得到裡面的火箱和煙管。",
+   "aliases": [
+    "鍋爐",
+    "外殼",
+    "鍋爐殼"
+   ]
+  },
+  {
+   "id": "smokebox",
+   "name": "煙箱和煙囪",
+   "en": "steam locomotive smokebox and chimney",
+   "info": "鍋爐最前面的圓筒。煙管裡的熱煙到這裡集合，再被排汽管噴出的蒸汽一起抽上煙囪。",
+   "aliases": [
+    "煙箱",
+    "煙囪",
+    "煙筒"
+   ]
+  },
+  {
+   "id": "smokebox_door",
+   "name": "煙箱門",
+   "en": "steam locomotive smokebox door",
+   "info": "車頭正面的圓門，鉸鏈在右邊。打開來可以清掉煙箱裡積的煤灰。",
+   "aliases": [
+    "煙箱門",
+    "前門",
+    "門"
+   ]
+  },
+  {
+   "id": "tank_l",
+   "name": "左水櫃",
+   "en": "steam locomotive left side tank",
+   "info": "鍋爐旁邊的水櫃，裝鍋爐要用的水。這種把水櫃背在身上的車頭叫「水櫃式機車」，不用另外拖煤水車。",
+   "aliases": [
+    "水櫃",
+    "水箱"
+   ]
+  },
+  {
+   "id": "tank_r",
+   "name": "右水櫃",
+   "en": "steam locomotive right side tank",
+   "info": "右邊的水櫃，和左邊的連通。",
+   "aliases": [
+    "水櫃",
+    "水箱"
+   ]
+  },
+  {
+   "id": "cab",
+   "name": "司機室",
+   "en": "steam locomotive cab",
+   "info": "司機和司爐站的地方。前面是火箱的爐門，司機在這裡操作調節閥和換向桿。",
+   "aliases": [
+    "駕駛室",
+    "司機室",
+    "車廂"
+   ]
+  },
+  {
+   "id": "cab_roof",
+   "name": "司機室頂",
+   "en": "steam locomotive cab roof",
+   "info": "司機室的屋頂，鉸鏈在前緣，可以往上掀開。",
+   "aliases": [
+    "屋頂",
+    "車頂"
+   ]
   }
  ],
  "drives": [
@@ -354,6 +439,23 @@
     {
      "part": "wheelset_3",
      "ratio": 1
+    }
+   ]
+  },
+  {
+   "id": "open",
+   "name": "打開煙箱門和司機室頂",
+   "swing": 100,
+   "period": 6,
+   "oneWay": true,
+   "moves": [
+    {
+     "part": "smokebox_door",
+     "ratio": -1
+    },
+    {
+     "part": "cab_roof",
+     "ratio": 0.5
     }
    ]
   }
@@ -654,6 +756,16 @@
        ]
       ]
      }
+    },
+    {
+     "say": "打開煙箱門，就看得到排汽管：每一口廢蒸汽從這裡往上噴，把煙一起抽上煙囪，火也就燒得更旺。",
+     "parts": [
+      "smokebox_door",
+      "smokebox",
+      "blastpipe"
+     ],
+     "drive": "open",
+     "speed": 1
     }
    ]
   }
