@@ -102,8 +102,8 @@ def make_objects():
         ob['explode'] = g(p['explode'])
     for pid, p in PARTS.items():
         if p['parent']:
-            ob, par = obs[pid], obs[p['parent']]
-            ob.parent = par; ob.location = ob.location - par.location   # no rotations anywhere: offsets subtract
+            ob, par, pp = obs[pid], obs[p['parent']], PARTS[p['parent']]['pivot'] or V((0, 0, 0))
+            ob.parent = par; ob.location = (p['pivot'] or V((0, 0, 0))) - pp   # no rotations anywhere: world pivots subtract (chains too)
     return obs
 
 def lights_camera(res, engine):
@@ -151,7 +151,9 @@ def run(script, build, views, thumb_view):
         with open(mf, encoding='utf-8') as f: ids = {p['id'] for p in json.load(f)['parts']}
         assert ids == set(PARTS), f'manifest vs model: missing {ids - set(PARTS)}, extra {set(PARTS) - ids}'
     make_objects()
-    if '--preview' in sys.argv:   # look first, export later
+    if '--preview' in sys.argv:   # look first, export later; `--hide a,b` leaves those parts out of the shots
+        hide = sys.argv[sys.argv.index('--hide') + 1].split(',') if '--hide' in sys.argv else []
+        for pid in hide: bpy.data.objects[pid].hide_render = True
         preview(os.path.join(here, 'preview'), views); return
     os.makedirs(out, exist_ok=True)
     bpy.ops.export_scene.gltf(filepath=os.path.join(here, 'model.raw.glb'), export_format='GLB', export_extras=True, export_yup=True,
