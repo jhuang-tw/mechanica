@@ -1,0 +1,39 @@
+# Built during the hackathon (Oct 26 – Nov 4, 2026)
+
+Every line of code and every asset in this repository was created during the Meta Global AI Developer Hackathon (Indie track).
+The repository was created on `<date>`; its first commit is `<hash>`. The git history is the record.
+
+An earlier personal prototype (a private VR mechanics explorer, started 2026-10-20) was used only as a design reference.
+None of its code, models or media are in this repository; everything here was rewritten from scratch.
+
+<!-- Team notes (中文，提交前刪掉)：
+- 新 repo 是從零重寫，舊專案只當參考。現在 C:\AI\mechanica 的「舊快照」基底（舊 c87ab01）不能進新 repo。
+- 每做完一個功能就在下表加一列：功能 → commit 範圍 → 日期。
+- 舊專案 10-26 之後的 commit（CAD 傳動、Meta providers、SAM 遮罩、AI 編排）雖然在活動期間，但在舊 repo 裡，為了乾淨一律在新 repo 重寫，不搬。
+-->
+
+## Features → commits
+| Feature | Meta model / tool | Commits | Date |
+|---|---|---|---|
+| Mobile-first app shell (phone + Quest via IWSDK) | Meta IWSDK | `<range>` | `<date>` |
+| Bicycle exhibit: drivetrain, gears, derailleurs, brakes, freehub, removable parts | — | `<range>` | `<date>` |
+| Photo → machine recognition | Muse Spark vision | `<range>` | `<date>` |
+| Photo → part masks linked to 3D parts | SAM 3.1 | `<range>` | `<date>` |
+| Q&A agent that drives the exhibit | Muse Spark tool calling | `<range>` | `<date>` |
+| AI-choreographed part demos | Muse Spark structured output | `<range>` | `<date>` |
+| Voice questions | Muse Voice Transcribe | `<range>` | `<date>` |
+
+## Third-party (unmodified dependencies, used under their licenses)
+| Package | License |
+|---|---|
+| @iwsdk/core | `<license>` |
+| three (super-three) | MIT |
+| Vite | MIT |
+| `<others>` | |
+
+## Assets
+| Asset | Made with | Rights |
+|---|---|---|
+| Bicycle model | `<script in tools/>` | Ours |
+| Voice-over | `<Jim / TTS service>` | `<terms>` |
+| Music | `<source>` | Royalty-free |
