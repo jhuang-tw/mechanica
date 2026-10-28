@@ -1,5 +1,6 @@
 // Browser media helpers: hold-to-talk recording as 16 kHz mono WAV (what Meta speech-to-text takes),
 // a phone photo shrunk to a small JPEG, and spoken answers.
+import { isEn } from './i18n.js';
 
 export class Recorder {
   async start() {
@@ -43,13 +44,18 @@ export async function shrink(file, max = 768) {
   return new Promise((ok) => c.toBlob(ok, 'image/jpeg', 0.8));
 }
 
+// the page's language picks the voice: Taiwan Mandarin, or English (the natural-sounding system voices first)
 let voice;
+const pickVoice = (want, any) => {
+  const vs = speechSynthesis.getVoices(), good = (v) => /natural|neural|premium|enhanced|google/i.test(v.name);
+  return vs.find((v) => want.test(v.lang) && good(v)) || vs.find((v) => want.test(v.lang)) || vs.find((v) => any.test(v.lang));
+};
 export function speak(text) {
   if (!('speechSynthesis' in window)) return;
   speechSynthesis.cancel();
   if (!text) return;
-  voice ||= speechSynthesis.getVoices().find((v) => /zh[-_]TW/i.test(v.lang)) || speechSynthesis.getVoices().find((v) => /^zh/i.test(v.lang));
-  const u = Object.assign(new SpeechSynthesisUtterance(text), { lang: 'zh-TW', rate: 1.05 });
+  voice ||= isEn ? pickVoice(/en[-_]US/i, /^en/i) : pickVoice(/zh[-_]TW/i, /^zh/i);
+  const u = Object.assign(new SpeechSynthesisUtterance(text), { lang: isEn ? 'en-US' : 'zh-TW', rate: isEn ? 1 : 1.05 });
   if (voice) u.voice = voice;
   speechSynthesis.speak(u);
 }

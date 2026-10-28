@@ -25,6 +25,7 @@ async function body(req, max) {
   return Buffer.concat(chunks);
 }
 const str = (v, max) => (typeof v === 'string' ? v : '').slice(0, max);
+const en = (b) => (b.lang === 'en' ? 'en' : undefined);
 
 // Spend guard for a public build: model-backed calls per visitor and per server, per UTC day.
 // cf-connecting-ip can be spoofed without Cloudflare in front, so the server-wide cap is the real ceiling.
@@ -40,42 +41,43 @@ export function overBudget(who, day = new Date().toISOString().slice(0, 10)) {
 async function api(req, res, path, q) {
   if (path === '/api/status') return send(res, 200, { meta: configured() });
   if (req.method !== 'POST') return send(res, 405, { error: 'POST only' });
-  if (overBudget(String(req.headers['cf-connecting-ip'] || req.socket.remoteAddress))) return send(res, 429, { error: '今天的 AI 額度用完了，明天再來。' });
+  const lang = q.get('lang') === 'en' ? 'en' : undefined;   // JSON bodies carry their own lang
+  if (overBudget(String(req.headers['cf-connecting-ip'] || req.socket.remoteAddress))) return send(res, 429, { error: lang ? "Today's AI allowance is used up. Come back tomorrow." : '今天的 AI 額度用完了，明天再來。' });
   const [mime] = (req.headers['content-type'] || '').toLowerCase().split(/\s*;/);
   try {
     if (path === '/api/identify' || path === '/api/segment') {   // raw photo upload; photos are never saved
       if (!/^image\/(jpeg|png|webp)$/.test(mime)) return send(res, 415, { error: 'image body expected' });
       const image = (await body(req, 6 << 20)).toString('base64');
-      if (path === '/api/identify') return send(res, 200, await identify({ image, mime }));
+      if (path === '/api/identify') return send(res, 200, await identify({ image, mime, lang }));
       return send(res, 200, await segment({ image, mime, exhibit: str(q.get('exhibit'), 20), parts: q.getAll('part').map((p) => str(p, 40)) }));
     }
     if (path.endsWith('/stt')) {
       if (mime !== 'audio/wav') return send(res, 415, { error: 'audio/wav body expected' });
-      return send(res, 200, await transcribe({ wav: await body(req, 2 << 20), exhibit: str(q.get('exhibit'), 20) }));
+      return send(res, 200, await transcribe({ wav: await body(req, 2 << 20), exhibit: str(q.get('exhibit'), 20), lang }));
     }
     if (path === '/api/ask') {
       const b = JSON.parse(await body(req, 32 << 10));
       exhibit(str(b.exhibit, 20));   // unknown exhibit -> 400 before any model call
-      const history = (Array.isArray(b.history) ? b.history : []).slice(-4).map((m) => ({ role: m.role === 'assistant' ? 'assistant' : 'user', content: str(m.content, 400) }));
-      return send(res, 200, await choreograph({ exhibit: b.exhibit, text: str(b.text, 300), pointed: str(b.pointed, 60), history }));
+      const history = (Array.isArray(b.history) ? b.history : []).slice(-4).map((m) => ({ role: m.role === 'assistant' ? 'assistant' : 'user', content: str(m.content, 800) }));
+      return send(res, 200, await choreograph({ exhibit: b.exhibit, text: str(b.text, 600), pointed: str(b.pointed, 60), history, lang: en(b) }));
     }
     if (path === '/api/explain') {
       const b = JSON.parse(await body(req, 16 << 10));
-      return send(res, 200, await explainBack({ exhibit: str(b.exhibit, 20), lesson: str(b.lesson, 40), text: str(b.text, 600) }));
+      return send(res, 200, await explainBack({ exhibit: str(b.exhibit, 20), lesson: str(b.lesson, 40), text: str(b.text, 1200), lang: en(b) }));
     }
     if (path === '/api/fix') {
       const b = JSON.parse(await body(req, 32 << 10));
       exhibit(str(b.exhibit, 20));
-      const history = (Array.isArray(b.history) ? b.history : []).slice(-4).map((m) => ({ role: m.role === 'assistant' ? 'assistant' : 'user', content: str(m.content, 400) }));
+      const history = (Array.isArray(b.history) ? b.history : []).slice(-4).map((m) => ({ role: m.role === 'assistant' ? 'assistant' : 'user', content: str(m.content, 800) }));
       const solved = (Array.isArray(b.solved) ? b.solved : []).slice(-16).map((k) => str(k, 40)).filter(Boolean);
-      return send(res, 200, await fix({ exhibit: b.exhibit, fault: str(b.fault, 40), stage: str(b.stage, 10), text: str(b.text, 300), pointed: str(b.pointed, 60), history, solved }));
+      return send(res, 200, await fix({ exhibit: b.exhibit, fault: str(b.fault, 40), stage: str(b.stage, 10), text: str(b.text, 600), pointed: str(b.pointed, 60), history, solved, lang: en(b) }));
     }
     if (path === '/api/tutor') {
       const b = JSON.parse(await body(req, 32 << 10));
       exhibit(str(b.exhibit, 20));
-      const history = (Array.isArray(b.history) ? b.history : []).slice(-6).map((m) => ({ role: m.role === 'assistant' ? 'assistant' : 'user', content: str(m.content, 400) }));
+      const history = (Array.isArray(b.history) ? b.history : []).slice(-6).map((m) => ({ role: m.role === 'assistant' ? 'assistant' : 'user', content: str(m.content, 800) }));
       const known = (Array.isArray(b.known) ? b.known : []).slice(-12).map((k) => ({ concept: str(k?.concept, 20), verdict: ['right', 'partial', 'wrong'].includes(k?.verdict) ? k.verdict : 'wrong' })).filter((k) => k.concept);
-      return send(res, 200, await tutor({ exhibit: b.exhibit, answer: str(b.answer, 300), history, known, focus: str(b.focus, 40) }));
+      return send(res, 200, await tutor({ exhibit: b.exhibit, answer: str(b.answer, 600), history, known, focus: str(b.focus, 40), lang: en(b) }));
     }
     return send(res, 404, { error: 'unknown endpoint' });
   } catch (e) {

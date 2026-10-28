@@ -1,0 +1,85 @@
+{
+ "name": "VR headset",
+ "title": "VR headset (standalone)",
+ "intro": "This is a standalone VR headset taken apart: displays, lenses, tracking cameras, processor and cooling. Ask me \"How does it know where I am?\"",
+ "suggest": ["How does it know where I am?", "Why does it need lenses?", "What is IPD?"],
+ "looksLike": "VR headset, VR goggles, virtual reality headset, MR headset",
+ "parts": {
+  "front_cover": { "name": "Front cover", "info": "The outermost panel, hiding the cameras and the cooling vents.", "aliases": ["cover", "front panel"] },
+  "housing": { "name": "Housing", "info": "The main shell. It wraps all the parts and decides how the weight is spread.", "aliases": ["shell", "case"] },
+  "midframe": { "name": "Midframe", "info": "The internal skeleton. The mainboard, lens modules and battery all bolt to it, keeping them precisely in place.", "aliases": ["frame", "skeleton"] },
+  "mainboard": { "name": "Mainboard", "info": "The headset's circuit board, with the processor, memory, storage and wireless chips soldered on.", "aliases": ["motherboard", "logic board", "circuit board"] },
+  "soc": { "name": "Processor (SoC)", "info": "CPU, GPU and AI processing on one chip. It draws two images more than 90 times a second while working out where your head is.", "aliases": ["processor", "chip", "CPU", "GPU"] },
+  "memory": { "name": "Memory", "info": "Holds the data the processor is using right now. Very fast, and wiped when the power goes off.", "aliases": ["RAM", "memory"] },
+  "storage": { "name": "Storage", "info": "Holds apps, games and videos, and keeps them with the power off.", "aliases": ["flash", "storage", "drive"] },
+  "wifi": { "name": "Wireless chip", "info": "Connects to the internet, downloads apps and talks to the controllers, no cables needed.", "aliases": ["Wi-Fi", "WiFi", "Bluetooth", "wireless"] },
+  "heatsink": { "name": "Heatsink", "info": "A metal plate on the processor that draws the heat away quickly and hands it to the fan.", "aliases": ["heat sink", "cooler"] },
+  "fan": { "name": "Fan", "info": "Pulls the hot air from the heatsink out of the headset.", "aliases": ["cooling fan"] },
+  "fan_rotor": { "name": "Fan blades", "info": "Small blades spinning at high speed. The busier the processor, the faster they spin.", "aliases": ["blades", "impeller"] },
+  "cameras": { "name": "Tracking cameras", "info": "The cameras on the front watch the room all the time and work out from features in the image where your head is and where it's facing. They track your hands too.", "aliases": ["cameras", "camera"] },
+  "depth_sensor": { "name": "Depth sensor", "info": "Measures how far away things in the room are, so virtual objects can sit on a real table and hide behind a real wall.", "aliases": ["depth", "sensor"] },
+  "battery": { "name": "Battery", "info": "The lithium battery inside the body, good for about two hours of play.", "aliases": ["battery", "power"] },
+  "flex_cables": { "name": "Flex cables", "info": "Very thin, bendable ribbon cables connecting the displays, cameras and buttons to the mainboard.", "aliases": ["ribbon cables", "cables"] },
+  "ipd_rail": { "name": "IPD rail", "info": "The two lens modules slide left and right on this rail to match the distance between each person's eyes.", "aliases": ["rail", "IPD"] },
+  "eye_carriage_l": { "name": "Left lens module", "info": "The left eye's display and lens built into one module that slides on the IPD rail.", "aliases": ["lens module", "left eye"] },
+  "eye_carriage_r": { "name": "Right lens module", "info": "The right eye's display and lens built into one module that slides on the IPD rail.", "aliases": ["lens module", "right eye"] },
+  "lens_l": { "name": "Left lens", "info": "The screen is only a few centimetres from your eye, too close to focus on. The lens makes it look like a big screen over a metre away.", "aliases": ["lens"] },
+  "lens_r": { "name": "Right lens", "info": "Like the left lens, it makes the screen right in front of your eye look far away.", "aliases": ["lens"] },
+  "display_l": { "name": "Left display", "info": "The image for the left eye only. It's drawn from a very slightly different angle than the right eye's, and your brain combines the two into 3D.", "aliases": ["screen", "display"] },
+  "display_r": { "name": "Right display", "info": "The image for the right eye only.", "aliases": ["screen", "display"] },
+  "ipd_wheel": { "name": "IPD wheel", "info": "Turn it and the two lens modules slide out or in together to line up with your pupils.", "aliases": ["wheel", "IPD adjustment"] },
+  "face_cushion": { "name": "Face cushion", "info": "The soft pad against your face. It blocks light and keeps the headset comfortable.", "aliases": ["face pad", "foam", "cushion"] },
+  "side_arms": { "name": "Side arms", "info": "They reach back from the body, connect to the strap and hold the speakers.", "aliases": ["arms", "temples"] },
+  "speakers": { "name": "Speakers", "info": "Beside your ears without covering them. The sound changes direction as you turn your head (spatial audio).", "aliases": ["speaker", "audio", "sound"] },
+  "buttons": { "name": "Buttons", "info": "The power and volume buttons.", "aliases": ["power button", "button"] },
+  "strap": { "name": "Head strap", "info": "Spreads the weight over your head so the headset doesn't press on your nose.", "aliases": ["strap", "band"] }
+ },
+ "drives": {
+  "cooling": "Cooling fan",
+  "ipd": "Adjusting the IPD (58–70 mm)"
+ },
+ "lessons": {
+  "see": { "title": "How you see in 3D", "steps": [
+   { "say": "Each eye has its own display, with images from very slightly different angles, just like your two eyes see the real world.",
+     "quiz": { "q": "Why does each eye see a different image?", "options": [
+      ["The brain uses the difference to work out distance", "That's binocular disparity. The bigger the difference between the two images, the closer things look."],
+      ["To make the picture brighter", "Brightness comes from the display, not from the images being different."],
+      ["To save power", "Drawing two images actually uses more power; it's for depth."]] } },
+   { "say": "The screen is only a few centimetres from your eye. The lens pushes it out to what looks like over a metre away, so your eye can focus.",
+     "quiz": { "q": "What happens if you remove the lens and look straight at the screen?", "options": [
+      ["It's too close to focus on, so it's all a blur", "Your eye can only focus down to about 10 cm; the lens makes the image look far away."],
+      ["The picture gets bigger", "It gets blurry, not bigger."],
+      ["No difference", "A big difference: your eye can't focus at a few centimetres."]] } },
+   { "say": "Everyone's eyes are a different distance apart. Turn the IPD wheel and the two lens modules slide out or in together to line up with your pupils." }
+  ] },
+  "track": { "title": "How it knows where you are", "steps": [
+   { "say": "The tracking cameras on the front watch the room all the time and remember features like room corners and table edges.",
+     "quiz": { "q": "With no external sensors, how does the headset know you've taken a step forward?", "options": [
+      ["The cameras see the room's features move backwards", "How the features move tells it how you moved. That's called inside-out tracking."],
+      ["GPS", "GPS doesn't work indoors, and it's only accurate to a few metres."],
+      ["Wi-Fi signals", "Wi-Fi is for the internet; it isn't precise enough to track your head."]] } },
+   { "say": "Hundreds of times a second the processor combines the camera images with the motion sensors to work out your head's position and direction, then draws the view from that angle." },
+   { "say": "The depth sensor measures the shape of the room, so virtual things can sit on a real table." }
+  ] },
+  "cool": { "title": "Why it needs a fan", "steps": [
+   { "say": "Drawing two images while tracking takes a lot of power, and all of it ends up as heat." },
+   { "say": "The heatsink draws the heat away from the chip, and the fan blows the hot air out of the headset.",
+     "quiz": { "q": "If the cooling isn't enough, what happens first?", "options": [
+      ["The processor slows itself down and the frame rate drops", "A chip that gets too hot throttles itself to stay safe. The picture updates more slowly, and that makes people feel sick."],
+      ["The battery explodes", "There are several layers of protection: first it slows down, then it shuts off."],
+      ["The picture goes black and white", "The colours stay the same; the picture stutters."]] } }
+  ] }
+ },
+ "faults": {
+  "fan_dead": {
+   "title": "Cooling fan stopped",
+   "short": "Gets hot and stutters after a few minutes",
+   "symptom": "Ten minutes into a game, the headset gets very hot and the picture starts to stutter. Take a look inside: what do you think is broken?",
+   "hint": "The chip heats up while it draws. How does that heat get carried out of the headset? What on that path isn't moving?",
+   "suspects": ["The battery is faulty", "The cooling fan isn't spinning", "The screen is broken"],
+   "cause": "The cooling fan's blades have stopped. The chip's heat reaches the heatsink, but there's no airflow to blow it out.",
+   "why": "Why does a stopped fan make the headset hot and the picture stutter?",
+   "answer": "The chip heats up while drawing; the heat goes into the heatsink, and the fan blows it out of the housing. With the fan stopped the heat can't escape, the chip gets too hot and slows itself down to stay safe, so the picture stutters."
+  }
+ }
+}

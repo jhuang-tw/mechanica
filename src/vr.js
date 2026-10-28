@@ -3,6 +3,7 @@
 // the full answer is spoken. Holding the trigger or a pinch on a part drags it (see Rig.grab). Panels are canvas textures; a controller trigger, a pinch ray or an index-finger poke presses them.
 import * as THREE from 'three';
 import { isFist, isOpen, isPinch, palmNormal, twoHand, twoHandStart } from './gestures.js';
+import { t } from './i18n.js';
 
 const JOINTS = ['wrist', 'thumb-metacarpal', 'thumb-phalanx-proximal', 'thumb-phalanx-distal', 'thumb-tip',
   ...['index', 'middle', 'ring', 'pinky'].flatMap((f) => ['metacarpal', 'phalanx-proximal', 'phalanx-intermediate', 'phalanx-distal', 'tip'].map((b) => `${f}-finger-${b}`))];
@@ -215,15 +216,15 @@ export class VR {
     const close = (fn) => () => { this.menu.mesh.visible = false; fn(); };
     row(a.ex.lessons.map((l) => ({ label: `⛓ ${l.title}`, size: 28, on: close(() => a.startLesson(l, false)) })));
     row([
-      { label: '🎓 AI 家教', on: close(() => a.startTutor()) },
-      { label: '❓ 先猜再看', on: close(() => a.quizLesson()) },
-      { label: a.rig.explodeTarget > 0.5 ? '🧩 合起來' : '💥 拆開', on: () => { a.explode(a.rig.explodeTarget > 0.5 ? 0 : 1); this.drawMenu(); } },
-      { label: '↺ 重設', on: close(() => { a.reset(); this.fitStage(); }) },
+      { label: t('vrTutor'), on: close(() => a.startTutor()) },
+      { label: t('vrGuess'), on: close(() => a.quizLesson()) },
+      { label: a.rig.explodeTarget > 0.5 ? t('vrClose') : t('vrOpen'), on: () => { a.explode(a.rig.explodeTarget > 0.5 ? 0 : 1); this.drawMenu(); } },
+      { label: t('vrReset'), on: close(() => { a.reset(); this.fitStage(); }) },
     ]);
     row([
-      { label: a.recording ? '⏹ 說完了' : a.tutoring ? '🎤 回答家教' : '🎤 問 AI', color: a.recording ? C.rec : undefined, on: () => { a.talk(!a.recording); setTimeout(() => this.menu.mesh.visible && this.drawMenu(), 50); } },
-      { label: '✕ 關選單', on: () => (this.menu.mesh.visible = false) },
-      { label: '🚪 離開 VR', on: () => this.xr.getSession()?.end() },
+      { label: a.recording ? t('vrDone') : a.tutoring ? t('vrAnswer') : t('vrAsk'), color: a.recording ? C.rec : undefined, on: () => { a.talk(!a.recording); setTimeout(() => this.menu.mesh.visible && this.drawMenu(), 50); } },
+      { label: t('vrMenuClose'), on: () => (this.menu.mesh.visible = false) },
+      { label: t('vrExit'), on: () => this.xr.getSession()?.end() },
     ]);
     const H = y + 2, canvas = this.menu.canvas;
     if (canvas.height !== H) { canvas.height = H; this.menu.h = (this.menu.w * H) / W; this.menu.mesh.geometry.dispose(); this.menu.mesh.geometry = new THREE.PlaneGeometry(this.menu.w, this.menu.h); }
@@ -246,7 +247,7 @@ export class VR {
     const g = this.sub.canvas.getContext('2d'), { width: W, height: H } = this.sub.canvas;
     g.clearRect(0, 0, W, H); g.fillStyle = 'rgba(10,14,20,0.78)'; g.beginPath(); g.roundRect(0, 0, W, H, H / 2); g.fill();
     g.fillStyle = C.text; g.font = `56px ${FONT}`; g.textAlign = 'center'; g.textBaseline = 'middle';
-    g.fillText(fit(g, (text || '').match(/^[^。！？\n]*[。！？]?/)[0], W - 80), W / 2, H / 2);   // the first sentence on one line; the voice says the rest
+    g.fillText(fit(g, (text || '').match(/^[^。！？\n]*?(?:[。！？]|[.!?](?=\s|$)|$)/m)[0], W - 80), W / 2, H / 2);   // the first sentence on one line; the voice says the rest
     this.sub.tex.needsUpdate = true; this.subT = text ? 0 : 99;
   }
 }

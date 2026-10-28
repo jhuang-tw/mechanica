@@ -29,6 +29,12 @@
 
 `test/rig.test.mjs` 會檢查 manifest 裡提到的每個零件都在模型裡。
 
+### en.json（英文版）
+
+`manifest.json` 是唯一的來源（id、數字、動作、中文）；同一個資料夾的 `en.json` 只放英文字，用 id 對應：`{name, title, intro, suggest[], looksLike, ride?{hint}, parts:{id:{name, info, aliases[]}}, drives:{id: name}, lessons:{id:{title, steps:[{say, quiz?{q, options:[[text, why]]}}]}}, faults:{id:{title, short, symptom, hint, suspects[], cause, why, answer}}}`。`src/localize.js` 把它疊上去，瀏覽器和伺服器共用。新增零件還沒翻譯時，英文版先用它的 `en` 名稱。`test/i18n.test.mjs` 會檢查每個字都有英文、英文版沒有殘留中文。
+
+語言：`?lang=en|zh` → 切換鈕存的選擇 → 預設英文。index.html 本身是英文。介面字串在 `src/i18n.js`。
+
 ### model.glb
 
 - 每個零件一個節點，名稱 = `parts[].id`，節點原點放在它的旋轉中心。
@@ -51,6 +57,8 @@
 | `POST /api/identify` | 圖片（不儲存） | `{match, exhibit, confidence, machine, parts[≤4], say}` |
 | `POST /api/segment?exhibit=&part=` | 圖片 | `{exhibit, results:[{part, masks:[{bounds, width, height, path}]}]}` |
 | `POST /api/stt?exhibit=` | 16 kHz 單聲道 WAV | `{text}` |
+
+每個 JSON API 都可以帶 `lang: "en"`（`/api/identify`、`/api/stt` 用 `?lang=en`）：讀英文展品、用英文提示詞，Muse 用英文回答。
 
 ### steps（AI 編排的示範）
 

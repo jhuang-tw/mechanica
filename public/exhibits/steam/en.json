@@ -1,0 +1,109 @@
+{
+ "name": "Steam locomotive",
+ "title": "Steam locomotive (0-6-0 tank engine)",
+ "intro": "This is a 0-6-0 steam tank engine. Explode it (🧩) to see the firebox, boiler tubes, cylinders, rods and Walschaerts valve gear. Ask me \"How does steam turn the wheels?\"",
+ "suggest": ["How does steam turn the wheels?", "Why are the left and right cranks 90° apart?", "How does a steam engine go backwards?", "What's behind the smokebox door?"],
+ "looksLike": "train, steam train, locomotive, steam engine, railway vehicle, rails",
+ "parts": {
+  "wheelset_1": { "name": "Leading driving wheels", "info": "The front pair of driving wheels. On an 0-6-0 all three pairs are linked by coupling rods, so they all drive.", "aliases": ["front wheels", "driving wheels", "wheels"] },
+  "wheelset_2": { "name": "Main driving wheels", "info": "The pair the connecting rod pushes directly; the coupling rods pass the drive on to the pairs in front and behind. The axle also carries the return crank that drives the valve gear.", "aliases": ["main drivers", "driving wheels", "wheels"] },
+  "wheelset_3": { "name": "Trailing driving wheels", "info": "The rear pair of driving wheels, carried round by the coupling rods.", "aliases": ["rear wheels", "driving wheels", "wheels"] },
+  "cylinder_l": { "name": "Left cylinder", "info": "High-pressure steam enters in front of and then behind the piston in turn, pushing it back and forth. The top of the outer side is cut away so you can see the piston and valve.", "aliases": ["cylinder"] },
+  "piston_l": { "name": "Left piston", "info": "Pushed back and forth in the cylinder by the steam; through the piston rod it drives the crosshead.", "aliases": ["piston", "piston rod"] },
+  "crosshead_l": { "name": "Left crosshead", "info": "Slides in a straight line along the slide bars, handing the piston's straight push to the swinging connecting rod, so the piston rod doesn't get bent.", "aliases": ["crosshead", "slide"] },
+  "connecting_rod_l": { "name": "Left connecting rod", "info": "One end on the crosshead, the other on the main wheel's crank pin: it turns the back-and-forth push into the wheels' rotation.", "aliases": ["connecting rod", "main rod"] },
+  "coupling_rod_l": { "name": "Left coupling rod", "info": "Links the crank pins of all three wheel pairs, so they turn and pull together. It only moves in a circle without rotating.", "aliases": ["coupling rod", "side rod"] },
+  "valve_l": { "name": "Left valve", "info": "Decides whether steam goes in front of or behind the piston at each moment, and lets the used steam out of the other side.", "aliases": ["valve", "piston valve", "slide valve"] },
+  "eccentric_rod_l": { "name": "Left eccentric rod", "info": "Driven by the return crank on the main wheel, it rocks the expansion link back and forth. It is the \"clock\" of the Walschaerts valve gear.", "aliases": ["eccentric rod"] },
+  "expansion_link_l": { "name": "Left expansion link", "info": "A curved, rocking link. Placing the radius rod's die block in the upper or lower half decides forward or reverse; the nearer the middle, the earlier the steam is cut off.", "aliases": ["expansion link", "link"] },
+  "radius_rod_l": { "name": "Left radius rod", "info": "Carries the link's rocking to the combination lever; the reverser raises and lowers it.", "aliases": ["radius rod"] },
+  "combination_lever_l": { "name": "Left combination lever", "info": "Adds the link's rocking to the crosshead's back-and-forth motion and moves the valve, so the valve timing is exact.", "aliases": ["combination lever"] },
+  "union_link_l": { "name": "Left union link", "info": "Connects the crosshead to the bottom of the combination lever.", "aliases": ["union link"] },
+  "cylinder_r": { "name": "Right cylinder", "info": "High-pressure steam enters in front of and then behind the piston in turn, pushing it back and forth. The top of the outer side is cut away so you can see the piston and valve.", "aliases": ["cylinder"] },
+  "piston_r": { "name": "Right piston", "info": "Pushed back and forth in the cylinder by the steam; through the piston rod it drives the crosshead.", "aliases": ["piston", "piston rod"] },
+  "crosshead_r": { "name": "Right crosshead", "info": "Slides in a straight line along the slide bars, handing the piston's straight push to the swinging connecting rod, so the piston rod doesn't get bent.", "aliases": ["crosshead", "slide"] },
+  "connecting_rod_r": { "name": "Right connecting rod", "info": "One end on the crosshead, the other on the main wheel's crank pin: it turns the back-and-forth push into the wheels' rotation.", "aliases": ["connecting rod", "main rod"] },
+  "coupling_rod_r": { "name": "Right coupling rod", "info": "Links the crank pins of all three wheel pairs, so they turn and pull together. It only moves in a circle without rotating.", "aliases": ["coupling rod", "side rod"] },
+  "valve_r": { "name": "Right valve", "info": "Decides whether steam goes in front of or behind the piston at each moment, and lets the used steam out of the other side.", "aliases": ["valve", "piston valve", "slide valve"] },
+  "eccentric_rod_r": { "name": "Right eccentric rod", "info": "Driven by the return crank on the main wheel, it rocks the expansion link back and forth. It is the \"clock\" of the Walschaerts valve gear.", "aliases": ["eccentric rod"] },
+  "expansion_link_r": { "name": "Right expansion link", "info": "A curved, rocking link. Placing the radius rod's die block in the upper or lower half decides forward or reverse; the nearer the middle, the earlier the steam is cut off.", "aliases": ["expansion link", "link"] },
+  "radius_rod_r": { "name": "Right radius rod", "info": "Carries the link's rocking to the combination lever; the reverser raises and lowers it.", "aliases": ["radius rod"] },
+  "combination_lever_r": { "name": "Right combination lever", "info": "Adds the link's rocking to the crosshead's back-and-forth motion and moves the valve, so the valve timing is exact.", "aliases": ["combination lever"] },
+  "union_link_r": { "name": "Right union link", "info": "Connects the crosshead to the bottom of the combination lever.", "aliases": ["union link"] },
+  "frames": { "name": "Frames", "info": "The main frame, two steel plates left and right. The boiler, cylinders and axles are all mounted on it.", "aliases": ["chassis", "frame"] },
+  "firebox": { "name": "Firebox", "info": "Where the coal burns. The fire and hot gas travel forward from here through the tubes in the boiler.", "aliases": ["fire", "furnace"] },
+  "boiler_tubes": { "name": "Boiler tubes", "info": "Over a hundred thin tubes run through the boiler water. Hot gas runs inside them and the water outside is heated into steam. More tubes means more contact area and faster boiling.", "aliases": ["boiler", "tubes", "fire tubes"] },
+  "steam_pipes": { "name": "Steam pipes", "info": "Carry steam from the top of the boiler, through the regulator, to the cylinders on both sides.", "aliases": ["steam pipe"] },
+  "blastpipe": { "name": "Blastpipe", "info": "Used steam from the cylinders shoots up the chimney from here, pulling air out of the smokebox, so the firebox draws in more air and burns hotter. That's the \"chuff, chuff\" sound.", "aliases": ["exhaust", "chimney"] },
+  "reverser": { "name": "Reverser", "info": "The driver uses it to move the die block in the expansion link: one half for forward, the other for reverse; nearer the middle, less steam goes in each stroke, which saves steam.", "aliases": ["reverse", "reversing lever"] },
+  "regulator": { "name": "Regulator", "info": "The locomotive's \"throttle\". The wider it opens, the more steam goes to the cylinders and the harder it pulls.", "aliases": ["throttle"] },
+  "track": { "name": "Track", "info": "Standard-gauge rails. The wheel flanges run inside the rails, so the train can't slide off.", "aliases": ["rails", "railway"] },
+  "footplate": { "name": "Running board", "info": "The walkway around the top of the frames, so the crew can walk along to the front of the engine.", "aliases": ["platform", "walkway"] },
+  "boiler_cladding": { "name": "Boiler cladding", "info": "The thin sheet metal around the boiler, with insulation underneath to keep the heat in. Explode it (🧩) to see the firebox and tubes inside.", "aliases": ["boiler", "cladding", "boiler shell"] },
+  "smokebox": { "name": "Smokebox and chimney", "info": "The cylinder at the very front of the boiler. Hot smoke from the tubes gathers here and is drawn up the chimney together with the steam from the blastpipe.", "aliases": ["smokebox", "chimney", "smokestack"] },
+  "smokebox_door": { "name": "Smokebox door", "info": "The round door on the front of the engine, hinged on the right. Open it to clear out the soot that collects in the smokebox.", "aliases": ["smokebox door", "front door", "door"] },
+  "tank_l": { "name": "Left water tank", "info": "The tank beside the boiler holds the water for the boiler. An engine that carries its water on its back like this is a \"tank engine\" and needs no tender.", "aliases": ["water tank", "tank"] },
+  "tank_r": { "name": "Right water tank", "info": "The right-hand tank, connected to the left one.", "aliases": ["water tank", "tank"] },
+  "cab": { "name": "Cab", "info": "Where the driver and fireman stand. In front is the firebox door; the driver works the regulator and reverser from here.", "aliases": ["cab", "driver's cab"] },
+  "cab_roof": { "name": "Cab roof", "info": "The cab's roof, hinged at the front edge so it can lift up.", "aliases": ["roof"] }
+ },
+ "drives": {
+  "run": "Running forward (cylinders → connecting rods → three pairs of wheels)",
+  "open": "Opening the smokebox door and cab roof"
+ },
+ "lessons": {
+  "steam": { "title": "How steam turns the wheels", "steps": [
+   { "say": "Coal burns in the firebox, and the hot gas passes through the tubes in the boiler, boiling the water around them into steam.",
+     "quiz": { "q": "What runs inside the boiler tubes?", "options": [
+      ["Fire and hot gas", "It's a fire-tube boiler: hot gas inside the tubes, water outside. More tubes, faster boiling."],
+      ["Water", "That's a water-tube boiler, used in ships and power stations; most locomotives have fire-tube boilers."],
+      ["Steam", "Steam collects at the top of the boiler and goes to the cylinders through the regulator."]] } },
+   { "say": "Open the regulator and steam flows through the steam pipes to the cylinders on both sides." },
+   { "say": "Steam pushes the piston, and the crosshead slides straight back and forth along the slide bars.",
+     "quiz": { "q": "What is the crosshead for?", "options": [
+      ["It keeps the piston rod straight and lets the connecting rod do the swinging", "The connecting rod swings up and down. Joined straight to the piston rod, it would bend the rod and the cylinder would leak."],
+      ["It steers the train", "Trains steer with their flanges and the rails, not the crosshead."],
+      ["It raises the steam pressure", "Pressure comes from the boiler; the crosshead just passes the force on."]] } },
+   { "say": "The connecting rod turns the push and pull into rotation of the main wheels, and the coupling rods drive the pairs in front and behind.",
+     "quiz": { "q": "The right crank leads the left one by 90°. Why?", "options": [
+      ["So at least one side can always push", "If both sides were in step and the engine stopped on dead centre (crank and rod in a straight line), it couldn't push and couldn't start."],
+      ["It looks nicer", "The 90° offset is there to avoid dead centre; looks have nothing to do with it."],
+      ["It makes the train faster", "Speed depends on the steam and the wheel size; the offset is for starting."]] } }
+  ] },
+  "valve": { "title": "Valve gear: when the steam goes in", "steps": [
+   { "say": "The return crank on the main wheel pushes and pulls the eccentric rod, rocking the expansion link back and forth." },
+   { "say": "The radius rod carries the rocking to the combination lever, which adds the crosshead's motion and moves the valve." },
+   { "say": "The valve sends steam in front of and behind the piston in turn, and the used steam on the other side escapes at the same time.",
+     "quiz": { "q": "As the piston moves forward, which side of it is the steam on?", "options": [
+      ["Behind it, pushing it forward", "The valve lets fresh steam in behind the piston and, at the same time, lets out the used steam in front from the last stroke."],
+      ["In front", "Steam in front would push the piston back."],
+      ["Both sides equally", "With equal pressure on both sides it couldn't move."]] } },
+   { "say": "To reverse, the driver uses the reverser to move the radius rod to the other half of the expansion link. The valve timing flips and the wheels turn backwards.",
+     "quiz": { "q": "How does a steam locomotive go backwards?", "options": [
+      ["The reverser changes the valve timing", "The die block moves to the other half of the link, steam enters from the other side, and the pistons push the wheels the opposite way."],
+      ["The wheels are refitted the other way round", "The wheels stay as they are; what changes is when the steam goes in."],
+      ["It can't go backwards", "It can: in shunting yards engines go back and forth all the time."]] } }
+  ] },
+  "puff": { "title": "What makes the \"chuff, chuff\"", "steps": [
+   { "say": "Used steam from the cylinders blasts up the chimney through the blastpipe." },
+   { "say": "The blast pulls air out of the smokebox, so the firebox draws in more fresh air and burns hotter. The faster it runs, the hotter the fire.",
+     "quiz": { "q": "How many chuffs do you hear for each turn of the driving wheels?", "options": [
+      ["4", "Two cylinders, and each one exhausts once from the front and once from the back: 4 per turn."],
+      ["1", "Each cylinder exhausts from both ends, not just once."],
+      ["2", "That counts the two cylinders but forgets each exhausts from both ends."]] } },
+   { "say": "Open the smokebox door to see the blastpipe: every puff of used steam shoots up from here, drawing the smoke up the chimney and making the fire burn hotter." }
+  ] }
+ },
+ "faults": {
+  "rods_off": {
+   "title": "The coupling rods came off",
+   "short": "Only the middle wheels turn",
+   "symptom": "Steam pushes the pistons and the middle pair of driving wheels turns, but the front and rear pairs stay still. What do you think is broken?",
+   "hint": "The connecting rod only reaches the middle pair of wheels. What normally makes the front and rear pairs turn with it?",
+   "suspects": ["A cylinder is leaking steam", "The coupling rods came off", "The wheels are stuck on the track"],
+   "cause": "The coupling rods on both sides have come off. The connecting rods only push the middle pair, and nothing carries the front and rear pairs round.",
+   "why": "Why does only the middle pair of wheels turn once the coupling rods are off?",
+   "answer": "The cylinders' force goes through the connecting rods to the middle pair only. The coupling rods link the crank pins of all three pairs so the front and rear pairs turn too. Without them, the front and rear pairs get no force."
+  }
+ }
+}
