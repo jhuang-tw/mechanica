@@ -1721,5 +1721,55 @@
    "door_rr",
    "trunk"
   ]
- }
+ },
+ "faults": [
+  {
+   "id": "belt_snap",
+   "title": "正時皮帶斷了",
+   "short": "曲軸在轉，引擎卻發不動",
+   "symptom": "轉鑰匙發動，曲軸和活塞都在動，引擎卻怎麼樣都發不起來。你覺得哪裡壞了？",
+   "drive": "engine",
+   "speed": 0.5,
+   "broken": [
+    "timing_belt"
+   ],
+   "stops": [
+    "camshaft_intake",
+    "camshaft_exhaust"
+   ],
+   "look": {
+    "detach": {
+     "amount": 0.08
+    }
+   },
+   "see": [
+    "crankshaft",
+    "crank_pulley",
+    "flywheel",
+    "piston_1",
+    "piston_2",
+    "piston_3",
+    "piston_4",
+    "conrod_1",
+    "conrod_2",
+    "conrod_3",
+    "conrod_4",
+    "camshaft_intake",
+    "camshaft_exhaust",
+    "timing_belt",
+    "head",
+    "block"
+   ],
+   "hint": "引擎要發動，氣門得在對的時間打開。曲軸在轉的時候，上面的凸輪軸有跟著轉嗎？",
+   "suspects": [
+    "電瓶沒電",
+    "正時皮帶斷了",
+    "活塞卡住"
+   ],
+   "cause": "正時皮帶斷了。曲軸照樣在轉，但上面的凸輪軸沒有被帶動，氣門不會開關。",
+   "why": "為什麼正時皮帶斷了，曲軸在轉，引擎還是發不動？",
+   "answer": "正時皮帶讓凸輪軸跟著曲軸轉（曲軸兩圈、凸輪軸一圈）；凸輪軸不轉，氣門就不會在對的時間開關，汽缸吸不到油氣、也排不了廢氣，引擎就點不著。",
+   "lesson": "engine"
+  }
+ ]
 }

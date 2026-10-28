@@ -510,5 +510,47 @@
     }
    ]
   }
+ ],
+ "faults": [
+  {
+   "id": "fan_dead",
+   "title": "散熱風扇不轉",
+   "short": "玩一下就發燙、變卡",
+   "symptom": "戴上去玩十分鐘，頭盔就變得很燙，畫面還開始變卡。拆開看看，你覺得哪裡壞了？",
+   "drive": "cooling",
+   "speed": 0.5,
+   "broken": [
+    "fan_rotor"
+   ],
+   "stops": [
+    "fan_rotor"
+   ],
+   "look": {
+    "hide": [
+     "front_cover"
+    ]
+   },
+   "see": [
+    "mainboard",
+    "soc",
+    "memory",
+    "heatsink",
+    "fan",
+    "fan_rotor",
+    "battery",
+    "display_l",
+    "display_r"
+   ],
+   "hint": "晶片在算圖時會發熱。熱是怎麼從晶片被帶出頭盔的？那條路上哪個東西沒在動？",
+   "suspects": [
+    "電池壞了",
+    "散熱風扇不轉",
+    "螢幕壞了"
+   ],
+   "cause": "散熱風扇的葉輪不轉了。晶片的熱傳到散熱片上，卻沒有風把熱吹出去。",
+   "why": "為什麼風扇不轉，頭盔會變燙、畫面還會變卡？",
+   "answer": "晶片算圖時發熱，熱傳到散熱片，再靠風扇吹出外殼；風扇不轉熱散不掉，晶片溫度太高就會自己降速保護，畫面就變卡。",
+   "lesson": "cool"
+  }
  ]
 }

@@ -12,7 +12,7 @@ try {
     if (value && !(key in process.env)) process.env[key] = value;
   }
 } catch { /* no .env */ }
-const { identify, segment, choreograph, transcribe, tutor, explainBack, exhibit } = await import('./ai.mjs');
+const { identify, segment, choreograph, transcribe, tutor, explainBack, fix, exhibit } = await import('./ai.mjs');
 const { configured } = await import('./meta.mjs');
 
 const web = join(root, 'dist') + sep;
@@ -62,6 +62,13 @@ async function api(req, res, path, q) {
     if (path === '/api/explain') {
       const b = JSON.parse(await body(req, 16 << 10));
       return send(res, 200, await explainBack({ exhibit: str(b.exhibit, 20), lesson: str(b.lesson, 40), text: str(b.text, 600) }));
+    }
+    if (path === '/api/fix') {
+      const b = JSON.parse(await body(req, 32 << 10));
+      exhibit(str(b.exhibit, 20));
+      const history = (Array.isArray(b.history) ? b.history : []).slice(-4).map((m) => ({ role: m.role === 'assistant' ? 'assistant' : 'user', content: str(m.content, 400) }));
+      const solved = (Array.isArray(b.solved) ? b.solved : []).slice(-16).map((k) => str(k, 40)).filter(Boolean);
+      return send(res, 200, await fix({ exhibit: b.exhibit, fault: str(b.fault, 40), stage: str(b.stage, 10), text: str(b.text, 300), pointed: str(b.pointed, 60), history, solved }));
     }
     if (path === '/api/tutor') {
       const b = JSON.parse(await body(req, 32 << 10));

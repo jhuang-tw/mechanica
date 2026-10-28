@@ -1,4 +1,6 @@
-// App flow: landing → exhibit (tap parts, explode, ask the AI, lessons, quiz) → back. Photo and VR are reachable from both.
+// App flow: straight into a repair challenge (修理: a broken machine, the learner guesses, Muse checks it on the model)
+// or 原理 on the same exhibit (tap parts, explode, ask the AI, lessons, quiz, tutor); the landing page picks another machine.
+// Photo and VR are reachable from both.
 import { cleanSteps } from './choreo.js';
 import { Recorder, shrink, speak } from './media.js';
 
@@ -16,34 +18,25 @@ await Promise.all(list.map(async (id) => (exhibits[id] = await (await fetch(`${B
 const icon = (id) => `<svg class="i"><use href="#i-${id}"/></svg>`;
 const thumb = (id) => `${BASE}${id}/${exhibits[id].thumb}`;
 const warm = (id) => viewerModule.then((m) => m.preload(BASE + id + '/' + exhibits[id].model));   // start the model download on touch
-$('tiles').replaceChildren(...list.map((id, i) => {
-  const e = exhibits[id], b = Object.assign(document.createElement('button'), { className: 'tile', type: 'button' });
-  b.innerHTML = `<span class="well"><span class="n"></span><img alt="" loading="${i < 4 ? 'eager' : 'lazy'}" src="${thumb(id)}" onerror="this.style.visibility='hidden'"></span><span class="body"><b></b><small></small><span class="first">${icon('book')}<span></span></span></span>`;
-  b.querySelector('.n').textContent = `${e.lessons?.length || 0} 堂課`;
-  b.querySelector('b').textContent = e.name;
-  b.querySelector('small').textContent = e.title;
-  b.querySelector('.first span').textContent = e.lessons?.[0]?.title || '點零件看說明';
-  b.onpointerdown = () => warm(id);
-  b.onclick = () => open(id);
-  return b;
-}));
-// hero: the first exhibit is the way in, its first lesson one tap away
-{
-  const id = list[0], e = exhibits[id], parts = e.parts.filter((p) => !p.fixed);
-  const lessons = list.reduce((n, x) => n + (exhibits[x].lessons?.length || 0), 0);
-  $('stats').textContent = `${list.length} 台機器 · ${lessons} 堂課 · 免安裝`;
-  $('count').textContent = `${list.length} 台`;
-  $('feature-img').src = thumb(id);
-  $('feature-name').textContent = e.title;
-  $('feature-lesson').textContent = e.lessons?.[0] ? `第一課：${e.lessons[0].title}` : e.intro;
-  // shortcut: callout spots are placed for the bike thumbnail; move them if another exhibit leads
-  $('co1').textContent = (e.parts.find((p) => p.id === 'saddle') || parts[0]).name;
-  $('co2').textContent = (e.parts.find((p) => p.id === 'handlebar') || parts[1]).name;
-  const begin = async () => { await open(id); if (ex.lessons?.[0]) startLesson(ex.lessons[0], true); };
-  $('start').onpointerdown = $('feature').onpointerdown = () => warm(id);
-  $('start').onclick = $('feature').onclick = begin;
-  $('browse').onclick = () => $('all').scrollIntoView({ behavior: 'smooth' });
+const faults = list.flatMap((id) => (exhibits[id].faults || []).map((f) => ({ ex: id, f, key: `${id}/${f.id}` })));
+const solvedKeys = () => { try { return JSON.parse(localStorage.getItem('mechanica.fixed')) || []; } catch { return []; } };
+function tiles() {
+  const done = new Set(solvedKeys());
+  $('tiles').replaceChildren(...list.map((id, i) => {
+    const e = exhibits[id], f = e.faults?.[0], b = Object.assign(document.createElement('button'), { className: 'tile', type: 'button' });
+    b.innerHTML = `<span class="well"><span class="n"></span><img alt="" loading="${i < 4 ? 'eager' : 'lazy'}" src="${thumb(id)}" onerror="this.style.visibility='hidden'"></span><span class="body"><b></b><small></small><span class="first">${icon('book')}<span></span></span></span>`;
+    const fixed = f && done.has(`${id}/${f.id}`);
+    b.querySelector('.n').textContent = fixed ? '修好了' : '待修';
+    b.querySelector('.n').classList.toggle('done', !!fixed);
+    b.querySelector('b').textContent = e.name;
+    b.querySelector('small').textContent = f ? `症狀：${f.short}` : e.title;
+    b.querySelector('.first span').textContent = `原理：${e.lessons?.length || 0} 堂課`;
+    b.onpointerdown = () => warm(id);
+    b.onclick = () => (f ? startFix(`${id}/${f.id}`) : learn(id));
+    return b;
+  }));
 }
+tiles();
 const toast = (t, ms = 2500) => { $('toast').textContent = t; $('toast').hidden = !t; clearTimeout(toast.t); if (t) toast.t = setTimeout(() => ($('toast').hidden = true), ms); };
 
 async function open(id) {
@@ -64,7 +57,7 @@ async function open(id) {
   say(ex.name, ex.intro);
   $('vr').hidden = !(await Viewer.vrSupported());
 }
-function home() { stopAll(); speak(''); $('app').hidden = true; $('home').hidden = false; window.history.replaceState(null, '', location.pathname); }
+function home() { stopAll(); speak(''); tiles(); $('app').hidden = true; $('home').hidden = false; window.history.replaceState(null, '', location.pathname); }
 $('back').onclick = home;
 
 // ---------- caption ----------
@@ -79,23 +72,27 @@ function say(title, text, thinking = false, voice = false) {
 function pick(id) {
   if (!rig || lesson) return;
   pointed = id;
+  if (fix) { rig.highlight(id ? [id] : []); const p = ex.parts.find((x) => x.id === id); if (p && fix.stage === 'diagnose') fixTurn(`我覺得是${p.name}壞了`, id); return; }
   if (!id) { rig.highlight([]); return; }
   const p = ex.parts.find((x) => x.id === id);
   rig.highlight([id]);
   say(p.name, p.info, false, true);
 }
 $('explode-r').oninput = (e) => rig?.setExplode(+e.target.value);
-function stopAll() { clearTimeout(flow); stopRide(); if (viewer) viewer.lessonMode = false; lesson = quiz = tutor = explain = null; vr?.refresh(); document.body.classList.remove('lesson', 'tutor'); $('lesson').hidden = $('quiz').hidden = $('tutor').hidden = true; $('q').placeholder = '問任何問題…'; viewer?.choreo?.cancel(); rig?.reset(); $('explode-r').value = 0; }
-$('reset').onclick = () => { stopAll(); speak(''); viewer.frame(); pointed = null; say(ex.name, ex.intro); };
+function stopAll() { clearTimeout(flow); clearTimeout(symptomT); stopRide(); if (fix) { fix = null; rig?.setFault(null); } document.body.classList.remove('fix'); $('fix').hidden = true; if (viewer) viewer.lessonMode = false; lesson = quiz = tutor = explain = null; vr?.refresh(); document.body.classList.remove('lesson', 'tutor'); $('lesson').hidden = $('quiz').hidden = $('tutor').hidden = true; $('q').placeholder = '問任何問題…'; viewer?.choreo?.cancel(); rig?.reset(); $('explode-r').value = 0; }
+$('reset').onclick = () => { if (fix) { viewer.frame(); return symptom(); } stopAll(); speak(''); viewer.frame(); pointed = null; say(ex.name, ex.intro); };
 
 // ---------- suggestions: AI questions and lessons ----------
 function chips() {
   const chip = (cls, label, run) => { const b = Object.assign(document.createElement('button'), { className: `chip ${cls}`, type: 'button', onclick: run }); b.innerHTML = icon({ lesson: 'book', quiz: 'q', ai: 'spark', ask: 'spark', tutor: 'cap' }[cls.split(' ').pop()]) + '<span></span>'; b.lastChild.textContent = label; return b; };
-  $('ai-chips').replaceChildren(chip('ai ask tutor', 'AI 家教', () => startTutor()), chip('ai', '問 AI 老師', () => $('type').onclick()), ...ex.suggest.map((q) => chip('ai', q, () => ask(q))));
+  // 原理: one row, the lessons in order first; the AI tutor and a typed question after them (the mic asks anything)
+  $('ai-chips').replaceChildren();
   $('chips').replaceChildren(
-    ...(ex.ride ? [chip('lesson', '坐上去', startRide)] : []),
-    ...ex.lessons.map((l) => chip('lesson', l.title, () => startLesson(l, false))),
+    ...ex.lessons.map((l, i) => chip('lesson', i ? l.title : `第一課：${l.title}`, () => startLesson(l, false))),
     ...(ex.lessons.some((l) => l.steps.some((s) => s.quiz)) ? [chip('lesson quiz', '先猜再看', () => startLesson(ex.lessons.find((l) => l.steps.some((s) => s.quiz)), true))] : []),
+    ...(ex.ride ? [chip('lesson', '坐上去', startRide)] : []),
+    chip('ai ask tutor', 'AI 家教', () => startTutor()),
+    chip('ai', '問 AI 老師', () => $('type').onclick()),
   );
 }
 
@@ -103,6 +100,7 @@ function chips() {
 async function ask(text) {
   text = text.trim();
   if (!text || !rig) return;
+  if (fix) return fixTurn(text, pointed);   // in a repair challenge the mic and the keyboard answer it
   if (explain) return explainBack(text);   // while the tutor or the explain-back check runs, the mic and the keyboard answer it
   if (tutor) return tutorTurn(text);
   stopAll();
@@ -287,7 +285,7 @@ async function tutorTurn(answer, focus) {
   } finally { t.busy = false; $('tutor').classList.remove('thinking'); }
 }
 $('t-show').onclick = () => (explain ? done() : tutorTurn('我不知道，請動模型示範給我看，再問簡單一點的'));
-const done = () => { stopAll(); say('完成', '這一套上完了。可以找 AI 家教再練，或換一套。', false, true); };
+const done = () => { stopAll(); say('完成', ex.faults?.length ? '這一套上完了。試試看「修理挑戰」：這台機器有個地方壞了，看你找不找得到。' : '這一套上完了。可以找 AI 家教再練，或換一套。', false, true); };
 
 // ---------- 講一遍給我聽: after a lesson the learner explains it back; Muse marks each cause → effect link, the model replays the missed ones ----------
 function startExplain(l) {
@@ -340,12 +338,113 @@ photoIn.onchange = async () => {
     toast('');
     if (!res.ok) throw new Error(r.error);
     if (!r.match || !exhibits[r.exhibit]) { if (!$('app').hidden) say('拍到的', r.say, false, true); else toast(r.say, 5000); return; }
-    await open(r.exhibit);
+    await learn(r.exhibit);
     if (r.parts?.length) rig.isolate(r.parts);
     say('拍到的', r.say, false, true);
     const part = ex.parts.find((p) => p.id === r.parts?.[0]);
     setTimeout(() => startTutor(part?.id), 3500);   // the tutor starts its lesson from the part in the photo
   } catch { toast('現在認不出來，再拍一次試試', 4000); }
+};
+
+// ---------- 修理挑戰: the exhibit's fault breaks a drive; guess → Muse checks it on the model → repair → explain why → next ----------
+let fix = null, symptomT;
+function setMode(m) { $('m-fix').setAttribute('aria-pressed', String(m === 'fix')); $('m-learn').setAttribute('aria-pressed', String(m === 'learn')); $('m-fix').disabled = !ex?.faults?.length; }
+async function learn(id = ex?.id) { await open(id); stopAll(); setMode('learn'); say(ex.name, ex.intro); }
+$('m-learn').onclick = () => { if (fix) learn(); };
+$('m-fix').onclick = () => { if (!fix && ex.faults?.length) startFix(`${ex.id}/${ex.faults[0].id}`); };
+const card = (cls, label, text) => { $('f-v').className = cls; $('f-v').replaceChildren(...(label ? [Object.assign(document.createElement('b'), { textContent: label }), ' '] : []), text); };
+const choices = (items) => $('f-choices').replaceChildren(...items.map(([text, run, go]) => Object.assign(document.createElement('button'), { type: 'button', textContent: text, className: go ? 'go' : '', onclick: run })));
+const driveParts = (f) => [...new Set([...(ex.drives.find((d) => d.id === f.drive)?.moves || []).map((m) => m.part), ...f.broken])];
+async function startFix(key) {
+  const c = faults.find((x) => x.key === key);
+  if (!c) return learn(list[0]);
+  await open(c.ex);
+  stopAll(); speak('');
+  fix = { ...c, stage: 'diagnose', tries: 0, help: 0, history: [] };
+  rig.setFault(c.f);
+  document.body.classList.add('fix'); $('fix').hidden = false; setMode('fix');
+  $('f-bar').textContent = `修理挑戰 · ${ex.name}`;
+  card('', '', ''); choices([]); $('f-help').hidden = false; $('f-help').textContent = '提示'; $('f-hint').hidden = false; $('f-hint').textContent = '按麥克風說你的猜測，或直接點你懷疑的零件';
+  $('f-q').textContent = c.f.symptom;
+  symptom();
+  speak(c.f.symptom); vr?.say(c.f.symptom);
+}
+// the broken machine running, as the learner first saw it (again after every check)
+function symptom() {
+  clearTimeout(symptomT);
+  if (!fix) return;
+  viewer.choreo.cancel(); rig.reset();
+  if (fix.stage !== 'diagnose') { rig.isolate(driveParts(fix.f)); return rig.drive(fix.f.drive, fix.f.speed ?? 0.5); }
+  if (fix.f.see) { rig.isolate(fix.f.see); rig.highlight([]); }   // the mechanism in view, nothing lit: finding it is the learner's job
+  rig.drive(fix.f.drive, fix.f.speed ?? 0.5);
+}
+async function fixTurn(text, pointed) {
+  const x = fix;
+  if (!x || x.busy || x.stage === 'done') return;
+  x.busy = true; clearTimeout(symptomT); speak('');
+  card('', '', `你${x.stage === 'diagnose' ? '猜' : '說'}：${text}`); $('fix').classList.add('thinking'); $('f-hint').hidden = true;
+  let r;
+  try {
+    const res = await fetch('/api/fix', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ exhibit: x.ex, fault: x.f.id, stage: x.stage, text, pointed, history: x.history, solved: solvedKeys() }), signal: AbortSignal.timeout(30000) });
+    r = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(r.error || `HTTP ${res.status}`);
+  } catch (e) { console.warn('fix failed:', e.message); r = offlineFix(x, text, pointed); }
+  x.busy = false; $('fix').classList.remove('thinking');
+  if (fix !== x) return;
+  x.history = [...x.history, { role: 'user', content: text }, { role: 'assistant', content: r.say }].slice(-4);
+  const steps = cleanSteps(r.steps, ex);
+  if (steps.length) viewer.choreo.play(steps);
+  const wait = (steps.length ? Math.min(12, Math.max(...steps.map((s) => s.at + (s.duration || 2)))) + 1.5 : 0) * 1000;
+  speak(r.say); vr?.say(r.say);
+  x.tries++;
+  if (x.stage === 'diagnose') {
+    if (r.result === 'found') { card('right', '找到了！', r.say); choices([]); $('f-help').hidden = true; symptomT = setTimeout(() => fix === x && repair(x), Math.max(wait, 2500)); return; }
+    card(r.result === 'close' ? 'partial' : 'wrong', r.result === 'close' ? '方向對了' : '不是這裡', r.say);
+    suspects(x);
+    symptomT = setTimeout(symptom, Math.max(wait, 1500));
+    return;
+  }
+  const v = r.grade?.verdict || 'partial';
+  card(v, { right: '說對了', partial: '對一半', wrong: '再想想' }[v], r.say);
+  if (v === 'right' || x.tries >= 2) return finish(x, r.next, v === 'right' ? '' : x.f.answer);
+  $('f-q').textContent = `再說一次：${x.f.why}`;
+  symptomT = setTimeout(symptom, Math.max(wait, 1500));
+}
+// a guess list after the first miss (or 提示), so nobody is stuck without words for the part
+function suspects(x) { if (x.stage === 'diagnose') choices((x.f.suspects || []).map((t) => [t, () => fixTurn(t)])); }
+// without the AI: a guess that names a broken part (or taps one) is found; an explanation is answered with the right one
+function offlineFix(x, text, pointed) {
+  if (x.stage === 'diagnose') {
+    const hit = x.f.broken.includes(pointed) || x.f.broken.some((id) => { const p = ex.parts.find((q) => q.id === id); return [p.name, ...(p.aliases || [])].some((n) => text.includes(n)); });
+    return hit ? { result: 'found', say: `對，就是這裡。${x.f.cause}` } : { result: 'not_it', say: `AI 暫時連不上，先給你線索：${x.f.hint}` };
+  }
+  return { grade: { verdict: 'right' }, say: `AI 暫時連不上，完整的說法是：${x.f.answer}` };
+}
+function repair(x) {
+  x.stage = 'explain'; x.tries = 0;
+  viewer.choreo.cancel(); rig.setFault(null);
+  symptom();
+  card('right', '修好了', x.f.cause); choices([]);
+  $('f-q').textContent = x.f.why; $('f-hint').textContent = '用你自己的話說說看，按麥克風或鍵盤'; $('f-hint').hidden = false; $('f-help').hidden = false; $('f-help').textContent = '不知道';
+  speak(`${x.f.cause} ${x.f.why}`); vr?.say(x.f.why);
+}
+function finish(x, next, answer) {
+  x.stage = 'done';
+  try { localStorage.setItem('mechanica.fixed', JSON.stringify([...new Set([...solvedKeys(), x.key])])); } catch { /* private mode */ }
+  const done = new Set(solvedKeys()), n = faults.find((c) => c.key === next && !done.has(c.key)) || faults.find((c) => !done.has(c.key)) || faults.find((c) => c.key !== x.key);
+  const l = ex.lessons.find((y) => y.id === x.f.lesson);
+  if (answer) card('partial', '完整的說法', answer);
+  $('f-q').textContent = `${ex.name}修好了！`; $('f-hint').hidden = true; $('f-help').hidden = true;
+  choices([...(n ? [[`下一台：${exhibits[n.ex].name}（${n.f.short}）`, () => startFix(n.key), true]] : []), ...(l ? [[`看原理：${l.title}`, async () => { await learn(); startLesson(l, false); }]] : [])]);
+  symptom();
+}
+$('f-help').onclick = () => {
+  const x = fix;
+  if (!x || x.busy) return;
+  if (x.stage === 'explain') return finish(x, null, x.f.answer);
+  if (x.help++ === 0) { card('', '線索', x.f.hint); suspects(x); speak(x.f.hint); $('f-help').textContent = '看答案'; return; }
+  card('', '答案', x.f.cause); x.tries = 9;
+  symptomT = setTimeout(() => fix === x && repair(x), 2500);
 };
 
 // ---------- VR (optional) ----------
@@ -367,9 +466,11 @@ async function enterVR() {
 }
 $('vr').onclick = enterVR;
 viewerModule.then(async ({ Viewer }) => { if (await Viewer.vrSupported()) $('home-vr').hidden = false; });
-$('home-vr').onclick = async () => { await open(ex?.id || list[0]); enterVR(); };
+$('home-vr').onclick = async () => { await learn(ex?.id || list[0]); enterVR(); };
 
 // first sound needs a tap on phones
 addEventListener('pointerdown', () => speechSynthesis?.speak(new SpeechSynthesisUtterance('')), { once: true });
-const start = new URLSearchParams(location.search).get('ex');
-if (exhibits[start]) open(start);
+// no landing page first: a broken machine is the way in (?ex= picks which, ?learn opens 原理)
+const qs = new URLSearchParams(location.search), start = exhibits[qs.get('ex')] ? qs.get('ex') : null;
+if (qs.has('learn') && start) learn(start);
+else startFix(faults.find((x) => x.ex === start)?.key || faults.find((x) => !solvedKeys().includes(x.key))?.key || faults[0]?.key);
