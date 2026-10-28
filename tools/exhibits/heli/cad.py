@@ -4,7 +4,7 @@
 # with its rotation centre at the origin. Bevel gears have their pitch cone apex on +z.
 import os
 from math import sin, cos, pi, radians
-from build123d import (BuildPart, BuildSketch, BuildLine, Polyline, Circle, Rectangle, Locations, PolarLocations, make_face,
+from build123d import (BuildPart, BuildSketch, BuildLine, Polyline, Circle, Rectangle, Locations, PolarLocations, make_face, RegularPolygon, add,
                        extrude, revolve, Mode, Cylinder, Box, Sphere, Plane, Axis, Pos, Rot, export_stl)
 
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'cad', 'out')
@@ -84,22 +84,51 @@ def swash_upper():
             with PolarLocations(150, 2, start_angle=0): Box(40, 30, 34)           # scissor lugs
     return p.part
 
+NUTS = {k: extrude(RegularPolygon(k[0] / 3 ** 0.5, 6), k[1]) for k in ((46, 18), (120, 50), (56, 26))}   # built outside any builder
+
+def hex_nut(af, h, z, x=0):
+    """Hex nut across flats `af`, height h, sitting on z at (x, 0), axis z."""
+    add(Pos(x, 0, z) * NUTS[(af, h)])
+
 def hub():
-    """Teetering hub: yoke across the mast (teeter pin on y), two blade grips along +-x with pitch horns leading by 90 deg."""
+    """Teetering hub like a light turbine single's: forged yoke across a trunnion on the mast, teeter pin in two pillow blocks (y),
+    blade grips on feathering bearings along +-x, forked at the tip round the blade bolt, pitch horns leading by 90 deg;
+    retaining nut, cotter cap and flapping-stop ring on top."""
     with BuildPart() as p:
-        Box(520, 160, 70)
-        Cylinder(70, 220, rotation=(90, 0, 0))                                    # teeter pin
-        Cylinder(48, 240, mode=Mode.SUBTRACT)                                     # mast spline
+        Box(210, 170, 120)                                                         # trunnion on the mast splines
+        for y in (-105, 105):
+            with Locations(Pos(0, y, 0)): Box(90, 40, 150)                         # pillow blocks
+        Cylinder(36, 290, rotation=(90, 0, 0))                                     # teeter pin
+        Box(560, 150, 36)                                                          # yoke plate
         for s in (-1, 1):
-            with Locations(Pos(s * 420, 0, 0)): Cylinder(65, 320, rotation=(0, 90, 0))     # grip
-            with Locations(Pos(s * 330, s * 150, -50)): Box(60, 200, 30)                     # pitch horn
-        with Locations(Pos(0, 0, 70)): Cylinder(60, 70)                           # nut
+            with Locations(Pos(s * 280, 0, 0)): Cylinder(75, 36)                  # yoke ends round the grip bearings
+            with Locations(Pos(s * 330, 0, 0)): Cylinder(78, 170, rotation=(0, 90, 0))      # feathering bearing housing
+            with Locations(Pos(s * 330, 0, 0)): Cylinder(84, 18, rotation=(0, 90, 0))       # housing flange
+            for z in (-37, 37):
+                with Locations(Pos(s * 505, 0, z)): Box(190, 130, 20)              # grip fork straps
+            with Locations(Pos(s * 545, 0, 0)): Cylinder(26, 120)                 # blade bolt
+            hex_nut(46, 18, 47, s * 545)
+            with Locations(Pos(s * 330, s * 95, -40)): Box(70, 110, 32)            # pitch horn arm
+            with Locations(Pos(s * 330, s * 150, -50)): Cylinder(30, 44)           # horn clevis lug
+        Cylinder(48, 400, mode=Mode.SUBTRACT)                                      # mast bore
+        with Locations(Pos(0, 0, -78)): Cylinder(118, 16)                          # flapping-stop ring
+        hex_nut(120, 50, 60)                                                       # mast retaining nut
+        with Locations(Pos(0, 0, 122)): Cylinder(30, 24)                           # cotter cap
     return p.part
 
 def tail_hub():
+    """Two-blade tail rotor hub (axis z): delta-hinged yoke, grips with pitch horns toward the crosshead, retaining nut."""
     with BuildPart() as p:
-        Cylinder(45, 90)
-        Box(260, 70, 50)
+        Cylinder(42, 70)
+        Box(200, 64, 34)                                                           # yoke
+        Cylinder(18, 120, rotation=(0, 90, 0), mode=Mode.ADD)
+        with Locations(Pos(0, 0, 0)): Cylinder(14, 150, rotation=(90, 0, 0))       # flapping hinge pin
+        for s in (-1, 1):
+            with Locations(Pos(s * 125, 0, 0)): Cylinder(32, 90, rotation=(0, 90, 0))        # grip
+            with Locations(Pos(s * 160, 0, 0)): Cylinder(36, 14, rotation=(0, 90, 0))        # grip flange
+            with Locations(Pos(s * 120, s * 40, -30)): Box(26, 56, 18)             # pitch horn
+            with Locations(Pos(s * 120, s * 62, -45)): Cylinder(10, 26)            # horn lug
+        hex_nut(56, 26, 30)
         with Locations(Pos(0, 0, -60)): Cylinder(25, 70)
     return p.part
 
