@@ -27,11 +27,12 @@ common.MATS.update({   # base colour (linear), metallic, roughness
     'chip':   ((0.02, 0.02, 0.025), 0.3, 0.35),
     'gold':   ((0.85, 0.62, 0.25), 1.0, 0.25),
     'batt':   ((0.05, 0.10, 0.25), 0.0, 0.40),
-    'lens':   ((0.55, 0.65, 0.70), 0.2, 0.05),
+    'lens':   ((0.16, 0.19, 0.22), 0.1, 0.04),
     'lcd':    ((0.02, 0.03, 0.05), 0.5, 0.10),
     'glass':  ((0.02, 0.02, 0.05), 0.8, 0.05),
     'foam':   ((0.20, 0.20, 0.21), 0.0, 0.90),
     'fabric': ((0.10, 0.10, 0.11), 0.0, 0.95),
+    'flex':   ((0.55, 0.30, 0.05), 0.0, 0.40),
 })
 
 # ---------------------------------------------------------------- shapes (y, z) in mm
@@ -80,6 +81,22 @@ def smooth(pts, n=6, closed=False):
             out.append(0.5 * (2 * p1 + (p2 - p0) * t + (2 * p0 - 5 * p1 + 4 * p2 - p3) * t * t + (3 * p1 - p0 - 3 * p2 + p3) * t ** 3))
     return out if closed else out + [pts[-1]]
 
+def holed_plate(m, outer, holes, x0, x1, mat):
+    """Flat plate between x0 and x1 with an outer (y, z) outline and through-holes (each a (y, z) outline)."""
+    def loop(pts, x): return [m.bm.verts.new(V((x, y, z))) for y, z in pts]
+    rings = [(loop(outer, x0), loop(outer, x1))] + [(loop(h, x0), loop(h, x1)) for h in holes]
+    for x, k, up in ((x0, 0, False), (x1, 1, True)):
+        es = []
+        for r in rings:
+            vs = r[k]; es += [m.bm.edges.new((vs[i], vs[(i + 1) % len(vs)])) for i in range(len(vs))]
+        fs = bmesh.ops.triangle_fill(m.bm, use_beauty=True, use_dissolve=True, edges=es, normal=X if up else -X)['geom']
+        for f in fs:
+            if isinstance(f, bmesh.types.BMFace):
+                f.material_index = m.mi(mat); f.smooth = True
+                if (f.normal.x > 0) != up: f.normal_flip()
+    m.bridge(rings[0][1], rings[0][0], mat)
+    for a, b in rings[1:]: m.bridge(a, b, mat)
+
 def band(m, pts, wdir, w, t, mat):
     """Flat strap along pts: width w along wdir (kept square to the path), thickness t."""
     rings = []
@@ -102,10 +119,21 @@ def shell():
     v.bridge(i[0], o[0], 'shell')
     for y, w, h, z in ((52, 21, 54, 0), (-52, 21, 54, 0), (0, 13, 30, -6)):                     # dark glossy sensor windows
         prism(v, rrect(w, h, w / 2 - 0.01, 8), lambda Y, Z: FRONT(Y, Z) - 1.0, lambda Y, Z: FRONT(Y, Z) + 1.6, 'gloss', off=(y, z))
+    for s in (1, -1):                                                                                # camera glass seen through each window
+        for z, r0 in ((-11, 4.6), (13, 4.0)):
+            c = V((FRONT(s * 52, z) + 1.7, s * 52, z))
+            v.disc(c, X, r0 + 1.1, 0.25, 'grey', 32, r_in=r0); v.disc(c, X, r0, 0.2, 'glass', 32)
+        for y, z in ((s * 76, -40.3),):                                                            # downward tracking camera windows
+            v.disc(V((16, y, z)), V((0, s * 0.45, -1)), 4.2, 1.2, 'gloss', 24)
+    for z, r0 in ((-1, 2.9), (-11, 2.9)):                                                            # depth sensor and its IR projector
+        c = V((FRONT(0, z) + 1.7, 0, z)); v.disc(c, X, r0 + 0.9, 0.25, 'grey', 24, r_in=r0); v.disc(c, X, r0, 0.2, 'glass', 24)
+    v.disc(V((FRONT(0, 7) + 1.7, 0, 7)), X, 1.1, 0.2, 'glass', 12)                                   # flood illuminator
     h = part('housing', explode=(-0.02, 0, 0))
     loft(h, [(-22, 0.985), (-20.5, 1), (12, 1)], 'shell', OUT)
     loft(h, [(12, 1), (-20, 1)], 'grey', INN)
-    prism(h, outline(90, 47.5, notch=20, n=72), -24, -21.6, 'dark')                                 # back plate around the lenses
+    hole = [(y, z + EYE_Z) for y, z in rrect(50, 45, 22.4, 10)]                                       # oval: the lenses slide with the IPD
+    holed_plate(h, outline(90, 47.5, notch=20, n=72), [[(y + s * IPD / 2, z) for y, z in hole] for s in (1, -1)], -24, -21.6, 'dark')
+    for k in range(4): h.disc(V((-14, -30 + 20 * k, -46.6)), Zv, 0.7, 1.4, 'dark', 10)               # microphone holes underneath
     for k in range(17): h.box(V((4, -40 + 5 * k, 48.6 - 4 * ((-40 + 5 * k) / 92) ** 2)), (12, 1.4, 1.6), 'dark')   # top intake vents
     for k in range(11): h.box(V((6, 48 + 3 * k, -46)), (9, 1.2, 1.6), 'dark')                        # exhaust vents underneath
 
@@ -119,6 +147,14 @@ def electronics():
     for y, z in ((-55, -8), (-48, 18), (40, 20), (56, -6), (-20, -18), (12, -20)):                   # board-to-board connectors
         bd.box(V((T + 0.65, y, z)), (1.3, 6.5, 3.2), 'dark'); bd.box(V((T + 1.35, y, z)), (0.2, 5.5, 2.2), 'gold')
     for k in range(8): bd.box(V((T + 0.4, -30 + 9 * k, -22 + 4 * (k % 2))), (0.8, 2.6, 2.6), 'chip')
+    for y, z, w, hh in ((-44, 4, 14, 16), (28, -12, 16, 9), (54, 14, 10, 9)):                         # RF / power shield cans
+        bd.box(V((T + 0.75, y, z)), (1.5, w, hh), 'metal')
+    import random; rnd = random.Random(3)
+    for k in range(70):                                                                               # capacitors and resistors
+        y, z = rnd.uniform(-60, 60), rnd.uniform(-24, 26)
+        if abs(y) < 32 and -6 < z < 16 or abs(y + 44) < 8 and abs(z - 4) < 9: continue
+        bd.box(V((T + 0.3, y, z)), (0.6, rnd.choice((1.0, 1.6)), 0.8), 'chip')
+    for y, z in ((-62, 12), (62, 8), (-30, 26), (30, 26), (0, -24)): bd.disc(V((T + 0.4, y, z)), X, 2.2, 0.8, 'gold', 16, r_in=1.1)
     soc = part('soc', explode=(0.075, 0, 0.0))
     soc.box(V((T + 0.5, 0, 4)), (1.0, 15, 15), 'pcb'); soc.box(V((T + 1.3, 0, 4)), (0.6, 11.5, 11.5), 'chip')
     part('memory', explode=(0.075, 0.02, 0)).box(V((T + 0.5, 18, 6)), (1.0, 12.4, 12.4), 'chip')
@@ -140,8 +176,11 @@ def electronics():
     cams = part('cameras', explode=(0.11, 0, 0))
     for s in (1, -1):
         for z, r0 in ((-11, 3.6), (13, 3.2)):                                                        # colour camera, tracking camera
-            c = V((24.0, s * 52, z)); cams.box(c - V((4.5, 0, 0)), (9, 9, 9), 'dark'); cams.disc(c + V((0.4, 0, 0)), X, r0, 1.0, 'glass', 20)
-        cams.box(V((15, s * 74, -31)), (8, 8, 8), 'dark')                                           # lower corner tracking cameras
+            c = V((24.0, s * 52, z)); cams.box(c - V((7.4, 0, 0)), (3.2, 10, 10), 'dark')          # sensor board
+            cams.disc(c - V((3.2, 0, 0)), X, r0 + 1.8, 5.2, 'dark', 24); cams.disc(c - V((0.3, 0, 0)), X, r0 + 1.2, 0.8, 'metal', 24, r_in=r0)
+            cams.disc(c + V((0.2, 0, 0)), X, r0, 0.6, 'glass', 20)
+        d = V((0, s * 0.45, -1)).normalized(); c = V((15, s * 76, -36))                              # lower corner tracking cameras, looking down
+        cams.box(c - d * 4, (7, 8, 8), 'dark'); cams.disc(c, d, 3.8, 3.4, 'dark', 20); cams.disc(c + d * 1.8, d, 3.0, 0.4, 'glass', 16)
         cams.box(V((22.1, s * 52, 1)), (1.0, 13, 36), 'metal')
     dp = part('depth_sensor', explode=(0.11, 0, -0.01))
     dp.box(V((22.6, 0, -6)), (4, 10, 20), 'dark')
@@ -150,8 +189,9 @@ def electronics():
     bt.box(V((3.4, 0, 10)), (6.0, 112, 40), 'batt'); bt.box(V((6.5, 14, 10)), (0.2, 64, 24), 'grey')
     fx = part('flex_cables', explode=(0.05, 0, -0.03))
     for s in (1, -1):
-        fx.sweep([V((21.8, s * 52, -16)), V((17, s * 40, -14)), V((T + 0.2, s * 30, -12))], 1.0, 'gold', 6)
-        fx.sweep([V((9.4, s * 40, -24)), V((2, s * 46, -28)), V((-5.5, s * 40, -27))], 1.0, 'gold', 6)
+        band(fx, smooth([V((21.8, s * 52, -17)), V((19, s * 46, -16)), V((14, s * 40, -14)), V((T + 1.4, s * 30, -12))], 5), Zv, 6, 0.3, 'flex')
+        band(fx, smooth([V((T, s * 40, -24)), V((4, s * 45, -27)), V((-2, s * 44, -28)), V((-5.5, s * 40, -27))], 5), V((0, 1, 0)), 7, 0.3, 'flex')
+        fx.box(V((T + 1.6, s * 30, -12)), (1.2, 7, 3), 'dark')
 
 def optics():
     rail = part('ipd_rail', explode=(-0.02, 0, -0.05))
@@ -179,12 +219,21 @@ def wearables():
     f.sweep(loop + loop[:2], 9.5, 'foam', 14, caps=False)
     a = part('side_arms', explode=(-0.03, 0, 0.03))
     for s in (1, -1):
-        a.sweep([V((4, s * 90.5, 2)), V((-30, s * 92, 1)), V((-80, s * 88, -2)), V((-120, s * 83, -3))], [5.0, 4.6, 4.2, 3.8], 'shell', 14)
-        a.disc(V((2, s * 87, 2)), Y, 9, 6, 'grey', 24)                                              # hinge
+        band(a, smooth([V((2, s * 90.5, 1)), V((-30, s * 92.5, 0)), V((-80, s * 89, -2)), V((-112, s * 84, -3))], 6), Zv, 15, 5.5, 'shell')
+        a.disc(V((2, s * 87, 1)), Y, 8.5, 7, 'grey', 32); a.disc(V((2, s * 91, 1)), Y, 3, 1.4, 'metal', 16)   # hinge and its pin
+        for z in (-14.5, 8.5): a.box(V((-118, s * 83.4, z - 3)), (14, 5, 3), 'shell')                    # strap loop the head strap threads through
+        a.box(V((-124, s * 82.8, -3)), (3, 5, 26), 'shell')
     sp = part('speakers', explode=(-0.03, 0, -0.03))
-    for s in (1, -1): sp.sweep([V((-73, s * 86, -9)), V((-94, s * 85, -9.5))], 3.0, 'grey', 12)
+    for s in (1, -1):                                                                                # speaker in the arm, grille slots facing the ear
+        for k in range(9):
+            x = -72 - 2.6 * k; y = s * (89 + (x + 80) * 0.11)
+            sp.box(V((x, y - s * 2.9, -2.2)), (1.1, 0.5, 9), 'dark')
+        sp.box(V((-82.4, s * (89 + 2.4 * 0.11) - s * 1.0, -2.2)), (26, 3.4, 11), 'grey')
     b = part('buttons', explode=(0, 0.03, 0))
-    b.box(V((4, 93.5, -6)), (10, 2, 4), 'grey'); b.box(V((6, -62, -47.8)), (4.5, 14, 2), 'grey')
+    rbox(b, V((4, 93.2, -6)), (11, 2.4, 4.2), 1.0, 'grey')                                          # power
+    rbox(b, V((6, -62, -48.2)), (5, 16, 2.2), 0.9, 'grey')                                           # volume rocker
+    for y in (-67, -57): b.disc(V((6, y, -49.4)), Zv, 1.3, 0.6, 'grey', 12)
+    b.disc(V((4, 92.9, 3)), Y, 0.9, 1.2, 'glass', 10)                                               # status light
     b.box(V((-26, 96.2, -4)), (10, 2.4, 3.8), 'metal')                                              # USB-C port
     st = part('strap', explode=(-0.12, 0, 0))
     back = [V((-110, 83, -3)), V((-165, 86, -2)), V((-225, 66, -1)), V((-248, 0, 0)), V((-225, -66, -1)), V((-165, -86, -2)), V((-110, -83, -3))]
@@ -199,7 +248,9 @@ def build():
 
 VIEWS = {'front_34': ((0.42, 0.30, 0.16), (-0.05, 0, 0), 40), 'back_34': ((-0.55, -0.30, 0.20), (-0.04, 0, 0), 40),
          'inside': ((0.20, -0.32, 0.18), (0.0, 0, 0), 40),
-         'detail_front': ((0.24, 0.15, 0.10), (0.01, 0, 0), 60), 'detail_back': ((-0.22, -0.13, 0.07), (-0.01, 0, 0), 60)}
+         'detail_front': ((0.24, 0.15, 0.10), (0.01, 0, 0), 60), 'detail_back': ((-0.22, -0.13, 0.07), (-0.01, 0, 0), 60),
+         'front': ((0.45, 0, 0.02), (0, 0, 0), 50), 'top': ((0.02, 0, 0.45), (-0.04, 0, 0), 40), 'below': ((0.15, 0.10, -0.30), (-0.01, 0, -0.03), 50),
+         'side': ((-0.02, 0.40, 0.03), (-0.04, 0, 0), 40), 'face': ((-0.33, 0.0, 0.02), (-0.03, 0, 0), 50)}
 
 if __name__ == '__main__':
     run(__file__, build, VIEWS, ((0.42, 0.30, 0.16), (-0.085, 0, 0.012), 68))
