@@ -58,6 +58,7 @@ None of its code, models or media are in this repository; everything here was re
 | Helicopter shell from a Tripo3D mesh (Tripo paid plan): stretched onto the CAD rotor hub and tail rotor, Tripo rotors, skids and cyclic sticks cut away, decimated to ~24k triangles with a 2048 texture, split along its own pieces into fuselage (with Tripo seats and panel), canopy, hinged front and rear doors, transmission and engine cowlings, tail boom and tail fins; pilot controls and fuel tank moved to fit it | — | `ddfc3af` | 2026-10-28 |
 | UI redesign: landing hero that starts the first lesson in one tap, lesson-led exhibit cards, own line-icon set (no emoji), glass panels and lesson progress bar in the exhibit view; photo kept as a secondary entry | — | `d156fbc` | 2026-10-28 |
 | Continuous lessons and free camera: a 連貫 toggle shows every step's parts and drives together while the captions walk through the cause-and-effect chain on a loop; dragging the camera during a lesson stops the steps from re-aiming it | — | `83efd34` | 2026-10-28 |
+| First-person ride (坐上去) on the motorbike and car: eye-point camera with drag look-around, a road rolling at the driven wheel's speed, throttle and per-gear drives (moto 6, car 5) with real rpm and km/h from the gear ratios, x-ray to the drivetrain, car shell lifted like a convertible | — | `ee5a780` | 2026-10-28 |
 
 ## Third-party (unmodified dependencies, used under their licenses)
 | Package | License |
