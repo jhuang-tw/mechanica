@@ -42,6 +42,7 @@
 |---|---|---|
 | `GET /api/status` | – | `{meta}` 是否可用 |
 | `POST /api/ask` | `{exhibit, text, pointed?, history?}` | `{say, steps[]}` |
+| `POST /api/tutor` | `{exhibit, answer?, history?, known?[{concept, verdict}], focus?}` | `{say, grade?{verdict, concept, gap}, question?{q, choices[]}, steps[]}` |
 | `POST /api/identify` | 圖片（不儲存） | `{match, exhibit, confidence, machine, parts[≤4], say}` |
 | `POST /api/segment?exhibit=&part=` | 圖片 | `{exhibit, results:[{part, masks:[{bounds, width, height, path}]}]}` |
 | `POST /api/stt?exhibit=` | 16 kHz 單聲道 WAV | `{text}` |

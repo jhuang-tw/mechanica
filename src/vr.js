@@ -215,12 +215,13 @@ export class VR {
     const close = (fn) => () => { this.menu.mesh.visible = false; fn(); };
     row(a.ex.lessons.map((l) => ({ label: `⛓ ${l.title}`, size: 28, on: close(() => a.startLesson(l, false)) })));
     row([
+      { label: '🎓 AI 家教', on: close(() => a.startTutor()) },
       { label: '❓ 先猜再看', on: close(() => a.quizLesson()) },
       { label: a.rig.explodeTarget > 0.5 ? '🧩 合起來' : '💥 拆開', on: () => { a.explode(a.rig.explodeTarget > 0.5 ? 0 : 1); this.drawMenu(); } },
       { label: '↺ 重設', on: close(() => { a.reset(); this.fitStage(); }) },
     ]);
     row([
-      { label: a.recording ? '⏹ 說完了' : '🎤 問 AI', color: a.recording ? C.rec : undefined, on: () => { a.talk(!a.recording); setTimeout(() => this.menu.mesh.visible && this.drawMenu(), 50); } },
+      { label: a.recording ? '⏹ 說完了' : a.tutoring ? '🎤 回答家教' : '🎤 問 AI', color: a.recording ? C.rec : undefined, on: () => { a.talk(!a.recording); setTimeout(() => this.menu.mesh.visible && this.drawMenu(), 50); } },
       { label: '✕ 關選單', on: () => (this.menu.mesh.visible = false) },
       { label: '🚪 離開 VR', on: () => this.xr.getSession()?.end() },
     ]);

@@ -117,3 +117,44 @@ export async function transcribe({ wav, exhibit: id }) {
     return { text: r.text && r.text.length <= raw.length * 2 + 10 ? r.text : raw };   // a runaway answer is not a transcript
   } catch { return { text: raw }; }
 }
+
+// ---------- AI tutor: Socratic turns that grade the learner, drive the model and adapt the next question ----------
+// One Muse call per turn: grade the last answer, demonstrate with the same tools as choreograph(), ask the next question.
+const VERDICTS = ['right', 'partial', 'wrong'];
+export function tutorTools(e) {
+  return [...toolsFor(e),
+    { name: 'grade', description: '學生剛回答時呼叫：評他的答案', parameters: { type: 'object', required: ['verdict', 'concept'], properties: {
+      verdict: { type: 'string', enum: VERDICTS, description: 'right=講出因果；partial=方向對但漏了關鍵；wrong=錯或有迷思' },
+      concept: { type: 'string', description: '這題考的概念，≤ 12 字' },
+      gap: { type: 'string', description: '漏掉的關鍵或迷思，≤ 30 字；答對留空' } } } },
+    { name: 'ask', description: '問學生下一題（每一輪都要呼叫一次）', parameters: { type: 'object', required: ['question'], properties: {
+      question: { type: 'string', description: '一次只問一件事，≤ 40 字，答案看模型就能推出來' },
+      choices: { type: 'array', items: { type: 'string' }, description: '學生卡住時才給 2–3 個選項（含 1 個對的），否則不給' } } } },
+  ];
+}
+const clip = (v, n) => (typeof v === 'string' ? v.trim().slice(0, n) : '');
+export function cleanTurn(calls, e) {
+  const g = calls.find((c) => c.name === 'grade')?.args, q = calls.find((c) => c.name === 'ask')?.args;
+  const grade = g && VERDICTS.includes(g.verdict) ? { verdict: g.verdict, concept: clip(g.concept, 20) || '這一題', gap: clip(g.gap, 60) } : null;
+  const choices = (Array.isArray(q?.choices) ? q.choices : []).map((c) => clip(c, 40)).filter(Boolean).slice(0, 3);
+  return { grade, question: clip(q?.question, 80) ? { q: clip(q.question, 80), choices: choices.length >= 2 ? choices : [] } : null, steps: cleanSteps(calls, e) };
+}
+export async function tutor({ exhibit: id, answer, history = [], known = [], focus }) {
+  const e = exhibit(id), part = e.parts.find((p) => p.id === focus);
+  const course = (e.lessons || []).map((l) => `${l.title}：${l.steps.map((s) => s.say).join(' ')}`).join('\n');
+  const record = known.length ? known.map((k) => `${k.concept}：${{ right: '懂了', partial: '半懂', wrong: '答錯' }[k.verdict]}`).join('、') : '第一次上課';
+  const system = `你是「${e.title || e.name}」3D 模型旁的機械家教，用蘇格拉底式教法：不直接給答案，用問題帶學生自己推理，再動模型讓他親眼確認。
+每一輪都在同一個回覆裡一起呼叫多個工具：grade（學生有回答時）＋動模型的工具＋ask，三樣都要有。
+1. 學生剛回答就呼叫 grade。口語、錯字、講得不完整都看意思評。
+2. 用工具動模型給他看：isolate 相關零件，有連動就 drive，要看清楚就 detach，整段 3–10 秒。
+3. 呼叫 ask 問下一題。答對就往下一層因果走、加深；半對或答錯就把同一個概念拆小再問；連錯兩題就給 choices。
+4. 文字回覆會被唸出來，直接對學生說（用「你」）：台灣繁體中文口語 ≤ 60 字，先回應他的答案（對在哪、漏了什麼），不要重複題目。數字只能用下面資料裡有的。
+學生的紀錄：${record}。從沒學過或答錯過的概念先教。${part ? `\n他剛拍了真的${part.name}，從${part.name}開始。` : ''}
+零件（id=名稱：說明）：
+${e.parts.map((p) => `${p.id}=${p.name}${p.info ? '：' + p.info : ''}`).join('\n')}
+課綱（正確的因果）：
+${course}`;
+  const user = answer ? `我的回答：${answer}` : '開始上課，先問我第一題。';
+  const r = await chat({ system, tools: tutorTools(e), maxTokens: 900, messages: [...history.slice(-6), { role: 'user', content: user }] });
+  return { say: r.text.slice(0, 200), ...cleanTurn(r.calls, e), model: r.model };
+}

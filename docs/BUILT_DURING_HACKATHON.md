@@ -41,6 +41,7 @@ None of its code, models or media are in this repository; everything here was re
 | Q&A agent that drives the exhibit | Muse Spark tool calling | `468ce33` (server) | 2026-10-27 |
 | AI-choreographed part demos (server checks every step against the manifest) | Muse Spark tool calling | `468ce33` (server) | 2026-10-27 |
 | Voice questions (+ one Muse Spark pass: simplified → traditional, part-name fixes) | Muse Voice Transcribe, Muse Spark | `468ce33` (server) | 2026-10-27 |
+| AI tutor (AI 家教): Socratic questions, grading of free-form spoken or typed answers (right / partial / misconception), a demo on the 3D model aimed at the gap, adaptive next question (choices after repeated misses), learner record per exhibit so a return visit starts from weak spots, photo of a real machine starts the tutor at that part, VR menu entry. One Muse call per turn | Muse Spark tool calling, Muse Voice Transcribe | `899702d` | 2026-10-28 |
 | Daily spend caps for the public demo | — | `468ce33` (server) | 2026-10-27 |
 | Bicycle model from scratch: CAD drivetrain (build123d), Blender build with one node per manifest part, phone GLB optimizer | — | `1b8f2dd` | 2026-10-27 |
 | Car exhibit mechanisms from scratch: CAD inline-four engine, 5-speed gearbox, differential, wheels and brakes; Blender chassis, steering, suspension | — | `ba0aa36` | 2026-10-27 |
