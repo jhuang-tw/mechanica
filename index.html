@@ -144,6 +144,8 @@
   #fix.thinking #f-q::after { content:" …"; animation:blink 1s infinite; }
   #f-choices { display:flex; flex-wrap:wrap; gap:6px; } #f-choices:empty { display:none; }
   #f-choices button { padding:8px 13px; font-size:14px; border-radius:999px; background:rgba(255,255,255,.08); border:1px solid var(--line2); }
+  #f-choices button.out { opacity:.4; text-decoration:line-through; }
+  #f-v .clue { display:block; margin-top:4px; color:var(--accent2); }
   #f-choices button.go { background:var(--accent); color:var(--ink); border:0; font-weight:700; }
   #f-hint { color:var(--dim); font-size:12px; }
   #tutor { border-radius:var(--r); padding:4px 6px 10px 14px; display:grid; grid-template-columns:minmax(0,1fr); gap:4px; max-height:34vh; overflow:auto; }
@@ -234,7 +236,7 @@
     <div id="quiz" hidden></div>
     <div id="fix" class="glass" hidden>
       <div class="row"><b id="f-bar" data-t="fixBar">Repair challenge</b><button id="f-help" type="button" data-t="help">Hint</button></div>
-      <p id="f-v"></p><p id="f-q"></p><div id="f-choices"></div><small id="f-hint" data-t="fixHint">Tap the mic and say your guess, or tap the part you suspect</small>
+      <p id="f-v"></p><p id="f-q"></p><div id="f-choices"></div><small id="f-hint" data-t="fixHint">Pick a guess, or say your own with the mic, or tap the part you suspect</small>
     </div>
     <div id="tutor" class="glass" hidden>
       <div class="row"><b id="t-bar" data-t="tutorName">AI tutor</b><button id="t-show" type="button" data-t="tShow">I don't know, show me</button><button id="t-stop" type="button" aria-label="End tutor" data-t-aria="tStop"><svg class="i"><use href="#i-x"/></svg></button></div>

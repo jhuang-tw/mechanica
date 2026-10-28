@@ -74,6 +74,8 @@
    "symptom": "With the engine running, the fan and the turbines at the back are turning, but the high-pressure compressor in the middle has stopped and thrust has dropped a lot. What do you think is broken?",
    "hint": "The compressor has no motor of its own. What turns at the back, and what carries its force to the front?",
    "suspects": ["The combustor flamed out", "The high-pressure shaft broke", "The fan blades are damaged"],
+   "observe": "The fan at the front and the turbines at the back spin; only the middle stops. Look at how front and back are connected.",
+   "whys": ["If the combustor flamed out there would be no hot gas, and the turbines would stop too. But they are still spinning.", "", "The fan is spinning, and it is driven by the low-pressure shaft, a different path from the high-pressure compressor."],
    "cause": "The high-pressure shaft linking the high-pressure turbine and compressor has broken. The turbine still turns, but its force can't reach the compressor in front.",
    "why": "Why does thrust drop when the high-pressure shaft breaks and the compressor stops?",
    "answer": "The burnt gas spins the high-pressure turbine, and the high-pressure shaft carries that to the high-pressure compressor, which squeezes the air. With the shaft broken the compressor stops, too little air reaches the combustor, less gas is produced, and the thrust drops."

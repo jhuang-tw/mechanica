@@ -106,6 +106,8 @@
    "symptom": "In 1st gear with the throttle open, the crankshaft spins fast, but the rear wheel barely moves. What do you think is broken?",
    "hint": "Where does the engine's force go first, before it reaches the gearbox? Find the point after which everything stops.",
    "suspects": ["The chain broke", "The clutch is slipping", "The engine has no power"],
+   "observe": "The crankshaft spins fast. Find the first part that can't keep up.",
+   "whys": ["The chain is still on both sprockets. The problem is further forward: the mainshaft itself barely turns.", "", "The engine spins fast, so it has power. The power is lost before it gets into the gearbox."],
    "cause": "The clutch plates are worn and slipping. The clutch basket turns with the engine, but the gearbox mainshaft inside isn't driven.",
    "why": "Why doesn't the rear wheel move with a slipping clutch, however fast the engine spins?",
    "answer": "The clutch passes the engine's turning to the gearbox mainshaft through friction plates. When they slip past each other, the force never enters the gearbox, so the countershaft, chain and rear wheel get nothing."

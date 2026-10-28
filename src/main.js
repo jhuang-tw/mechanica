@@ -358,7 +358,7 @@ function setMode(m) { $('m-fix').setAttribute('aria-pressed', String(m === 'fix'
 async function learn(id = ex?.id) { await open(id); stopAll(); setMode('learn'); say(ex.name, ex.intro); }
 $('m-learn').onclick = () => { if (fix) learn(); };
 $('m-fix').onclick = () => { if (!fix && ex.faults?.length) startFix(`${ex.id}/${ex.faults[0].id}`); };
-const card = (cls, label, text) => { $('f-v').className = cls; $('f-v').replaceChildren(...(label ? [Object.assign(document.createElement('b'), { textContent: label }), ' '] : []), text); };
+const card = (cls, label, text, clue) => { $('f-v').className = cls; $('f-v').replaceChildren(...(label ? [Object.assign(document.createElement('b'), { textContent: label }), ' '] : []), text, ...(clue ? [Object.assign(document.createElement('span'), { className: 'clue', textContent: t('clueLine', clue) })] : [])); };
 const choices = (items) => $('f-choices').replaceChildren(...items.map(([text, run, go]) => Object.assign(document.createElement('button'), { type: 'button', textContent: text, className: go ? 'go' : '', onclick: run })));
 const driveParts = (f) => [...new Set([...(ex.drives.find((d) => d.id === f.drive)?.moves || []).map((m) => m.part), ...f.broken])];
 async function startFix(key) {
@@ -366,11 +366,11 @@ async function startFix(key) {
   if (!c) return learn(list[0]);
   await open(c.ex);
   stopAll(); speak('');
-  fix = { ...c, stage: 'diagnose', tries: 0, help: 0, history: [] };
+  fix = { ...c, stage: 'diagnose', tries: 0, help: 0, history: [], out: new Set() };
   rig.setFault(c.f);
   document.body.classList.add('fix'); $('fix').hidden = false; setMode('fix');
   $('f-bar').textContent = t('fixBarEx', ex.name);
-  card('', '', ''); choices([]); $('f-help').hidden = false; $('f-help').textContent = t('help'); $('f-hint').hidden = false; $('f-hint').textContent = t('fixHint');
+  card('', t('look'), c.f.observe); suspects(fix); $('f-help').hidden = false; $('f-help').textContent = t('help'); $('f-hint').hidden = false; $('f-hint').textContent = t('fixHint');
   $('f-q').textContent = c.f.symptom;
   symptom();
   speak(c.f.symptom); vr?.say(c.f.symptom);
@@ -416,8 +416,33 @@ async function fixTurn(text, pointed) {
   $('f-q').textContent = t('sayAgain', x.f.why);
   symptomT = setTimeout(symptom, Math.max(wait, 1500));
 }
-// a guess list after the first miss (or 提示), so nobody is stuck without words for the part
-function suspects(x) { if (x.stage === 'diagnose') choices((x.f.suspects || []).map((g) => [g, () => fixTurn(g)])); }
+// three guesses from the start (a ruled-out one stays greyed); the mic, the keyboard and a tapped part still go to Muse
+function suspects(x) {
+  if (x.stage !== 'diagnose') return;
+  choices((x.f.suspects || []).map((g, i) => [g, () => pickSuspect(x, i)]));
+  [...$('f-choices').children].forEach((b, i) => { if (x.out.has(i)) { b.disabled = true; b.className = 'out'; } });
+}
+// a picked guess is answered at once from the exhibit: right → repair; wrong → why not, that part shown working, and a clue
+function pickSuspect(x, i) {
+  if (fix !== x || x.busy || x.stage !== 'diagnose' || x.out.has(i)) return;
+  const f = x.f;
+  clearTimeout(symptomT); viewer.choreo.cancel();
+  x.tries++;
+  if (i === f.right) {
+    x.history = [...x.history, { role: 'user', content: f.suspects[i] }, { role: 'assistant', content: f.cause }].slice(-4);
+    card('right', t('found'), f.cause); choices([]); $('f-help').hidden = true; rig.highlight(f.broken);
+    speak(f.cause); vr?.say(f.cause);
+    symptomT = setTimeout(() => fix === x && repair(x), 3500);
+    return;
+  }
+  x.out.add(i);
+  x.history = [...x.history, { role: 'user', content: f.suspects[i] }, { role: 'assistant', content: f.whys[i] }].slice(-4);
+  card('wrong', t('notIt'), f.whys[i], f.hint); suspects(x);
+  $('f-q').textContent = t('tryAgain'); $('f-hint').hidden = true;   // the symptom was read already; keep the guesses in view
+  speak(`${f.whys[i]} ${f.hint}`); vr?.say(f.whys[i]);
+  rig.reset(); rig.isolate([...new Set([...f.show[i], ...(f.see || driveParts(f))])]); rig.highlight(f.show[i]); rig.drive(f.drive, f.speed ?? 0.5);
+  symptomT = setTimeout(symptom, 6000);
+}
 // without the AI: a guess that names a broken part (or taps one) is found; an explanation is answered with the right one
 function offlineFix(x, text, pointed) {
   if (x.stage === 'diagnose') {
