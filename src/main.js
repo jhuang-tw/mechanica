@@ -15,8 +15,8 @@ const exhibits = {};   // id -> manifest
 let viewer, ex, rig, chat = [], pointed = null, lesson = null, quiz = null, vr = null, tutor = null, explain = null, flow;   // flow: the 連貫 caption timer
 
 // ---------- landing ----------
-const list = (await (await fetch(`${BASE}index.json`)).json()).exhibits;
 applyStatic();
+const list = (await (await fetch(`${BASE}index.json`)).json()).exhibits;
 for (const b of document.querySelectorAll('.lang')) { b.textContent = t('switchTo'); b.setAttribute('aria-label', t('switchAria')); b.onclick = switchLang; }
 // English: each manifest gets its en.json words laid over it (src/localize.js)
 const getJSON = async (u) => { const r = await fetch(u); if (!r.ok) throw new Error(r.status); return r.json(); };

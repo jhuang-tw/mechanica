@@ -1,5 +1,5 @@
-// Two languages: 繁體中文 (the default, also for any Chinese browser) and English.
-// The choice: ?lang=en|zh, then the one saved by the switch, then the browser's languages.
+// Two languages: English (the default) and 繁體中文.
+// The choice: ?lang=en|zh, then the one saved by the switch, else English.
 // t(key, ...args) gives the string in the current language; index.html marks its fixed text with data-t / data-t-aria.
 const saved = () => { try { return localStorage.getItem('mechanica.lang'); } catch { return null; } };
 function detect() {
@@ -7,9 +7,7 @@ function detect() {
   const q = new URLSearchParams(location.search).get('lang');
   if (q === 'en' || q === 'zh') return q;
   const s = saved();
-  if (s === 'en' || s === 'zh') return s;
-  const first = (navigator.languages?.length ? navigator.languages : [navigator.language || 'zh']).find((l) => /^(zh|en)\b/i.test(l)) || 'en';
-  return /^zh/i.test(first) ? 'zh' : 'en';
+  return s === 'zh' ? 'zh' : 'en';
 }
 export const lang = detect();
 export const isEn = lang === 'en';

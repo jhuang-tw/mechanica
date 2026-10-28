@@ -33,7 +33,7 @@
 
 `manifest.json` 是唯一的來源（id、數字、動作、中文）；同一個資料夾的 `en.json` 只放英文字，用 id 對應：`{name, title, intro, suggest[], looksLike, ride?{hint}, parts:{id:{name, info, aliases[]}}, drives:{id: name}, lessons:{id:{title, steps:[{say, quiz?{q, options:[[text, why]]}}]}}, faults:{id:{title, short, symptom, hint, suspects[], cause, why, answer}}}`。`src/localize.js` 把它疊上去，瀏覽器和伺服器共用。新增零件還沒翻譯時，英文版先用它的 `en` 名稱。`test/i18n.test.mjs` 會檢查每個字都有英文、英文版沒有殘留中文。
 
-語言：`?lang=en|zh` → 切換鈕存的選擇 → 瀏覽器語言（中文以外都是英文）。介面字串在 `src/i18n.js`。
+語言：`?lang=en|zh` → 切換鈕存的選擇 → 預設英文。index.html 本身是英文。介面字串在 `src/i18n.js`。
 
 ### model.glb
 
