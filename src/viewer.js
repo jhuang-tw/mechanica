@@ -3,9 +3,9 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
-import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { Rig } from './rig.js';
 import { Choreo } from './choreo.js';
+import { Studio } from './look.js';
 
 const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
 const cache = new Map();   // url -> Promise<gltf>
@@ -16,15 +16,11 @@ export class Viewer {
     this.panel = panel;   // the element covering the right side, if any: the view is centred on what's left
     const r = this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
     r.setPixelRatio(Math.min(devicePixelRatio, 2));
-    r.toneMapping = THREE.ACESFilmicToneMapping;
     r.xr.enabled = true;
     const scene = this.scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x10151c);
-    scene.environment = new THREE.PMREMGenerator(r).fromScene(new RoomEnvironment(), 0.04).texture;
-    const sun = new THREE.DirectionalLight(0xffffff, 1.6); sun.position.set(2, 4, 3);
-    const floor = this.floor = new THREE.Mesh(new THREE.CircleGeometry(3, 64).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ color: 0x1b232d, roughness: 0.9 }));
     this.stage = new THREE.Group();   // the exhibit sits on this; VR moves the stage, not the camera
-    scene.add(sun, floor, this.stage);
+    scene.add(this.stage);
+    this.studio = new Studio(r, scene, this.stage, matchMedia('(pointer: coarse)').matches);
     this.camera = new THREE.PerspectiveCamera(45, 1, 0.02, 100);
     this.controls = new OrbitControls(this.camera, canvas);
     Object.assign(this.controls, { enableDamping: true, enablePan: false, minDistance: 0.4, maxDistance: 6, maxPolarAngle: Math.PI * 0.55 });
@@ -43,6 +39,7 @@ export class Viewer {
         if (this.camera.position.distanceTo(this.goal.pos) < 0.005) this.goal = null;
       }
       if (!r.xr.isPresenting) this.controls.update();
+      this.studio.update();
       r.render(scene, this.camera);
     });
   }
@@ -62,6 +59,7 @@ export class Viewer {
     this.model = gltf.scene;   // kept: the rig resets it on every visit
     this.stage.add(this.model);
     this.rig = new Rig(this.model, manifest);
+    this.studio.fit(this.model, manifest.look);
     this.rig.onIsolate = (ids) => this.focus(ids);
     this.choreo = new Choreo(this.rig);
     this.frame();
@@ -74,7 +72,6 @@ export class Viewer {
     this.goal = null;
     const box = new THREE.Box3().setFromObject(this.model), s = box.getSize(new THREE.Vector3()).length();
     Object.assign(this.controls, { minDistance: s * 0.05, maxDistance: s * 4 });
-    this.floor.scale.setScalar(Math.max(1, s / 2.5));
     this.fit(box, new THREE.Vector3(...(this.rig?.m.view || [0.55, 0.35, 1])).normalize());   // manifest `view`: the side worth seeing first (a cutaway)
     this.camera.position.copy(this.goal.pos); this.controls.target.copy(this.goal.target); this.goal = null;
     this.controls.update();

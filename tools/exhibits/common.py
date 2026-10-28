@@ -14,7 +14,11 @@ def material(name):
     m = bpy.data.materials.new(name); m.use_nodes = True
     b = m.node_tree.nodes['Principled BSDF']; c, met, rough = MATS[name]
     b.inputs['Base Color'].default_value = (*c, 1); b.inputs['Metallic'].default_value = met; b.inputs['Roughness'].default_value = rough
+    if 'paint' in name: coat(b)
     return m
+
+def coat(b, rough=0.12):   # lacquer over paint: exported as KHR_materials_clearcoat
+    b.inputs['Coat Weight'].default_value = 0.8; b.inputs['Coat Roughness'].default_value = rough
 
 # ---------------------------------------------------------------- mesh builder: one bmesh per part, faces tagged by material
 class Mesh:
@@ -118,8 +122,8 @@ def shell_material(img, name='body_paint', tex=2048):
     px = np.array(img.pixels[:], dtype=np.float32).reshape(-1, 4)
     v = px[:, :3].max(1); sat = (v - px[:, :3].min(1)) / np.maximum(v, 1e-4)
     paint = np.clip((v - 0.45) / 0.20, 0, 1) * np.clip((0.25 - sat) / 0.15, 0, 1)
-    metal = 0.55 * paint
-    rough = 0.62 - 0.27 * paint - 0.3 * np.clip((sat - 0.4) / 0.3, 0, 1)
+    metal = 0.3 * paint                                     # less chrome: Tripo's wavy surfaces look dented in sharp reflections
+    rough = 0.6 - 0.18 * paint - 0.3 * np.clip((sat - 0.4) / 0.3, 0, 1)
     mr = bpy.data.images.new(name + '_mr', tex, tex)
     mr.pixels.foreach_set(np.stack([np.ones_like(v), np.clip(rough, 0.05, 1), metal, np.ones_like(v)], 1).ravel())
     mr.scale(tex // 2, tex // 2)                                                      # the exporter only keeps saved pixels: write, reload
@@ -131,6 +135,9 @@ def shell_material(img, name='body_paint', tex=2048):
     tm = nt.nodes.new('ShaderNodeTexImage'); tm.image = mr; mr.colorspace_settings.name = 'Non-Color'
     sep = nt.nodes.new('ShaderNodeSeparateColor'); nt.links.new(tm.outputs['Color'], sep.inputs['Color'])
     nt.links.new(sep.outputs['Green'], b.inputs['Roughness']); nt.links.new(sep.outputs['Blue'], b.inputs['Metallic'])
+    coat(b, 0.3); SHELLS.add(name)
+
+SHELLS = set()   # Tripo shell materials: no bevels (decimated scan meshes)
 
 def tripo_shell(path, axle_x, cut, tris, classify, nodes, turn=pi / 2, mat='body_paint'):
     """Import a Tripo GLB as exhibit parts. It is turned so its nose is +x, scaled so the lowest points of its two tyres land on
@@ -185,16 +192,40 @@ def tripo_shell(path, axle_x, cut, tris, classify, nodes, turn=pi / 2, mat='body
     bpy.data.objects.remove(ob)
     return True
 
+def bevel(m, size):
+    """Round the hard edges (> 40 degrees) of everything but Tripo shells, so they catch a highlight instead of a hard
+    black/white line. Width: a small share of the exhibit (`size` = its diagonal), never more than an eighth of the part's
+    thinnest side."""
+    bm = m.bm; bm.verts.ensure_lookup_table()
+    if not bm.verts: return
+    shell = {i for i, n in enumerate(m.mats) if n in SHELLS}
+    lo = V([min(v.co[i] for v in bm.verts) for i in range(3)]); hi = V([max(v.co[i] for v in bm.verts) for i in range(3)])
+    w = min(size * 0.0012, max(min(hi - lo), size * 0.002) * 0.12)
+    es = [e for e in bm.edges if len(e.link_faces) == 2 and e.calc_face_angle(0) > radians(40)
+          and not any(f.material_index in shell for f in e.link_faces)]
+    if es: bmesh.ops.bevel(bm, geom=es, offset=w, segments=2, profile=0.5, affect='EDGES', clamp_overlap=True)
+
 def make_objects():
     obs = {}
+    vs = [v.co for p in PARTS.values() for v in p['m'].bm.verts]
+    size = (V([max(c[i] for c in vs) for i in range(3)]) - V([min(c[i] for c in vs) for i in range(3)])).length
     for pid, p in PARTS.items():
-        me = bpy.data.meshes.new(pid); p['m'].bm.to_mesh(me); p['m'].bm.free()
-        for mat in p['m'].mats: me.materials.append(material(mat))
-        piv = p['pivot'] or V((0, 0, 0))
-        me.transform(Matrix.Translation(-piv))
-        me.set_sharp_from_angle(angle=radians(40))
-        ob = bpy.data.objects.new(pid, me); bpy.context.scene.collection.objects.link(ob)
-        ob.location = piv; obs[pid] = ob
+        bevel(p['m'], size)
+        piv = p['pivot'] or V((0, 0, 0)); ob = None
+        # one object per material (extra ones are children `<id>~<material>`): the glTF exporter writes vertex colours
+        # (baked AO) only for an object's first material, and AO must not blend across a material border
+        for k, mat in enumerate(p['m'].mats):
+            bm = p['m'].bm.copy()
+            bmesh.ops.delete(bm, geom=[f for f in bm.faces if f.material_index != k], context='FACES')
+            if not bm.faces: bm.free(); continue
+            for f in bm.faces: f.material_index = 0
+            me = bpy.data.meshes.new(pid); bm.to_mesh(me); bm.free(); me.materials.append(material(mat))
+            me.transform(Matrix.Translation(-piv))
+            me.set_sharp_from_angle(angle=radians(40))
+            o = bpy.data.objects.new(pid if ob is None else f'{pid}~{mat}', me); bpy.context.scene.collection.objects.link(o)
+            if ob is None: ob = o; ob.location = piv
+            else: o.parent = ob
+        p['m'].bm.free(); obs[pid] = ob
         if p['axis'] is not None: ob['axis'] = g(V(p['axis']).normalized())
         ob['explode'] = g(p['explode'])
     for pid, p in PARTS.items():
@@ -202,6 +233,33 @@ def make_objects():
             ob, par, pp = obs[pid], obs[p['parent']], PARTS[p['parent']]['pivot'] or V((0, 0, 0))
             ob.parent = par; ob.location = (p['pivot'] or V((0, 0, 0))) - pp   # no rotations anywhere: world pivots subtract (chains too)
     return obs
+
+def bake_ao(size):
+    """Cycles ambient occlusion into a vertex colour, multiplied by the base colour: parts get depth where they nest
+    (a gear inside its case) at no runtime cost. Tripo shells keep their texture and get none."""
+    import numpy as np
+    sc = lights_camera((64, 64), 'CYCLES'); sc.cycles.samples = 64
+    sc.world.light_settings.distance = size * 0.05
+    sc.render.bake.target = 'VERTEX_COLORS'
+    obs = [o for o in bpy.data.objects if o.type == 'MESH' and o.data.materials[0].name in MATS]
+    for o in bpy.data.objects: o.select_set(o in obs)
+    for o in obs:
+        o.data.color_attributes.active_color = o.data.color_attributes.new('AO', 'FLOAT_COLOR', 'POINT')
+    bpy.context.view_layer.objects.active = obs[0]
+    bpy.ops.object.bake(type='AO')
+    for o in obs:
+        mat = o.data.materials[0].name; a = o.data.color_attributes['AO']
+        c = np.empty(len(a.data) * 4, np.float32); a.data.foreach_get('color', c); c = c.reshape(-1, 4)
+        ao = 0.3 + 0.7 * c[:, :1] ** 0.8                     # never pitch black: the live lights still have to read
+        c[:, :3] = ao * np.array(MATS[mat][0], np.float32); c[:, 3] = 1
+        a.data.foreach_set('color', c.ravel()); o.data.materials[0] = ao_material(mat)
+
+def ao_material(name):
+    v = 'v_' + name   # not `name`: bpy would rename a clash to 'name.001'
+    if v in bpy.data.materials: return bpy.data.materials[v]
+    m = material(name).copy(); m.name = v; nt = m.node_tree; b = nt.nodes['Principled BSDF']
+    ca = nt.nodes.new('ShaderNodeVertexColor'); ca.layer_name = 'AO'; nt.links.new(ca.outputs['Color'], b.inputs['Base Color'])
+    return m
 
 def lights_camera(res, engine):
     sc = bpy.context.scene; sc.render.engine = engine; sc.render.resolution_x, sc.render.resolution_y = res
@@ -249,6 +307,9 @@ def run(script, build, views, thumb_view):
         with open(mf, encoding='utf-8') as f: ids = {p['id'] for p in json.load(f)['parts']}
         assert ids == set(PARTS), f'manifest vs model: missing {ids - set(PARTS)}, extra {set(PARTS) - ids}'
     make_objects()
+    bpy.context.view_layer.update()
+    vs = [o.matrix_world @ V(c) for o in bpy.data.objects if o.type == 'MESH' for c in o.bound_box]
+    bake_ao((V([max(c[i] for c in vs) for i in range(3)]) - V([min(c[i] for c in vs) for i in range(3)])).length)
     if '--preview' in sys.argv:   # look first, export later; `--hide a,b` leaves those parts out of the shots
         hide = sys.argv[sys.argv.index('--hide') + 1].split(',') if '--hide' in sys.argv else []
         for pid in hide: bpy.data.objects[pid].hide_render = True
@@ -257,7 +318,7 @@ def run(script, build, views, thumb_view):
         preview(os.path.join(here, 'preview'), views); return
     os.makedirs(out, exist_ok=True)
     bpy.ops.export_scene.gltf(filepath=os.path.join(here, 'model.raw.glb'), export_format='GLB', export_extras=True, export_yup=True,
-                              export_apply=False, export_cameras=False, export_lights=False, export_materials='EXPORT')
+                              export_apply=False, export_cameras=False, export_lights=False, export_materials='EXPORT', export_vertex_color='MATERIAL')
     if '--no-thumb' not in sys.argv: thumbnail(os.path.join(out, 'thumb.jpg'), thumb_view)
     tris = sum(len(ob.data.polygons) for ob in bpy.data.objects if ob.type == 'MESH')
     print(f'{name}: {len(PARTS)} parts, {tris} faces ->', out)
