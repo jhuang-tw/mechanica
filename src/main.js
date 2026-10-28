@@ -8,7 +8,7 @@ const $ = (id) => document.getElementById(id);
 const BASE = `${import.meta.env.BASE_URL}exhibits/`;
 const viewerModule = import('./viewer.js');   // three.js downloads while the landing page is up
 const exhibits = {};   // id -> manifest
-let viewer, ex, rig, chat = [], pointed = null, lesson = null, quiz = null, vr = null, tutor = null;
+let viewer, ex, rig, chat = [], pointed = null, lesson = null, quiz = null, vr = null, tutor = null, explain = null;
 
 // ---------- landing ----------
 const list = (await (await fetch(`${BASE}index.json`)).json()).exhibits;
@@ -85,7 +85,7 @@ function pick(id) {
   say(p.name, p.info, false, true);
 }
 $('explode-r').oninput = (e) => rig?.setExplode(+e.target.value);
-function stopAll() { lesson = quiz = tutor = null; vr?.refresh(); document.body.classList.remove('lesson', 'tutor'); $('lesson').hidden = $('quiz').hidden = $('tutor').hidden = true; $('q').placeholder = '問任何問題…'; viewer?.choreo?.cancel(); rig?.reset(); $('explode-r').value = 0; }
+function stopAll() { lesson = quiz = tutor = explain = null; vr?.refresh(); document.body.classList.remove('lesson', 'tutor'); $('lesson').hidden = $('quiz').hidden = $('tutor').hidden = true; $('q').placeholder = '問任何問題…'; viewer?.choreo?.cancel(); rig?.reset(); $('explode-r').value = 0; }
 $('reset').onclick = () => { stopAll(); speak(''); viewer.frame(); pointed = null; say(ex.name, ex.intro); };
 
 // ---------- suggestions: AI questions and lessons ----------
@@ -102,7 +102,8 @@ function chips() {
 async function ask(text) {
   text = text.trim();
   if (!text || !rig) return;
-  if (tutor) return tutorTurn(text);   // while the tutor runs, the mic and the keyboard answer its question
+  if (explain) return explainBack(text);   // while the tutor or the explain-back check runs, the mic and the keyboard answer it
+  if (tutor) return tutorTurn(text);
   stopAll();
   say('你問', text, true);
   try {
@@ -184,7 +185,7 @@ function answer(i) {
   say(right ? '答對了！' : '再想想', why, false, true);
   setTimeout(() => lesson && playStep(s), 2600);
 }
-const go = (d) => { if (!lesson) return; const n = lesson.i + d; if (n < 0) return; if (n >= lesson.l.steps.length) { stopAll(); return say('完成', '這一套看完了。可以再問 AI，或換一套。', false, true); } lesson.i = n; showStep(); };
+const go = (d) => { if (!lesson) return; const n = lesson.i + d; if (n < 0) return; if (n >= lesson.l.steps.length) return startExplain(lesson.l); lesson.i = n; showStep(); };
 $('l-next').onclick = () => go(1);
 $('l-prev').onclick = () => go(-1);
 $('l-stop').onclick = () => { stopAll(); say(ex.name, ex.intro); };
@@ -202,7 +203,7 @@ function startTutor(focus) {
   stopAll(); speak('');
   tutor = { history: [], n: 0, right: 0 };
   document.body.classList.add('tutor'); $('tutor').hidden = false; $('q').placeholder = '輸入你的答案…';
-  $('t-bar').textContent = 'AI 家教';
+  $('t-bar').textContent = 'AI 家教'; $('t-show').textContent = '不會，示範給我看';
   tutorTurn('', focus);
 }
 async function tutorTurn(answer, focus) {
@@ -236,7 +237,46 @@ async function tutorTurn(answer, focus) {
     console.warn('tutor failed:', e.message);
   } finally { t.busy = false; }
 }
-$('t-show').onclick = () => tutorTurn('我不知道，請動模型示範給我看，再問簡單一點的');
+$('t-show').onclick = () => (explain ? done() : tutorTurn('我不知道，請動模型示範給我看，再問簡單一點的'));
+const done = () => { stopAll(); say('完成', '這一套上完了。可以找 AI 家教再練，或換一套。', false, true); };
+
+// ---------- 講一遍給我聽: after a lesson the learner explains it back; Muse marks each cause → effect link, the model replays the missed ones ----------
+function startExplain(l) {
+  stopAll(); speak('');
+  explain = { l };
+  document.body.classList.add('tutor'); $('tutor').hidden = false; $('q').placeholder = '用你自己的話講一遍…';
+  $('t-bar').textContent = '講一遍給我聽'; $('t-show').textContent = '跳過';
+  $('t-v').textContent = ''; $('t-choices').replaceChildren(); $('t-hint').hidden = false;
+  $('t-q').textContent = `用你自己的話，從頭講一次「${l.title}」是怎麼動的。`;
+  say('最後一關', $('t-q').textContent, false, true);
+  vr?.refresh();
+}
+async function explainBack(text) {
+  const x = explain;
+  if (!x || x.busy) return;
+  x.busy = true; viewer.choreo.cancel(); speak('');
+  say('你說', text, true);
+  try {
+    const res = await fetch('/api/explain', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ exhibit: ex.id, lesson: x.l.id, text }), signal: AbortSignal.timeout(30000) });
+    const r = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(r.error || `HTTP ${res.status}`);
+    if (explain !== x) return;
+    const steps = x.l.steps, got = r.covered.filter(Boolean).length, missed = steps.filter((_, i) => !r.covered[i]);
+    remember({ concept: x.l.title, verdict: !missed.length ? 'right' : got * 2 >= steps.length ? 'partial' : 'wrong' });   // the tutor starts from what was missed
+    $('t-v').textContent = `講到 ${got}/${steps.length} 個環節${r.wrong ? `，講錯：${r.wrong}` : ''}`;
+    $('t-v').className = !missed.length ? 'right' : got * 2 >= steps.length ? 'partial' : 'wrong';
+    $('t-choices').replaceChildren(...steps.map((s, i) => Object.assign(document.createElement('div'), { className: r.covered[i] ? 'ok' : 'miss', textContent: s.say })));
+    $('t-q').textContent = missed.length ? '看模型補上漏掉的環節，想再講一次就直接說。' : '整條因果鏈都講對了！';
+    $('t-show').textContent = '結束';
+    say(missed.length ? '還差一點' : '全對', r.say);
+    speak(r.say);
+    // the model replays only the missed links, one every 4 s
+    viewer.choreo.play(cleanSteps(missed.flatMap((s, k) => [{ do: 'isolate', at: k * 4, parts: s.parts }, ...[].concat(s.drive || []).map((d) => ({ do: 'drive', at: k * 4, drive: d, speed: s.speed ?? 0.5, duration: 3.5 }))]), ex));
+  } catch (e) {
+    if (explain === x) say('AI 暫時連不上', '再講一次試試，或按跳過。');
+    console.warn('explain failed:', e.message);
+  } finally { x.busy = false; }
+}
 $('t-stop').onclick = () => { stopAll(); speak(''); say(ex.name, ex.intro); };
 
 // ---------- 📷 a real machine → the matching exhibit, its part lit, and the AI shows how it moves ----------
@@ -265,7 +305,7 @@ photoIn.onchange = async () => {
 const app = {
   list: list.map((id) => ({ id, thumb: `${BASE}${id}/${exhibits[id].thumb}`, title: exhibits[id].name })),
   get ex() { return ex; }, get rig() { return rig; }, get lesson() { return lesson; }, get quiz() { return quiz; }, get recording() { return holding; },
-  get tutoring() { return !!tutor; },
+  get tutoring() { return !!(tutor || explain); },
   open, pick, go, answer, startLesson, startTutor: () => startTutor(),
   quizLesson: () => startLesson(ex.lessons.find((l) => l.steps.some((s) => s.quiz)) || ex.lessons[0], true),
   stopLesson: () => { stopAll(); say(ex.name, ex.intro); },

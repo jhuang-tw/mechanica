@@ -12,7 +12,7 @@ try {
     if (value && !(key in process.env)) process.env[key] = value;
   }
 } catch { /* no .env */ }
-const { identify, segment, choreograph, transcribe, tutor, exhibit } = await import('./ai.mjs');
+const { identify, segment, choreograph, transcribe, tutor, explainBack, exhibit } = await import('./ai.mjs');
 const { configured } = await import('./meta.mjs');
 
 const web = join(root, 'dist') + sep;
@@ -58,6 +58,10 @@ async function api(req, res, path, q) {
       exhibit(str(b.exhibit, 20));   // unknown exhibit -> 400 before any model call
       const history = (Array.isArray(b.history) ? b.history : []).slice(-4).map((m) => ({ role: m.role === 'assistant' ? 'assistant' : 'user', content: str(m.content, 400) }));
       return send(res, 200, await choreograph({ exhibit: b.exhibit, text: str(b.text, 300), pointed: str(b.pointed, 60), history }));
+    }
+    if (path === '/api/explain') {
+      const b = JSON.parse(await body(req, 16 << 10));
+      return send(res, 200, await explainBack({ exhibit: str(b.exhibit, 20), lesson: str(b.lesson, 40), text: str(b.text, 600) }));
     }
     if (path === '/api/tutor') {
       const b = JSON.parse(await body(req, 32 << 10));

@@ -160,6 +160,9 @@
   #t-choices { display:grid; gap:6px; } #t-choices:empty { display:none; }
   #t-choices button { padding:11px 14px; text-align:left; border-radius:12px; background:rgba(255,255,255,.06); border:1px solid var(--line2); }
   #t-hint { color:var(--dim); font-size:12px; }
+  #t-choices div { font-size:14px; line-height:1.5; padding-left:22px; text-indent:-22px; }
+  #t-choices div::before { display:inline-block; width:22px; text-indent:0; font-weight:700; }
+  #t-choices div.ok::before { content:"✓"; color:var(--ok); } #t-choices div.miss { color:var(--dim); } #t-choices div.miss::before { content:"✗"; color:var(--bad); }
   #quiz { display:grid; gap:8px; }
   #quiz button { padding:13px 16px; text-align:left; border-radius:14px; background:var(--glass); border:1px solid var(--line2); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); }
   #quiz button.right { border-color:var(--ok); background:rgba(40,120,75,.55); }
