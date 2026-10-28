@@ -168,7 +168,13 @@
   #quiz button.right { border-color:var(--ok); background:rgba(40,120,75,.55); }
   #quiz button.wrong { border-color:var(--bad); background:rgba(130,40,35,.55); }
   #toast { position:fixed; left:50%; top:calc(70px + env(safe-area-inset-top)); transform:translateX(-50%); z-index:5; padding:9px 16px; border-radius:999px; font-size:14px; background:var(--glass); border:1px solid var(--line2); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); white-space:nowrap; max-width:calc(100% - 32px); overflow:hidden; text-overflow:ellipsis; }
-  @media (min-width:900px) { #sheet { left:auto; right:16px; margin:0; width:420px; } }
+  /* a mouse can't swipe a row sideways: every chip stays in view, wrapped */
+  @media (pointer:fine) { .chips { flex-wrap:wrap; overflow:visible; } }
+  @media (min-width:900px) {
+    #sheet { left:auto; right:8px; top:calc(76px + env(safe-area-inset-top)); bottom:8px; margin:0; width:464px; padding:12px; justify-content:flex-end; overflow-y:auto; scrollbar-width:thin; }
+    #caption { max-height:none; }
+    #caption p { font-size:16px; }
+  }
   /* phone on its side: the sheet moves to the right so the model keeps the full height */
   @media (orientation:landscape) and (max-height:500px) { #sheet { left:auto; right:0; top:0; margin:0; width:min(400px,50vw); justify-content:flex-end; padding:calc(64px + env(safe-area-inset-top)) calc(10px + env(safe-area-inset-right)) calc(10px + env(safe-area-inset-bottom)) 10px; overflow-y:auto; } }
   @media (prefers-reduced-motion:reduce) { *, *::before, *::after { animation:none !important; transition:none !important; } }
