@@ -1,12 +1,13 @@
 # Car exhibit (generic compact front-wheel-drive sedan), built from scratch for Mechanica: one GLB node per semantic part.
 #   "C:\Program Files\Blender Foundation\Blender 5.2\blender.exe" -b --factory-startup -t 4 -P tools/exhibits/car/build.py -- public/exhibits/car [--preview]
+# then node tools/optimize-glb.mjs tools/exhibits/car/model.raw.glb public/exhibits/car/model.glb 0.002
 # Run tools/exhibits/car/cad.py first (engine, gearbox, differential, wheels and discs come from its STLs).
 # Model frame (Blender): metres, ground z = 0, front = +x, car's left = +y. glTF export: front +x, up +y, car's right = +z.
 # Node origins are rotation centres; spin axes are written as extras.axis (glTF axes); shafts across the car spin about
 # glTF -z (Blender +y), so a positive turn rolls the wheels forward. Front wheels hang on their steering
 # knuckle (knuckle turns about the kingpin, the wheel spins inside it); brake discs hang on their wheel.
 # The body shell is a Tripo3D mesh (tools/exhibits/car/tripo/body.glb, kept out of git): aligned to the CAD axles, wheels cut away,
-# decimated and split along its panel lines into hood, doors, trunk and body. Seats and dashboard are modelled here.
+# decimated and split along its panel lines into hood, doors, trunk and body. Seats, dashboard, pedals, floor pan and brake booster are modelled here.
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from common import *   # Mesh, part, run, V, Matrix, Y, TAU, maths
@@ -55,6 +56,9 @@ common.MATS.update({   # base colour (linear), metallic, roughness
     'seat':   ((0.035, 0.035, 0.04), 0.0, 0.80),
     'trim':   ((0.06, 0.06, 0.065), 0.0, 0.60),
     'screen': ((0.005, 0.006, 0.01), 0.3, 0.08),
+    'carpet': ((0.025, 0.025, 0.028), 0.0, 0.95),
+    'fluid':  ((0.55, 0.50, 0.38), 0.0, 0.45),      # translucent-looking reservoir plastic
+    'white':  ((0.80, 0.80, 0.78), 0.0, 0.50),
 })
 
 def helix(m, a, b, r, turns, wire, mat):
@@ -63,6 +67,32 @@ def helix(m, a, b, r, turns, wire, mat):
     u = ax.cross(V((0, 0, 1)) if abs(ax.z) < 0.9 else V((1, 0, 0))).normalized(); w = ax.cross(u)
     n = int(turns * 16)
     m.sweep([a + ax * (L * i / n) + (u * cos(TAU * turns * i / n) + w * sin(TAU * turns * i / n)) * r for i in range(n + 1)], wire, mat, 6)
+
+def revolve(m, c, axis, prof, mat, seg=96, bump=None):
+    """Closed surface of revolution about axis through c; prof = [(radius, axial offset)] as a closed loop.
+    bump(i, j) -> radius change for ring i, profile point j (tread blocks)."""
+    ax = axis.normalized(); a = ax.cross(V((0, 0, 1)) if abs(ax.z) < 0.9 else V((1, 0, 0))).normalized(); b = ax.cross(a)
+    rings = []
+    for i in range(seg):
+        t = TAU * i / seg; rd = a * cos(t) + b * sin(t)
+        rings.append([m.bm.verts.new(c + rd * (r + (bump(i, j) if bump else 0)) + ax * h) for j, (r, h) in enumerate(prof)])
+    n = len(prof)
+    for i in range(seg):
+        r0, r1 = rings[i], rings[(i + 1) % seg]
+        for j in range(n): m.face([r0[j], r1[j], r1[(j + 1) % n], r0[(j + 1) % n]], mat)
+
+def sector(m, c, axis, r0, r1, a0, a1, h0, h1, mat, steps=8):
+    """Annular sector (radii r0..r1, angles a0..a1 in the plane normal to axis, axial h0..h1) about c: caliper bodies."""
+    ax = axis.normalized(); u = V((1, 0, 0)) if abs(ax.x) < 0.9 else V((0, 0, 1)); w = ax.cross(u).normalized(); u = w.cross(ax)
+    if h0 > h1: h0, h1 = h1, h0
+    rings = []
+    for k in range(steps + 1):
+        t = a0 + (a1 - a0) * k / steps; d = u * cos(t) + w * sin(t)
+        rings.append([m.bm.verts.new(c + d * r + ax * h) for r, h in ((r0, h0), (r1, h0), (r1, h1), (r0, h1))])
+    if (u.cross(w)).dot(ax) * (a1 - a0) < 0: rings = [r[::-1] for r in rings]
+    for r0_, r1_ in zip(rings, rings[1:]):
+        for j in range(4): m.face([r0_[j], r0_[(j + 1) % 4], r1_[(j + 1) % 4], r1_[j]], mat)
+    m.face(rings[0], mat); m.face(rings[-1][::-1], mat)
 
 def band(m, centres, y, width, mat):
     """Closed flat belt around pulleys given as (x, z, r) in the xz plane at y, wound the convex way (outer tangents)."""
@@ -133,6 +163,14 @@ def engine():
     rc = V((2.02, 0.0, 0.48))
     m.box(rc, (0.03, 0.62, 0.40), 'black'); m.box(rc + V((0, 0.33, 0)), (0.05, 0.05, 0.42), 'black'); m.box(rc + V((0, -0.33, 0)), (0.05, 0.05, 0.42), 'black')
     for k in range(14): m.box(rc + V((0.016, -0.29 + k * 0.045, 0)), (0.004, 0.02, 0.38), 'alu')
+    fc = rc - V((0.055, 0.0, 0.0)); X = V((1, 0, 0))                          # electric cooling fan in its shroud
+    m.box(rc - V((0.022, 0, 0)), (0.012, 0.60, 0.38), 'black')
+    m.disc(fc, X, 0.16, 0.05, 'black', 40, r_in=0.150)
+    m.disc(fc - X * 0.01, X, 0.04, 0.05, 'black', 24)                         # motor
+    for k in range(7):
+        t = TAU * k / 7
+        m.box(fc + V((0, cos(t) * 0.095, sin(t) * 0.095)), (0.006, 0.042, 0.11), 'black', Matrix.Rotation(t - pi / 2, 3, 'X') @ Matrix.Rotation(radians(28), 3, 'Z'))
+    for t in (0.6, 0.6 + TAU / 3, 0.6 + 2 * TAU / 3): m.tube(fc - X * 0.02 + V((0, cos(t) * 0.04, sin(t) * 0.04)), fc - X * 0.02 + V((0, cos(t) * 0.15, sin(t) * 0.15)), 0.005, 'black', 6)
     m.sweep([rc + V((-0.02, 0.30, 0.14)), V((1.85, 0.28, 0.66)), V((CRANK.x + 0.12, 0.25, DECK + 0.08))], 0.016, 'rubber', 8)   # top hose
     m = part('battery', explode=(0, -0.3, 0.2))
     m.box(V((1.80, -0.45, 0.66)), (0.24, 0.17, 0.19), 'black'); [m.disc(V((1.80 + dx, -0.45, 0.76)), V((0, 0, 1)), 0.01, 0.02, 'red' if dx > 0 else 'steel', 10) for dx in (-0.08, 0.08)]
@@ -166,17 +204,46 @@ def transmission():
             s.sweep([e + V((0, dy * 0.03, 0)), e + V((0, dy * 0.09, 0))] if e.y * dy < b.y * dy - 0.1 else [e - V((0, dy * 0.03, 0)), e - V((0, dy * 0.09, 0))], [0.035, 0.016], 'rubber', 14)
 
 # ---------------------------------------------------------------- wheels, brakes, suspension, steering
+# 205/55 R16 tyre section (radius, offset across the tread): bead, sidewall bulge with a rim protector, rounded shoulder,
+# tread with four circumferential grooves; closed under the bead (hidden by the rim)
+_T = [(0.204, -0.084), (0.226, -0.101), (0.252, -0.105), (0.262, -0.108), (0.272, -0.104), (0.290, -0.100),
+      (0.306, -0.093), (0.313, -0.084), (0.316, -0.074)]
+for g in (-0.048, -0.017):
+    _T += [(0.316, g - 0.006), (0.307, g - 0.005), (0.307, g + 0.005), (0.316, g + 0.006)]
+TYRE = _T + [(r, -h) for r, h in reversed(_T)] + [(0.200, 0.084), (0.200, -0.084)]
+SHOULDER = {j for j, (r, h) in enumerate(TYRE) if r > 0.300 and abs(h) > 0.066}
+
 def wheel(pid, c, side, parent, ex):
+    """Rim with its hub outboard (positive offset, like a real FWD wheel), lug nuts and centre cap, a treaded tyre; the
+    brake disc's hat bolts against the rim's mounting face; a floating caliper straddles the disc at the rear-top."""
+    out = Y * side
     w = part(pid, pivot=c, parent=parent, axis=Y, explode=ex)
-    w.stl('rim', 'alu', at(c, NY if side > 0 else PY))                        # mounting face towards the car's centre
-    w.torus(c, Y, WR - 0.056, 0.055, 'rubber', 64, 12, squash=1.45)
+    w.stl('rim', 'alu', at(c, PY if side > 0 else NY))                         # rim z (outboard) -> away from the car
+    revolve(w, c, Y, TYRE, 'rubber', 108, lambda i, j: -0.0045 if j in SHOULDER and i % 3 == 0 else 0)   # shoulder blocks
+    for k in range(5):                                                         # lug nuts in the rim's five holes (PCD 114)
+        t = TAU * k / 5 + pi / 2; p = c + out * 0.059 + V((cos(t) * 0.057, 0, sin(t) * 0.057))
+        w.disc(p, Y, 0.0105, 0.016, 'steel', 6); w.disc(p + out * 0.009, Y, 0.007, 0.004, 'steel', 12)
+    w.disc(c + out * 0.058, Y, 0.031, 0.008, 'black', 24)                      # centre cap
+    dc = c - out * 0.009                                                       # disc centre: braking faces at -0.021..+0.003
     d = part(pid.replace('wheel', 'disc'), pivot=c, parent=pid, axis=Y, explode=(0, -side * 0.2, 0))
-    hub = c - V((0, side * 0.05, 0))
-    d.stl('disc', 'cast', at(hub, NY if side > 0 else PY))
+    d.stl('disc', 'cast', at(dc, PY if side > 0 else NY))
     cal = part(pid.replace('wheel', 'caliper'), parent=parent and parent, explode=(0, -side * 0.15, 0.25))
-    cp = hub + V((-0.10, 0, 0.09))
-    cal.box(cp, (0.10, 0.07, 0.05), 'red', Matrix.Rotation(radians(-42), 3, 'Y'))
-    cal.box(cp + V((0, -side * 0.025, 0)), (0.07, 0.02, 0.07), 'red', Matrix.Rotation(radians(-42), 3, 'Y'))
+    a = radians(140); da = radians(24)                                         # caliper centre angle (rear-top) and half span
+    io, oo = -side, side                                                       # inboard / outboard along y
+    sector(cal, dc, Y, 0.086, 0.150, a - da, a + da, io * 0.022, io * 0.058, 'red')          # piston housing (inboard)
+    sector(cal, dc, Y, 0.100, 0.150, a - da * 0.8, a + da * 0.8, oo * 0.022, oo * 0.034, 'red')   # outer fingers
+    sector(cal, dc, Y, 0.142, 0.162, a - da * 0.85, a + da * 0.85, io * 0.058, oo * 0.034, 'red')  # bridge over the disc rim
+    sector(cal, dc, Y, 0.100, 0.138, a - da * 0.75, a + da * 0.75, io * 0.012, io * 0.022, 'black')   # pads
+    sector(cal, dc, Y, 0.100, 0.138, a - da * 0.75, a + da * 0.75, oo * 0.012, oo * 0.022, 'black')
+    ctr = dc + V((cos(a), 0, sin(a))) * 0.118
+    cal.disc(ctr + Y * io * 0.064, Y, 0.030, 0.014, 'red', 24)                 # piston bore boss
+    for s in (-1, 1):                                                          # guide pins on the bracket
+        t = a + s * (da + 0.10); p = dc + V((cos(t), 0, sin(t))) * 0.112
+        cal.disc(p + Y * io * 0.037, Y, 0.011, 0.044, 'steel', 12); cal.disc(p + Y * io * 0.063, Y, 0.008, 0.008, 'black', 12)
+    t = a - da * 0.55; p = dc + V((cos(t), 0, sin(t))) * 0.150 + Y * io * 0.045
+    cal.tube(p, p + V((cos(t), 0, sin(t))) * 0.014, 0.004, 'steel', 8)        # bleed nipple
+    t = a + da * 0.4; p = dc + V((cos(t), 0, sin(t))) * 0.12 + Y * io * 0.058
+    cal.sweep([p, p + Y * io * 0.03, p + Y * io * 0.06 + V((0, 0, 0.05))], 0.0055, 'rubber', 8)   # brake hose
 
 def front_corner(side):
     s = 'l' if side > 0 else 'r'; c = V((FA, side * TW, WR)); k = c - V((0, side * 0.09, 0))
@@ -214,14 +281,19 @@ def rear_axle():
 def steering():
     col_dir = (PINION - SW).normalized()
     sw = part('steering_wheel', pivot=SW, axis=-col_dir, explode=(-0.45, 0, 0.25))
-    sw.torus(SW, col_dir, 0.185, 0.016, 'black', 48, 10)
-    sw.disc(SW + col_dir * 0.02, col_dir, 0.07, 0.05, 'black', 20)
-    u = col_dir.cross(Y).normalized(); w = col_dir.cross(u)
-    for a in (pi / 2, pi + 0.35, -0.35):
-        sw.sweep([SW + col_dir * 0.02 + (u * cos(a) + w * sin(a)) * 0.06, SW + (u * cos(a) + w * sin(a)) * 0.175], 0.012, 'black', 8)
+    sw.torus(SW, col_dir, 0.185, 0.0175, 'black', 64, 12, squash=1.2)          # leather rim, slightly oval grip
+    sw.disc(SW + col_dir * 0.025, col_dir, 0.072, 0.05, 'black', 32)          # hub
+    sw.disc(SW - col_dir * 0.002, col_dir, 0.064, 0.008, 'trim', 32)           # airbag cover
+    up = (V((0, 0, 1)) - col_dir * col_dir.z).normalized(); side = col_dir.cross(up)
+    for r in (-up, (side - up * 0.25).normalized(), (-side - up * 0.25).normalized()):   # spokes at 3, 6 and 9 o'clock, each two tubes wide
+        t = r.cross(col_dir).normalized()
+        for o in (-0.006, 0.006): sw.sweep([SW + col_dir * 0.02 + r * 0.06 + t * o, SW + col_dir * 0.005 + r * 0.172 + t * o * 0.7], 0.0095, 'black', 8)
     col = part('steering_column', pivot=SW + col_dir * 0.06, axis=-col_dir, explode=(-0.25, 0, 0.1))
     mid = SW.lerp(PINION, 0.6) + V((0, 0, 0.05))
     col.tube(SW + col_dir * 0.05, mid, 0.016, 'steel', 10); col.tube(mid, PINION, 0.012, 'steel', 10)
+    col.sweep([SW + col_dir * 0.065, SW + col_dir * 0.25], [0.048, 0.055], 'trim', 16)   # shroud
+    u = col_dir.cross(Y).normalized()
+    for s in (-1, 1): col.sweep([SW + col_dir * 0.09 + u * s * 0.045, SW + col_dir * 0.08 + u * s * 0.15 + V((0, 0, 0.01))], [0.009, 0.007], 'black', 8)   # stalks
     col.disc(mid, (PINION - mid).normalized(), 0.022, 0.04, 'black', 12)                    # universal joint
     r = part('steering_rack', explode=(0, 0, -0.25))
     r.tube(RACK + V((0, -0.42, 0)), RACK + V((0, 0.42, 0)), 0.025, 'alu', 14)
@@ -260,7 +332,7 @@ def panel(c, n):
 def tripo_body():
     hubs = [V((x, s * TW, WR)) for x in (FA, RA) for s in (1, -1)]
     def cut(ps):   # Tripo's own wheels and tyres
-        return all(any(((p.x - c.x) ** 2 + (p.z - c.z) ** 2) ** 0.5 < WR + 0.012 and abs(p.y - c.y) < 0.13 for c in hubs) for p in ps)
+        return all(any(((p.x - c.x) ** 2 + (p.z - c.z) ** 2) ** 0.5 < WR + 0.03 and abs(p.y - c.y) < 0.20 for c in hubs) for p in ps)
     nodes = {'hood': (V((1.06, 0, 0.98)), Y, (0.25, 0, 0.75), None), 'trunk': (V((-1.80, 0, 1.12)), Y, (-0.3, 0, 0.7), None),
              'body': (None, None, (0, 0, 1.3), None)}
     for s, side in (('l', 1), ('r', -1)):
@@ -269,31 +341,142 @@ def tripo_body():
     tripo_shell(TRIPO, (FA, RA), cut, SHELL_TRIS, panel, nodes)
 
 # ---------------------------------------------------------------- cabin
-def seat(m, x, y, w):
-    lean = Matrix.Rotation(radians(-16), 3, 'Y')
-    rbox(m, V((x, y, 0.47)), (0.50, w, 0.13), 0.04, 'seat')                                  # cushion
-    rbox(m, V((x - 0.30, y, 0.80)), (0.12, w, 0.62), 0.045, 'seat', lean)                    # backrest
-    for dy in ((0,) if w < 0.7 else (-0.40, 0, 0.40)):
-        rbox(m, V((x - 0.42, y + dy, 1.20)), (0.09, 0.24, 0.17), 0.04, 'seat', lean)         # headrest
-        m.tube(V((x - 0.39, y + dy, 1.08)), V((x - 0.405, y + dy, 1.13)), 0.006, 'steel', 6)
-    if w < 0.7: m.box(V((x, y, 0.37)), (0.40, 0.36, 0.06), 'black')                          # rails
+RY = lambda deg: Matrix.Rotation(radians(deg), 3, 'Y')
+RX = lambda deg: Matrix.Rotation(radians(deg), 3, 'X')
+RZ = lambda deg: Matrix.Rotation(radians(deg), 3, 'Z')
+
+def seat(m, x, y, places, bench=False):
+    """Upholstered seat: pleated cushion and backrest inserts between side bolsters, front roll, headrests on posts, rails.
+    places = [(y offset, width)] of the sitting places (one for a bucket seat, three for the rear bench)."""
+    w = places[-1][0] - places[0][0] + places[0][1]                           # overall width
+    H = V((x - 0.25, y, 0.49)); lean = RY(-16)                                 # backrest hinge, leaning back 16 degrees
+    L = lambda p: H + lean @ V(p)
+    rbox(m, V((x, y, 0.435)), (0.50, w - 0.02, 0.07), 0.03, 'seat')                          # cushion base
+    rbox(m, V((x + 0.23, y, 0.475)), (0.07, w - 0.06, 0.09), 0.035, 'seat')                   # front roll
+    rbox(m, L((-0.065, 0, 0.32)), (0.06, w - 0.01, 0.60), 0.025, 'seat', lean)                # backrest shell
+    rbox(m, L((-0.01, 0, 0.60)), (0.13, w - 0.04, 0.07), 0.033, 'seat', lean)                 # top roll
+    for k, (dy, pw) in enumerate(places):
+        c = V((x - 0.01, y + dy, 0.485))
+        for i in range(4): rbox(m, c + V((-0.165 + 0.11 * i, 0, 0)), (0.10, pw - 0.15, 0.045), 0.02, 'seat')   # pleats
+        for i in range(5): rbox(m, L((0.0, dy, 0.08 + 0.10 * i)), (0.06, pw - 0.17, 0.09), 0.025, 'seat', lean)
+        outer = [s for s in (-1, 1) if not bench or (k == 0 and s < 0) or (k == len(places) - 1 and s > 0)]
+        for s in outer:                                                        # side bolsters, tipped inwards
+            rbox(m, c + V((-0.01, s * (pw / 2 - 0.05), 0.015)), (0.44, 0.10, 0.10), 0.04, 'seat', RX(s * 14))
+            rbox(m, L((0.01, dy + s * (pw / 2 - 0.055), 0.28)), (0.14, 0.11, 0.52), 0.045, 'seat', lean @ RZ(-s * 12))
+        hc = L((-0.03, dy, 0.76))                                              # headrest on two chrome posts
+        rbox(m, hc, (0.10, 0.25 if not bench else 0.22, 0.17), 0.045, 'seat', lean @ RX(0))
+        for s in (-1, 1): m.tube(L((-0.035, dy + s * 0.065, 0.60)), L((-0.035, dy + s * 0.065, 0.69)), 0.0055, 'steel', 8)
+    if not bench:
+        for s in (-1, 1):                                                      # seat tracks on the floor
+            m.box(V((x, y + s * 0.17, 0.33)), (0.46, 0.035, 0.03), 'black')
+            m.box(V((x, y + s * 0.17, 0.37)), (0.36, 0.025, 0.06), 'steel')
+        so = 1 if y > 0 else -1                                                # outer side: plastic trim, recline knob, slide bar
+        rbox(m, V((x - 0.02, y + so * (w / 2 + 0.005), 0.43)), (0.42, 0.02, 0.09), 0.008, 'trim')
+        m.disc(L((-0.02, so * (w / 2 + 0.02), 0.0)), Y, 0.028, 0.02, 'trim', 18)
+        m.sweep([V((x + 0.20, y - 0.09, 0.355)), V((x + 0.27, y - 0.09, 0.36)), V((x + 0.27, y + 0.09, 0.36)), V((x + 0.20, y + 0.09, 0.355))], 0.006, 'black', 8)
+        m.box(V((x - 0.18, y - so * (w / 2 + 0.02), 0.50)), (0.035, 0.025, 0.08), 'black')       # seat-belt buckle
+    else:
+        m.box(L((0.035, -w / 2 + 0.6 * w, 0.30)), (0.10, 0.006, 0.60), 'black', lean)   # 60/40 split seam
+
+def floor_pan():
+    """Cabin floor, toe board and firewall in carpet, with the transmission tunnel and the step up under the rear seat."""
+    m = part('floor_pan', explode=(0, 0, -0.75))
+    m.box(V((0.20, 0, 0.30)), (1.40, 1.36, 0.02), 'carpet')                                  # front floor
+    m.box(V((0.99, 0, 0.43)), (0.316, 1.36, 0.02), 'carpet', RY(-55.3))                      # toe board up to the firewall
+    m.box(V((1.08, 0, 0.76)), (0.02, 1.36, 0.40), 'carpet')                                  # firewall
+    rbox(m, V((0.22, 0, 0.36)), (1.36, 0.22, 0.12), 0.04, 'carpet')                          # transmission tunnel
+    m.box(V((-0.50, 0, 0.345)), (0.02, 1.36, 0.09), 'carpet')                                # step under the rear seat
+    m.box(V((-0.875, 0, 0.38)), (0.75, 1.36, 0.02), 'carpet')                                # rear floor
+    for s in (-1, 1): rbox(m, V((0.20, s * 0.70, 0.36)), (1.40, 0.06, 0.10), 0.03, 'carpet')   # sills
+    rbox(m, V((0.88, 0.63, 0.40)), (0.22, 0.08, 0.025), 0.01, 'trim', RY(-40))               # dead pedal (footrest)
+    rbox(m, V((0.55, DRIVER_Y, 0.312)), (0.38, 0.36, 0.008), 0.004, 'rubber')                 # driver's mat
+
+def pedals():
+    """Pendant clutch, brake and accelerator hanging from a pedal box under the dash (left-hand drive, clutch leftmost)."""
+    m = part('pedals', explode=(-0.35, 0, -0.1))
+    box = V((1.00, DRIVER_Y, 0.72))
+    rbox(m, box, (0.08, 0.36, 0.08), 0.015, 'black')                                          # pedal box
+    m.box(box + V((0.07, 0, 0)), (0.06, 0.30, 0.10), 'black')                                # mounting plate to the firewall
+    m.tube(V((0.97, DRIVER_Y - 0.17, 0.69)), V((0.97, DRIVER_Y + 0.17, 0.69)), 0.008, 'steel', 10)   # pivot shaft
+    for dy, pw, ph in ((0.15, 0.075, 0.06), (0.01, 0.10, 0.065)):                            # clutch, brake
+        y = DRIVER_Y + dy; pad = V((0.83, y, 0.415))
+        m.sweep(smooth([V((0.97, y, 0.69)), V((0.95, y, 0.60)), V((0.89, y, 0.50)), pad + V((0.02, 0, 0.01))], 3), 0.009, 'black', 6)
+        m.disc(V((0.97, y, 0.69)), Y, 0.016, 0.03, 'black', 14)                              # pivot boss
+        rbox(m, pad, (0.022, pw, ph), 0.008, 'rubber', RY(30))
+        for k in range(4): m.box(pad + RY(30) @ V((-0.012, 0, -0.022 + 0.0147 * k)), (0.004, pw - 0.012, 0.005), 'rubber', RY(30))   # ribs
+    m.tube(V((0.955, DRIVER_Y + 0.01, 0.62)), V((1.13, DRIVER_Y + 0.01, 0.72)), 0.005, 'steel', 8)   # brake push rod through the firewall
+    m.tube(V((0.955, DRIVER_Y + 0.15, 0.62)), V((1.10, DRIVER_Y + 0.15, 0.70)), 0.005, 'steel', 8)   # clutch push rod
+    y = DRIVER_Y - 0.13; pad = V((0.845, y, 0.40))                                              # accelerator, tall narrow pad
+    m.sweep(smooth([V((0.97, y, 0.66)), V((0.93, y, 0.58)), V((0.875, y, 0.47)), pad + V((0.015, 0, 0.04))], 3), 0.006, 'black', 6)
+    m.disc(V((0.97, y, 0.66)), Y, 0.014, 0.04, 'black', 14)
+    rbox(m, pad, (0.016, 0.052, 0.12), 0.008, 'rubber', RY(30))
+    for k in range(5): m.box(pad + RY(30) @ V((-0.009, 0, -0.044 + 0.022 * k)), (0.003, 0.042, 0.006), 'rubber', RY(30))
+
+def brake_booster():
+    """Vacuum brake booster on the engine side of the firewall with the master cylinder, fluid reservoir and the clutch master."""
+    m = part('brake_booster', explode=(0.25, 0.25, 0.35))
+    b = V((1.16, DRIVER_Y + 0.01, 0.72)); X = V((1, 0, 0))
+    m.disc(b, X, 0.105, 0.075, 'black', 40); m.torus(b, X, 0.104, 0.006, 'steel', 40, 8)      # two-shell drum, crimped seam
+    m.disc(b + X * 0.04, X, 0.04, 0.01, 'black', 24)
+    m.tube(b + X * 0.04, b + X * 0.16, 0.021, 'alu', 16)                                     # master cylinder
+    m.disc(b + X * 0.16, X, 0.023, 0.008, 'alu', 16)
+    rbox(m, b + V((0.10, 0, 0.055)), (0.10, 0.07, 0.05), 0.012, 'fluid')                      # reservoir
+    m.disc(b + V((0.10, 0, 0.085)), V((0, 0, 1)), 0.016, 0.014, 'black', 16)                  # filler cap
+    for dx in (0.07, 0.13): m.sweep([b + V((dx, 0, -0.02)), b + V((dx, -0.06, -0.06)), b + V((dx + 0.05, -0.12, -0.10))], 0.004, 'steel', 6)   # brake lines
+    c = V((1.10, DRIVER_Y + 0.15, 0.70)); m.tube(c, c + X * 0.08, 0.012, 'alu', 12)            # clutch master cylinder
+    m.disc(c + V((0.04, 0, 0.03)), V((0, 0, 1)), 0.014, 0.025, 'fluid', 14)
 
 def cabin():
-    for s, y in (('l', DRIVER_Y), ('r', -DRIVER_Y)): seat(part(f'seat_f{s}', explode=(0, 0, 1.0)), -0.10, y, 0.52)
-    seat(part('seat_rear', explode=(-0.3, 0, 1.0)), -0.95, 0, 1.30)
+    for s, y in (('l', DRIVER_Y), ('r', -DRIVER_Y)): seat(part(f'seat_f{s}', explode=(0, 0, 1.0)), -0.10, y, [(0, 0.52)])
+    seat(part('seat_rear', explode=(-0.3, 0, 1.0)), -0.95, 0, [(-0.43, 0.44), (0, 0.42), (0.43, 0.44)], bench=True)
     d = part('dashboard', explode=(0.35, 0, 0.9))
-    rbox(d, V((0.88, 0, 0.86)), (0.34, 1.44, 0.22), 0.05, 'trim')
-    rbox(d, V((0.74, DRIVER_Y, 0.99)), (0.16, 0.36, 0.07), 0.03, 'trim')                     # instrument cluster hood
-    d.box(V((0.67, DRIVER_Y, 0.95)), (0.01, 0.30, 0.09), 'screen')
-    d.box(V((0.70, 0, 0.92)), (0.02, 0.26, 0.15), 'screen', Matrix.Rotation(radians(-12), 3, 'Y'))   # centre screen
-    for y in (0.60, 0.12, -0.12, -0.60): d.box(V((0.705, y, 0.84)), (0.01, 0.12, 0.04), 'black')      # vents
-    rbox(d, V((0.25, 0, 0.42)), (0.75, 0.20, 0.14), 0.04, 'trim')                            # centre console
-    d.tube(V((0.35, 0, 0.49)), V((0.32, 0, 0.60)), 0.008, 'steel', 8); d.disc(V((0.32, 0, 0.61)), V((0, 0, 1)), 0.022, 0.04, 'black', 12)   # gear lever
+    rbox(d, V((0.90, 0, 0.975)), (0.32, 1.46, 0.07), 0.03, 'trim', RY(-4))                    # soft top pad up to the windscreen
+    rbox(d, V((0.83, 0, 0.865)), (0.15, 1.44, 0.18), 0.04, 'trim')                            # face
+    rbox(d, V((0.87, 0, 0.72)), (0.16, 1.30, 0.12), 0.04, 'trim', RY(25))                     # knee panel, tucked under
+    rbox(d, V((0.752, -0.36, 0.82)), (0.02, 0.42, 0.11), 0.012, 'trim')                        # glove box lid
+    d.box(V((0.742, -0.36, 0.855)), (0.012, 0.09, 0.018), 'black')                            # glove box handle
+    # instrument cluster: hood, two round dials (speed, rpm) with chrome bezels, white ticks and red needles
+    rbox(d, V((0.73, DRIVER_Y, 1.005)), (0.15, 0.40, 0.065), 0.03, 'trim')
+    d.box(V((0.762, DRIVER_Y, 0.935)), (0.01, 0.36, 0.10), 'black')
+    X = V((1, 0, 0))
+    for k, dy in enumerate((0.085, -0.085)):
+        g = V((0.755, DRIVER_Y + dy, 0.935))
+        d.disc(g, X, 0.046, 0.004, 'screen', 32); d.torus(g + X * -0.002, X, 0.047, 0.004, 'alu', 32, 6)
+        for i in range(11):
+            t = radians(225 - 27 * i); d.box(g + V((-0.003, cos(t) * 0.038, sin(t) * 0.038)), (0.002, 0.003, 0.009), 'white', RX(135 - 27 * i))
+        t = radians(200 - 40 * k); d.box(g + V((-0.004, cos(t) * 0.018, sin(t) * 0.018)), (0.002, 0.003, 0.036), 'red', RX(110 - 40 * k))
+        d.disc(g + X * -0.005, X, 0.006, 0.004, 'black', 12)
+    # centre stack: floating screen, vents with slats, climate knobs, hazard button
+    rbox(d, V((0.735, 0, 1.03)), (0.025, 0.25, 0.15), 0.008, 'black', RY(-10))
+    d.box(V((0.722, 0, 1.03)), (0.004, 0.23, 0.13), 'screen', RY(-10))
+    for y, z in ((0.62, 0.89), (0.12, 0.88), (-0.12, 0.88), (-0.62, 0.89)):
+        rbox(d, V((0.752, y, z)), (0.012, 0.13, 0.055), 0.006, 'black')
+        for i in range(4): d.box(V((0.746, y, z - 0.018 + 0.012 * i)), (0.006, 0.12, 0.004), 'trim', RY(-15))
+    for y in (-0.08, 0, 0.08):
+        d.disc(V((0.752, y, 0.80)), X, 0.022, 0.025, 'black', 20); d.torus(V((0.742, y, 0.80)), X, 0.022, 0.003, 'alu', 20, 6)
+    d.box(V((0.755, 0, 0.845)), (0.012, 0.035, 0.018), 'red')
+    # console: tunnel cover, cup holders, gear lever with boot and knob, handbrake, armrest box
+    rbox(d, V((0.25, 0, 0.44)), (0.75, 0.22, 0.10), 0.035, 'trim')
+    rbox(d, V((0.68, 0, 0.62)), (0.10, 0.20, 0.26), 0.045, 'trim', RY(28))                      # stack down to the console
+    for x in (0.50, 0.42): d.disc(V((x, 0, 0.49)), V((0, 0, 1)), 0.036, 0.006, 'black', 20)
+    d.sweep([V((0.30, 0, 0.495)), V((0.295, 0, 0.53)), V((0.285, 0, 0.565))], [0.05, 0.03, 0.013], 'rubber', 16)   # shift boot
+    d.tube(V((0.285, 0, 0.56)), V((0.27, 0, 0.62)), 0.007, 'steel', 8)
+    rbox(d, V((0.268, 0, 0.635)), (0.045, 0.042, 0.045), 0.019, 'black')                      # knob
+    d.box(V((0.268, 0, 0.659)), (0.024, 0.024, 0.002), 'white')                               # shift pattern
+    rbox(d, V((0.08, 0, 0.53)), (0.22, 0.035, 0.035), 0.014, 'black', RY(14))                # handbrake lever
+    d.disc(V((-0.03, 0, 0.555)), X, 0.009, 0.012, 'steel', 12)
+    d.sweep([V((0.17, 0, 0.495)), V((0.17, 0, 0.51))], [0.03, 0.025], 'rubber', 12)
+    rbox(d, V((-0.22, 0, 0.47)), (0.28, 0.20, 0.16), 0.03, 'trim')                            # storage box
+    rbox(d, V((-0.22, 0, 0.565)), (0.28, 0.19, 0.04), 0.018, 'seat')                          # armrest lid
 
 def build():
     engine(); transmission(); steering(); rear_axle(); chassis_misc()
     for side in (1, -1): front_corner(side); rear_corner(side)
-    cabin(); tripo_body()
+    cabin(); floor_pan(); pedals(); brake_booster()
+    for pid, p in PARTS.items():   # the hand-built parts are closed shells: make every face point outwards
+        if pid.startswith(('wheel', 'caliper', 'seat', 'dashboard', 'floor', 'pedals', 'brake', 'radiator', 'steering_')):
+            bmesh.ops.recalc_face_normals(p['m'].bm, faces=p['m'].bm.faces[:])
+    tripo_body()
 
 VIEWS = {'left_34': ((3.4, 3.0, 1.9), (0.3, 0, 0.45), 35), 'right_side': ((0.2, -5.2, 0.9), (0.2, 0, 0.45), 35),
          'engine': ((2.6, 1.5, 1.55), (1.55, 0, 0.45), 40), 'gearbox': ((1.55, -1.6, 0.7), (1.45, -0.25, 0.4), 40),
