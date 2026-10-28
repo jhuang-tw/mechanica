@@ -7,7 +7,7 @@
 import os, sys
 from math import sin, cos, pi
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from build123d import (BuildPart, BuildSketch, BuildLine, Polyline, Circle, Locations, PolarLocations, make_face,
+from build123d import (BuildPart, BuildSketch, BuildLine, Polyline, Polygon, Circle, Locations, PolarLocations, make_face,
                        extrude, revolve, Mode, Cylinder, Box, Plane, Axis, Pos, Rot, export_stl)
 import car.cad as car
 import bike.cad as bike
@@ -142,6 +142,21 @@ def sprocket_rear():
         with PolarLocations(60, 5, start_angle=36): Cylinder(5, 7, mode=Mode.SUBTRACT)
     return s + c.part
 
+def hanger(bosses, web=0.45, t=8):
+    """Cast footpeg hanger: a plate through its boss centres (peg pivot first, x forward, y up, mm), a boss of radius 17 round
+    each with a bolt hole, a lightening window in the middle (the plate shrunk by `web` towards its centre), t thick about z = 0."""
+    gx, gy = (sum(b[i] for b in bosses) / len(bosses) for i in (0, 1))
+    with BuildPart() as p:
+        with BuildSketch():
+            Polygon(*bosses, align=None)
+            for b in bosses:
+                with Locations(b): Circle(17)
+            if web: Polygon(*[(gx + web * (x - gx), gy + web * (y - gy)) for x, y in bosses], align=None, mode=Mode.SUBTRACT)
+            for b in bosses:
+                with Locations(b): Circle(6, mode=Mode.SUBTRACT)
+        extrude(amount=t / 2, both=True)
+    return p.part
+
 if __name__ == '__main__':
     os.makedirs(OUT, exist_ok=True)
     jobs = [('crankshaft', crankshaft, 0.1), ('piston', car.piston, 0.1), ('conrod', car.conrod, 0.1),
@@ -150,7 +165,9 @@ if __name__ == '__main__':
             ('primary_gear', lambda: car.gear(PRIMARY[0], 2.5, 14, 16, hub=24), 0.08),
             ('rim_front', lambda: rim(89), 0.2), ('rim_rear', lambda: rim(140), 0.2),
             ('disc_front', lambda: disc(160), 0.12), ('disc_rear', lambda: disc(120), 0.12),
-            ('sprocket_front', lambda: bike.sprocket(SPROCKETS[0], 9, 14), 0.06), ('sprocket_rear', sprocket_rear, 0.1)]
+            ('sprocket_front', lambda: bike.sprocket(SPROCKETS[0], 9, 14), 0.06), ('sprocket_rear', sprocket_rear, 0.1),
+            ('hanger_rider', lambda: hanger([(0, 0), (30, 30), (30, 105), (-105, 145)], web=0.32), 0.1),   # peg, lever pivot, frame bolts (build.py PEG)
+            ('hanger_pillion', lambda: hanger([(0, 0), (60, 40), (-40, 40)], web=0), 0.1)]
     for i, (a, b) in enumerate(GEARS, 1):
         jobs += [(f'gear_main_{i}', lambda a=a: car.gear(a, 2.5, 12, 12, hub=18), 0.08), (f'gear_counter_{i}', lambda b=b: car.gear(b, 2.5, 12, 14, hub=20), 0.08)]
     for name, make, tol in jobs:
