@@ -56,17 +56,16 @@ def camshaft(phase):
     return p.part
 
 def block():
-    """Two-bore cylinder block, bores on +z, crank axis along y, front +x, deck at z = 0; the front-left quarter is cut away."""
+    """Two-bore cylinder block, bores on +z, crank axis along y, front +x, deck at z = 0; closed like a real one (lessons ghost it to show inside)."""
     with BuildPart() as p:
         with Locations(Pos(0, 0, -60)): Box(112, 205, 120)
         for y in CYL_Z:
             with Locations(Pos(0, y, -60)): Cylinder(40, 130, mode=Mode.SUBTRACT)
-        with Locations(Pos(40, 70, -60)): Box(80, 140, 130, mode=Mode.SUBTRACT)
         with Locations(Pos(0, -112, -60)): Box(30, 20, 100, mode=Mode.SUBTRACT)        # cam chain tunnel (right)
     return p.part
 
 def crankcase():
-    """Side outline in xz around the crank (origin), gearbox behind; walls 6 mm; left wall removed to show the crank and gears."""
+    """Side outline in xz around the crank (origin), gearbox behind; walls 6 mm, sealed: the crank and gears run in oil inside."""
     out = [(105, 30), (110, -40), (70, -120), (-60, -130), (-200, -80), (-262, -10), (-250, 60), (-170, 105), (-60, 100), (50, 75)]
     with BuildPart() as p:
         with BuildSketch(Plane.XZ):
@@ -77,7 +76,6 @@ def crankcase():
             with BuildLine(): Polyline(*[(x * 0.95 - 5, z * 0.92 - 3) for x, z in out], close=True)
             make_face()
         extrude(amount=104, both=True, mode=Mode.SUBTRACT)
-        with Locations(Pos(-80, 80, 0)): Box(400, 60, 300, mode=Mode.SUBTRACT)           # open left side (y > 50)
         for y in CYL_Z:
             with Locations(Pos(0, y, 60)): Cylinder(41, 80, mode=Mode.SUBTRACT)          # bores up into the block
         for x, z in ((-100, 50), (-200, 0)):

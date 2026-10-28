@@ -69,8 +69,8 @@ def wrist_pos(i):
 
 def engine():
     m = part('crankcase', explode=(0, 0, -0.45))
-    m.stl('crankcase', 'alu', at(CRANK, Matrix.Rotation(0, 4, 'Z') @ S))
-    part('cylinder_block', explode=(0, 0, 0)).stl('block', 'alu', frame_m(DECK, CF, Y, CD))
+    m.stl('crankcase', 'cast', at(CRANK, Matrix.Rotation(0, 4, 'Z') @ S))
+    part('cylinder_block', explode=(0, 0, 0)).stl('block', 'cast', frame_m(DECK, CF, Y, CD))
     h = part('cylinder_head', explode=CD * 0.30)
     rbox(h, DECK + CD * 0.045, (0.125, 0.215, 0.09), 0.012, 'alu', Matrix.Rotation(TILT, 3, 'Y'))
     for y in CYL_Y:                                                                       # exhaust ports and intake stubs
@@ -95,9 +95,16 @@ def engine():
     pg.stl('primary_gear', 'steel', at(CRANK + V((0, CLUTCH_Y + 0.024, 0)), NY))
     cl = part('clutch', pivot=MAIN + V((0, CLUTCH_Y, 0)), axis=Y, explode=(0, -0.45, 0))
     cl.stl('clutch', 'alu', at(MAIN + V((0, CLUTCH_Y, 0)), NY))
+    # right engine cover, sealed like a real one: clutch, primary drive and cam chain run in oil behind it
     cc = part('clutch_cover', explode=(0, -0.7, 0))
-    cc.disc(MAIN + V((0, CLUTCH_Y - 0.046, 0)), Y, 0.078, 0.012, 'black', 40)
-    cc.torus(MAIN + V((0, CLUTCH_Y - 0.036, 0)), Y, 0.078, 0.008, 'black', 40, 8)
+    yc, t = (-0.108 + CLUTCH_Y - 0.052) / 2, -0.108 - (CLUTCH_Y - 0.052)
+    cc.disc(MAIN + V((0, yc, 0)), Y, 0.082, t, 'cast', 48)
+    cc.disc(CRANK + V((0, yc, 0)), Y, 0.062, t, 'cast', 40)
+    d = MAIN - CRANK
+    cc.box((MAIN + CRANK) / 2 + V((0, yc, 0)), (d.length, t, 0.12), 'cast', Matrix.Rotation(-atan2(d.z, d.x), 3, 'Y'))
+    cc.torus(MAIN + V((0, CLUTCH_Y - 0.052, 0)), Y, 0.06, 0.006, 'alu', 40, 8)          # polished clutch lid ring
+    a, b = CRANK + V((0, -0.118, 0)), DECK + CD * 0.08 + V((0, -0.118, 0))
+    rbox(cc, (a + b) / 2, (0.085, 0.04, (b - a).length + 0.05), 0.012, 'cast', Matrix.Rotation(TILT, 3, 'Y'))   # cam chain tunnel
     rad = part('radiator', explode=(0.4, 0, 0.1))
     rc = V((0.335, 0, 0.60)); rr = Matrix.Rotation(TILT, 3, 'Y')
     rad.box(rc, (0.035, 0.30, 0.24), 'core', rr)

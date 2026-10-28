@@ -40,14 +40,25 @@ float grainNoise(vec3 p) {
   return mix(mix(mix(gh(i), gh(i + vec3(1, 0, 0)), f.x), mix(gh(i + vec3(0, 1, 0)), gh(i + vec3(1, 1, 0)), f.x), f.y),
              mix(mix(gh(i + vec3(0, 0, 1)), gh(i + vec3(1, 0, 1)), f.x), mix(gh(i + vec3(0, 1, 1)), gh(i + vec3(1, 1, 1)), f.x), f.y), f.z);
 }`;
-function grain(m, scale) {
+// every exhibit material: a highlight that keeps the real material (a warm rim glow, `m.userData.rim.value` 0..1, set by
+// the rig) and, on bare metal, the grain above
+function dress(m, grain) {
+  const rim = m.userData.rim = { value: 0 };
   m.onBeforeCompile = (sh) => {
-    sh.uniforms.uGrain = scale;
-    sh.vertexShader = `uniform float uGrain;\nvarying vec3 vGrain;\n${sh.vertexShader}`.replace('#include <begin_vertex>', '#include <begin_vertex>\nvGrain = position * uGrain;');
-    sh.fragmentShader = `${NOISE}\n${sh.fragmentShader}`.replace('#include <roughnessmap_fragment>',
-      '#include <roughnessmap_fragment>\nroughnessFactor = clamp(roughnessFactor * (0.88 + 0.24 * (0.65 * grainNoise(vGrain) + 0.35 * grainNoise(vGrain * 3.7))), 0.04, 1.0);');
+    sh.uniforms.uRim = rim;
+    let f = sh.fragmentShader.replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
+float rimK = 1.0 - abs(dot(normal, normalize(vViewPosition)));
+totalEmissiveRadiance += uRim * vec3(1.0, 0.62, 0.15) * (1.3 * rimK * rimK * rimK * rimK);`);
+    f = `uniform float uRim;\n${f}`;
+    if (grain) {
+      sh.uniforms.uGrain = grain;
+      sh.vertexShader = `uniform float uGrain;\nvarying vec3 vGrain;\n${sh.vertexShader}`.replace('#include <begin_vertex>', '#include <begin_vertex>\nvGrain = position * uGrain;');
+      f = `${NOISE}\n${f}`.replace('#include <roughnessmap_fragment>',
+        '#include <roughnessmap_fragment>\nroughnessFactor = clamp(roughnessFactor * (0.88 + 0.24 * (0.65 * grainNoise(vGrain) + 0.35 * grainNoise(vGrain * 3.7))), 0.04, 1.0);');
+    }
+    sh.fragmentShader = f;
   };
-  m.customProgramCacheKey = () => 'grain';
+  m.customProgramCacheKey = () => (grain ? 'look-grain' : 'look');
   m.needsUpdate = true;
 }
 
@@ -101,7 +112,7 @@ export class Studio {
     const env = look.env ?? 1;
     const ns = { value: 1 / (r * 0.006) };
     model.traverse((o) => {
-      if (o.isMesh) for (const m of [].concat(o.material)) { m.envMapIntensity = env; if (m.metalness > 0.5 && !m.roughnessMap) grain(m, ns); }
+      if (o.isMesh) for (const m of [].concat(o.material)) { m.envMapIntensity = env; dress(m, m.metalness > 0.5 && !m.roughnessMap && ns); }
     });
     this.key.intensity = 2.2 * (look.key ?? 1); this.rim.intensity = 1.4 * (look.key ?? 1);
   }
