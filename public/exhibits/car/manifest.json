@@ -718,6 +718,41 @@
     "儀表",
     "中控台"
    ]
+  },
+  {
+   "id": "floor_pan",
+   "name": "地板與防火牆",
+   "en": "car floor pan, firewall and transmission tunnel",
+   "info": "鋪著地毯的車廂地板。前面斜上去的是腳踏區和防火牆，把引擎室和車廂隔開；中間隆起的是變速箱與排氣管通道。",
+   "aliases": [
+    "地板",
+    "防火牆",
+    "地毯"
+   ]
+  },
+  {
+   "id": "pedals",
+   "name": "踏板（離合器、煞車、油門）",
+   "en": "car pedals: clutch, brake and accelerator",
+   "info": "左駕手排車由左到右是離合器、煞車、油門，都吊在儀表板下的踏板支架上。煞車踏板推桿穿過防火牆，推動煞車輔助器。",
+   "aliases": [
+    "踏板",
+    "油門",
+    "煞車踏板",
+    "離合器",
+    "腳踏板"
+   ]
+  },
+  {
+   "id": "brake_booster",
+   "name": "煞車輔助器與總泵",
+   "en": "car brake vacuum booster and master cylinder",
+   "info": "黑色圓鼓是真空輔助器，用引擎的真空放大腳的力量；前面的總泵把力量變成油壓，經煞車油管送到四個卡鉗。上面半透明的小桶是煞車油壺。",
+   "aliases": [
+    "煞車總泵",
+    "真空輔助器",
+    "煞車油"
+   ]
   }
  ],
  "drives": [
