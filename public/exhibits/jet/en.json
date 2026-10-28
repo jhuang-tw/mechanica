@@ -1,0 +1,82 @@
+{
+ "name": "Jet engine",
+ "title": "Turbofan jet engine",
+ "intro": "This is an airliner's turbofan engine, cut open at the top left so you can see the fan, compressors, combustor and turbines. Ask me \"Where does the thrust come from?\"",
+ "suggest": ["Where does the thrust come from?", "Why are there two shafts?", "How does a plane slow down after landing?"],
+ "looksLike": "jet engine, aircraft engine, turbofan, turbine engine, airplane, aeroplane",
+ "parts": {
+  "nacelle_inlet": { "name": "Inlet lip", "info": "The round lip at the very front. It guides air smoothly into the fan, even when the plane pitches up or flies in a crosswind.", "aliases": ["inlet", "intake", "lip"] },
+  "fan": { "name": "Fan", "info": "The big fan at the front. Most of the air it pushes skips the core and blows straight out around the outside; this \"bypass air\" makes most of the thrust.", "aliases": ["fan blades", "blades"] },
+  "fan_case": { "name": "Fan case", "info": "The thick case around the fan. If a blade ever breaks off, it has to keep it inside.", "aliases": ["casing", "case"] },
+  "fan_cowl_left": { "name": "Left fan cowl", "info": "A cover that swings up so engineers can inspect the accessories on the outside of the engine.", "aliases": ["cowl", "cowling", "cover"] },
+  "fan_cowl_right": { "name": "Right fan cowl", "info": "The right-hand cowl that swings open.", "aliases": ["cowl", "cowling", "cover"] },
+  "thrust_reverser": { "name": "Thrust reverser", "info": "After landing it slides back to uncover a set of cascades that turn the fan's air forward, helping the plane slow down.", "aliases": ["reverser", "reverse thrust"] },
+  "booster": { "name": "Low-pressure compressor", "info": "Right behind the fan, on the same shaft. It gives the air entering the core its first squeeze.", "aliases": ["booster", "LP compressor"] },
+  "hp_compressor": { "name": "High-pressure compressor", "info": "Row after row of ever-smaller blades squeeze the air to dozens of times atmospheric pressure, heating it up as well.", "aliases": ["compressor", "HP compressor"] },
+  "combustor": { "name": "Combustor", "info": "Fuel is sprayed into the compressed air and burns continuously. The gas passes a thousand degrees and expands rapidly.", "aliases": ["combustion chamber", "burner"] },
+  "hp_turbine": { "name": "High-pressure turbine", "info": "The hottest place in the engine. The burnt gas spins it, and the high-pressure shaft carries that to the high-pressure compressor.", "aliases": ["turbine", "HP turbine"] },
+  "lp_turbine": { "name": "Low-pressure turbine", "info": "The bigger turbine stages at the back. They take energy from what's left of the gas and turn the fan at the front through the low-pressure shaft.", "aliases": ["turbine", "LP turbine"] },
+  "hp_shaft": { "name": "High-pressure shaft", "info": "A short hollow shaft linking the high-pressure turbine and compressor. It spins the fastest.", "aliases": ["HP shaft", "shaft"] },
+  "lp_shaft": { "name": "Low-pressure shaft", "info": "A long thin shaft running through the middle of the high-pressure shaft, all the way from the low-pressure turbine at the back to the fan at the front.", "aliases": ["LP shaft", "main shaft", "shaft"] },
+  "core_case": { "name": "Core case", "info": "The case around the compressors, combustor and turbines. It has to withstand high pressure and heat.", "aliases": ["core", "casing"] },
+  "core_cowl": { "name": "Core cowl", "info": "The streamlined skin around the core. The bypass air blows between it and the fan case.", "aliases": ["cowl", "cowling"] },
+  "exhaust": { "name": "Exhaust nozzle", "info": "The core's hot gas leaves here. The nozzle's shape speeds the flow up, adding some thrust.", "aliases": ["nozzle", "exhaust"] },
+  "radial_driveshaft": { "name": "Radial driveshaft", "info": "Takes power off the high-pressure shaft through a pair of bevel gears (48:32) to drive the accessory gearbox below. For starting it works the other way: the starter spins the high-pressure shaft up.", "aliases": ["driveshaft", "power take-off"] },
+  "accessory_gearbox": { "name": "Accessory gearbox", "info": "Hangs under the engine and drives the generator, fuel pump and hydraulic pump. The plane's electricity and hydraulics come from here.", "aliases": ["gearbox", "accessory box"] },
+  "stand": { "name": "Stand", "info": "The stand the engine rests on; not part of the engine.", "aliases": ["stand", "support"] }
+ },
+ "drives": {
+  "run": "Running (low-pressure and high-pressure shafts)",
+  "cowls": "Opening the cowls",
+  "reverse": "Thrust reverser sliding back"
+ },
+ "lessons": {
+  "thrust": { "title": "Where the thrust comes from", "steps": [
+   { "say": "The fan pushes a huge amount of air backwards. Most of it skips the core and blows straight out around the outside.",
+     "quiz": { "q": "Where does most of a turbofan's thrust come from?", "options": [
+      ["The outer air pushed by the fan", "On an airliner's turbofan about 80% of the thrust comes from the bypass air: lots of air, not too fast, which saves fuel and is quieter."],
+      ["The fire out of the back", "The core's hot gas makes only a small part of the thrust; its main job is spinning the turbines."],
+      ["Explosions in the combustor", "Combustion is continuous, not explosive, and most of its energy goes into turning the turbines."]] } },
+   { "say": "Air entering the core is squeezed stage by stage, first by the low-pressure compressor, then by the high-pressure one.",
+     "quiz": { "q": "Why compress the air before burning it?", "options": [
+      ["Burning compressed air gets more work out of the same fuel", "The higher the pressure, the more the gas expands after burning and the more energy the turbines can take back: higher efficiency."],
+      ["To cool the air", "Compressing heats the air, it doesn't cool it."],
+      ["To make the engine lighter", "Compressors are heavy; they're there for efficiency."]] } },
+   { "say": "Fuel burns continuously in the combustor, and the gas becomes hot and expands." },
+   { "say": "The hot gas blows through the high-pressure and low-pressure turbines, which turn the compressors and the fan through two shafts. What's left of the hot gas leaves through the exhaust nozzle.",
+     "quiz": { "q": "What turns the big fan at the front?", "options": [
+      ["The low-pressure turbine at the back, through the low-pressure shaft", "The low-pressure shaft runs from the tail all the way to the front, so the turbine at the back and the fan at the front share one shaft."],
+      ["An electric motor", "The fan is turned by the engine's own turbine, no electricity needed."],
+      ["The oncoming wind", "Wind only turns it slowly; thrust needs the turbine's power."]] } }
+  ] },
+  "spools": { "title": "Two shafts, each at its own speed", "steps": [
+   { "say": "The low-pressure shaft joins the fan, the low-pressure compressor and the low-pressure turbine." },
+   { "say": "The high-pressure shaft sits around it and joins the high-pressure compressor and turbine. It spins several times faster.",
+     "quiz": { "q": "Why not put the fan and the high-pressure compressor on one shaft at the same speed?", "options": [
+      ["The fan is so big its tips would go supersonic", "The fan has the largest diameter; spun too fast its tips exceed the speed of sound, which is loud and inefficient. The small high-pressure compressor has to spin fast to squeeze enough. Two shafts let each run at its best speed."],
+      ["To make assembly easier", "Two nested shafts are actually harder to assemble; it's for efficiency."],
+      ["No reason", "There is one: the best speeds for a big fan and a small compressor are very different."]] } },
+   { "say": "The radial driveshaft takes power off the high-pressure shaft and drives the generator and pumps in the accessory gearbox below." }
+  ] },
+  "service": { "title": "Opening it up, and reverse thrust on landing", "steps": [
+   { "say": "The two fan cowls swing up so engineers can see the accessories on the outside of the core." },
+   { "say": "After landing the thrust reverser slides back and turns the fan's air forward, helping the plane slow down.",
+     "quiz": { "q": "When the thrust reverser opens, does the fan spin backwards?", "options": [
+      ["No, the fan keeps turning; the air is redirected", "The fan's direction doesn't change. The reverser blocks the outer airflow and turns it forward through the cascades."],
+      ["Yes, the fan reverses", "Neither the fan nor the turbines can reverse; it's the airflow that changes direction."],
+      ["The engine shuts down", "In fact the engine is throttled up during reverse thrust."]] } }
+  ] }
+ },
+ "faults": {
+  "hp_shaft": {
+   "title": "Broken high-pressure shaft",
+   "short": "The turbines turn, but the compressor has stopped",
+   "symptom": "With the engine running, the fan and the turbines at the back are turning, but the high-pressure compressor in the middle has stopped and thrust has dropped a lot. What do you think is broken?",
+   "hint": "The compressor has no motor of its own. What turns at the back, and what carries its force to the front?",
+   "suspects": ["The combustor flamed out", "The high-pressure shaft broke", "The fan blades are damaged"],
+   "cause": "The high-pressure shaft linking the high-pressure turbine and compressor has broken. The turbine still turns, but its force can't reach the compressor in front.",
+   "why": "Why does thrust drop when the high-pressure shaft breaks and the compressor stops?",
+   "answer": "The burnt gas spins the high-pressure turbine, and the high-pressure shaft carries that to the high-pressure compressor, which squeezes the air. With the shaft broken the compressor stops, too little air reaches the combustor, less gas is produced, and the thrust drops."
+  }
+ }
+}

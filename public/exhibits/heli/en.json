@@ -1,0 +1,98 @@
+{
+ "name": "Helicopter",
+ "title": "Helicopter (drive train and rotor controls)",
+ "intro": "This is a light helicopter. Explode it (🧩) to see the turboshaft engine, main gearbox, swashplate, teetering rotor and tail rotor. Ask me \"How does a helicopter fly forward?\"",
+ "suggest": ["How does a helicopter fly forward?", "Why does it need a tail rotor?", "What does the swashplate do?", "Open the doors and look inside?"],
+ "looksLike": "helicopter, rotorcraft, drone, propeller",
+ "parts": {
+  "engine": { "name": "Turboshaft engine", "info": "The helicopter's heart. It draws in air, compresses it and burns it with fuel; the hot gas spins a turbine, and a shaft sends the power forward. A window shows the turbine inside.", "aliases": ["engine", "turbine engine", "motor"] },
+  "turbine": { "name": "Power turbine", "info": "Spun at high speed by the hot gas from combustion. Every turning part of the helicopter starts here.", "aliases": ["turbine"] },
+  "input_shaft": { "name": "Input shaft", "info": "Carries the engine's rotation into the main gearbox. It spins very fast but with little force.", "aliases": ["drive shaft", "input"] },
+  "main_gearbox": { "name": "Main gearbox", "info": "Reduces the engine's tens of thousands of rpm to a few hundred rpm at the main rotor, multiplying the force many times. A quarter of the case is cut away to show the gears.", "aliases": ["gearbox", "transmission", "reduction gearbox"] },
+  "bevel_gear": { "name": "Bevel gear and sun gear", "info": "The 71-tooth bevel gear turns the horizontal input into vertical rotation; the sun gear above it drives the planet gears.", "aliases": ["bevel gear", "sun gear", "gears"] },
+  "planets": { "name": "Planet gears", "info": "They orbit the sun gear while rolling inside the fixed outer ring gear, reducing the speed again and handing it to the planet carrier and the mast.", "aliases": ["planets", "planetary gears", "epicyclic gears"] },
+  "mast": { "name": "Mast and planet carrier", "info": "The main shaft rising out of the gearbox, with the rotor on top. It turns about 15 times slower than the input shaft, with about 15 times the force.", "aliases": ["mast", "rotor shaft", "main shaft"] },
+  "rotor_hub": { "name": "Rotor hub (teetering)", "info": "The two blades sit on a central pivot like a seesaw: when one rises the other drops, so the whole rotor disc can tilt.", "aliases": ["hub", "rotor head", "rotor"] },
+  "blade_1": { "name": "Blade 1", "info": "Like a wing going round in a circle. Raise its leading edge a little (more pitch) and it pushes more air down, making more lift.", "aliases": ["blade", "rotor blade", "rotor"] },
+  "blade_2": { "name": "Blade 2", "info": "Turns together with the other blade. Each blade can twist about its own long axis to change its pitch.", "aliases": ["blade", "rotor blade", "rotor"] },
+  "swashplate_lower": { "name": "Lower swashplate (fixed)", "info": "Held up by three servos, it can rise and fall as a whole or tilt in any direction, but it doesn't turn. The pilot's commands enter the spinning parts here.", "aliases": ["swashplate", "lower swashplate"] },
+  "swashplate_upper": { "name": "Upper swashplate (rotating)", "info": "Turns with the rotor but rises and tilts together with the lower plate, twisting the blades through the pitch links.", "aliases": ["swashplate", "upper swashplate"] },
+  "pitch_link_1": { "name": "Pitch link 1", "info": "Passes the upper swashplate's height to the blade's pitch horn: link up, leading edge up.", "aliases": ["pitch link", "link"] },
+  "pitch_link_2": { "name": "Pitch link 2", "info": "The other pitch link, controlling the other blade.", "aliases": ["pitch link", "link"] },
+  "scissors": { "name": "Scissor link", "info": "Connects the upper swashplate to the mast, so the plate turns with the rotor while still free to rise and tilt.", "aliases": ["scissors", "drive link"] },
+  "servo_1": { "name": "Servo 1 (front)", "info": "A hydraulic servo pushing one point of the lower swashplate. All three pushing together raise or lower it (collective); pushing differently tilts it (cyclic).", "aliases": ["servo", "actuator", "hydraulic cylinder"] },
+  "servo_2": { "name": "Servo 2 (left rear)", "info": "A hydraulic servo pushing one point of the lower swashplate. All three pushing together raise or lower it (collective); pushing differently tilts it (cyclic).", "aliases": ["servo", "actuator", "hydraulic cylinder"] },
+  "servo_3": { "name": "Servo 3 (right rear)", "info": "A hydraulic servo pushing one point of the lower swashplate. All three pushing together raise or lower it (collective); pushing differently tilts it (cyclic).", "aliases": ["servo", "actuator", "hydraulic cylinder"] },
+  "tail_driveshaft": { "name": "Tail driveshaft", "info": "The long shaft running from the main gearbox all the way to the tail, driving the tail rotor.", "aliases": ["tail shaft", "tail drive"] },
+  "tail_gearbox": { "name": "Tail gearbox", "info": "Turns the drive 90° at the tail and hands the shaft's rotation to the tail rotor.", "aliases": ["tail gearbox"] },
+  "tail_rotor": { "name": "Tail rotor", "info": "As the main rotor turns one way, the reaction twists the body the other way. The tail rotor pushes sideways to hold the body straight; the pedals change its pitch to turn the nose left and right.", "aliases": ["tail rotor", "anti-torque rotor"] },
+  "cyclic": { "name": "Cyclic stick", "info": "The stick in the pilot's right hand. Push it any way and the swashplate tilts that way, the rotor disc follows, and the helicopter flies in that direction.", "aliases": ["cyclic", "control stick", "joystick"] },
+  "collective": { "name": "Collective lever", "info": "The lever by the pilot's left hand. Raise it and both blades' pitch increases together: more lift, and the helicopter climbs.", "aliases": ["collective"] },
+  "pedals": { "name": "Anti-torque pedals", "info": "Press left or right to change the tail rotor's pitch and turn the nose left or right.", "aliases": ["pedals", "rudder pedals"] },
+  "control_rods": { "name": "Control rods", "info": "Connect the pilot's stick, lever and pedals to the servos and the tail rotor.", "aliases": ["rods", "linkage", "controls"] },
+  "fuel_tank": { "name": "Fuel tank", "info": "Holds the fuel, in the middle of the body near the centre of gravity, so the balance doesn't change as the fuel is used.", "aliases": ["tank", "fuel"] },
+  "skids": { "name": "Skids", "info": "Landing gear made of two tubes: lighter and simpler than wheels.", "aliases": ["landing gear", "skid"] },
+  "fuselage": { "name": "Fuselage", "info": "The helicopter's main body, with the cockpit, seats and instrument panel at the front. Explode it (🧩) to see the engine and gearbox above and the controls below.", "aliases": ["body", "cabin", "cockpit"] },
+  "canopy": { "name": "Canopy", "info": "The clear cover over the front and top of the cockpit, so the pilot can see forward and down.", "aliases": ["windscreen", "windshield", "glass"] },
+  "door_l": { "name": "Left front door", "info": "The door beside the pilot's seat. Hinged at the front edge, it opens outwards.", "aliases": ["door"] },
+  "door_r": { "name": "Right front door", "info": "Hinged at the front edge, it opens outwards.", "aliases": ["door"] },
+  "rear_door_l": { "name": "Left rear door", "info": "The back-seat door, hinged at the rear edge, opening outwards.", "aliases": ["door", "rear door"] },
+  "rear_door_r": { "name": "Right rear door", "info": "The back-seat door, hinged at the rear edge, opening outwards.", "aliases": ["door", "rear door"] },
+  "transmission_cowling": { "name": "Transmission cowling", "info": "The cover over the main gearbox and the lower swashplate, so the air flows past smoothly.", "aliases": ["cowling", "cover"] },
+  "engine_cowling": { "name": "Engine cowling", "info": "The cover over the turboshaft engine, with the exhaust at the back.", "aliases": ["engine cover", "cowling"] },
+  "tail_boom": { "name": "Tail boom", "info": "The long boom reaching back from the body, with the tail rotor's driveshaft running inside. The further back the tail rotor, the less force it needs to cancel the torque.", "aliases": ["tail", "boom"] },
+  "tail_fins": { "name": "Tail fins", "info": "The vertical fin and the horizontal stabiliser. In forward flight they keep the body pointing straight ahead, like the feathers on an arrow.", "aliases": ["fins", "vertical fin", "stabiliser", "stabilizer"] }
+ },
+ "drives": {
+  "power": "Power (turbine → gearbox → main rotor and tail rotor)",
+  "collective": "Collective: raise and lower",
+  "cyclic": "Cyclic: stick forward and back",
+  "open": "Opening the doors"
+ },
+ "lessons": {
+  "power": { "title": "How the engine turns the rotor", "steps": [
+   { "say": "Hot gas in the turboshaft engine spins the turbine at tens of thousands of rpm." },
+   { "say": "The input shaft carries the rotation into the main gearbox, and the bevel gear turns it from horizontal to vertical.",
+     "quiz": { "q": "The engine spins very fast. Why does the rotor turn so much slower?", "options": [
+      ["The gearbox trades speed for force", "Cutting the speed about 15 times multiplies the torque about 15 times: enough to turn the long, heavy blades."],
+      ["The engine is deliberately throttled back", "The engine is most efficient at high speed; the gearbox does the reducing."],
+      ["Air resistance slows it", "Drag has to be overcome, but the speed is set by the gear ratio."]] } },
+   { "say": "The planet gears reduce the speed once more, and the planet carrier turns the mast and the blades." },
+   { "say": "At the same time the tail driveshaft sends part of the power to the tail rotor.",
+     "quiz": { "q": "What would happen without a tail rotor?", "options": [
+      ["The body would spin the opposite way to the rotor", "The engine pushes the rotor one way, and the rotor pushes the body the other way (torque reaction). The tail rotor pushes sideways to counter it."],
+      ["It couldn't take off", "Lift comes from the main rotor, so it could lift off, but the body would keep spinning."],
+      ["Nothing", "It would keep spinning. Only designs like coaxial twin rotors can do without a tail rotor."]] } }
+  ] },
+  "collective": { "title": "Collective: how it climbs", "steps": [
+   { "say": "The pilot raises the collective lever, and the three servos push the lower swashplate up together." },
+   { "say": "The upper swashplate rises with it, and the pitch links raise the leading edges of both blades at once.",
+     "quiz": { "q": "Raise the collective. What do the two blades do?", "options": [
+      ["Both get more pitch, making more lift", "Together they push a little more air down, and the helicopter climbs."],
+      ["They spin faster", "Rotor speed stays almost fixed; it's the pitch that changes."],
+      ["One gets more, one less", "That's the cyclic; the collective changes both together."]] } },
+   { "say": "More pitch also means more drag, so the engine has to give more power to keep the rotor from slowing down." }
+  ] },
+  "cyclic": { "title": "Cyclic: how it flies forward", "steps": [
+   { "say": "The pilot pushes the cyclic forward, and the servos tilt both swashplates forward together." },
+   { "say": "On every turn, each blade has more pitch on one side and less on the other.",
+     "quiz": { "q": "Is the rotor disc highest where the blade pitch is greatest?", "options": [
+      ["No, the high point comes 90° later", "That's gyroscopic precession: a spinning rotor responds a quarter turn after the force is applied, so the maximum pitch has to come 90° early."],
+      ["Yes, at the same spot", "The rotor is spinning, so the response comes a quarter turn later."],
+      ["The high point is on the opposite side", "The difference is 90°, not 180°."]] } },
+   { "say": "The result: the rotor disc tilts forward, the lift leans forward, and the helicopter flies forward." }
+  ] }
+ },
+ "faults": {
+  "tail_shaft": {
+   "title": "Broken tail driveshaft",
+   "short": "The main rotor turns, the tail rotor has stopped",
+   "symptom": "The turbine is running and the main rotor turns normally, but the small rotor at the tail has stopped. In the air, the body would keep spinning round. What do you think is broken?",
+   "hint": "The tail rotor has no engine of its own. Where does its power come from, and what carries it all the way to the tail?",
+   "suspects": ["The tail rotor blades are broken", "The tail driveshaft broke", "The engine has no power"],
+   "cause": "The driveshaft from the main gearbox to the tail has broken. The main rotor keeps turning, but the tail rotor gets no power.",
+   "why": "Why does the helicopter keep spinning when the tail driveshaft breaks?",
+   "answer": "As the main rotor turns, the reaction pushes the body the opposite way. The tail rotor, driven from the main gearbox by the tail driveshaft, pushes sideways to cancel that torque. With the shaft broken the tail rotor stops, nothing cancels the torque, and the body spins."
+  }
+ }
+}

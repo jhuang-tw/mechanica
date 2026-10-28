@@ -1,0 +1,87 @@
+{
+ "name": "Mechanical watch",
+ "title": "Automatic mechanical dive watch",
+ "intro": "This is a self-winding mechanical watch with no battery. Explode it (🧩) to see the mainspring, gears, balance wheel and escapement. Ask me \"How does the mainspring move the hands?\"",
+ "suggest": ["How does the mainspring move the hands?", "Where does the tick-tock come from?", "How does an automatic watch wind itself?"],
+ "looksLike": "watch, wristwatch, mechanical watch, dive watch, timepiece",
+ "parts": {
+  "case": { "name": "Case", "info": "The metal case around the whole movement, 42 mm across, sealed against water and dust.", "aliases": ["watch case", "housing"] },
+  "crystal": { "name": "Crystal", "info": "The clear sapphire glass on top. It is very hard to scratch.", "aliases": ["glass", "watch glass"] },
+  "case_back": { "name": "Case back", "info": "The cover on the back of the watch, sealed with a gasket when screwed down. Open it to see the movement.", "aliases": ["back", "caseback"] },
+  "bezel": { "name": "Rotating bezel", "info": "A dive watch's outer ring. It turns anticlockwise only (120 clicks a turn). Before a dive you line up 0 with the minute hand to read how long you've been under; if it gets knocked, it can only make the time look longer, which is the safe way round.", "aliases": ["bezel", "ring"] },
+  "crown": { "name": "Crown", "info": "The little knob on the side. Turn it to wind the watch by hand; pull it out to set the time. A winding stem connects it into the movement.", "aliases": ["knob", "winding crown", "stem"] },
+  "dial": { "name": "Dial", "info": "The marked face the hands move over. 12 o'clock at the top, 3 o'clock on the right.", "aliases": ["face", "watch face"] },
+  "hour_hand": { "name": "Hour hand", "info": "The shortest hand. It goes round once in 12 hours, 1/12 of the minute hand's speed.", "aliases": ["hour hand", "short hand"] },
+  "minute_hand": { "name": "Minute hand", "info": "Goes round once an hour. It sits directly on the centre wheel's arbor.", "aliases": ["minute hand", "long hand"] },
+  "seconds_hand": { "name": "Seconds hand", "info": "Goes round once a minute, on the fourth wheel's arbor. Look closely: it moves in tiny jumps, 8 a second.", "aliases": ["second hand", "seconds hand"] },
+  "mainplate": { "name": "Main plate", "info": "The base of the movement. Every wheel's arbor is held between it and the bridges above.", "aliases": ["base plate", "plate"] },
+  "barrel": { "name": "Mainspring barrel", "info": "A coiled mainspring inside is the watch's only power source. As it slowly unwinds it turns the barrel's 84-tooth gear, about once every 7 hours.", "aliases": ["mainspring", "barrel", "spring"] },
+  "barrel_bridge": { "name": "Barrel bridge", "info": "The bridge holding the barrel down; the winding wheels usually sit next to it.", "aliases": ["bridge"] },
+  "center_wheel": { "name": "Centre wheel", "info": "In the very middle, turning once an hour. The minute hand sits on its arbor.", "aliases": ["center wheel", "second wheel"] },
+  "third_wheel": { "name": "Third wheel", "info": "Multiplies the centre wheel's speed by 7.5 and passes it to the fourth wheel.", "aliases": ["third wheel"] },
+  "fourth_wheel": { "name": "Fourth wheel", "info": "Turns once a minute; the seconds hand sits on its arbor.", "aliases": ["fourth wheel", "seconds wheel"] },
+  "escape_wheel": { "name": "Escape wheel", "info": "A wheel with saw-like teeth. It wants to keep spinning, but the pallet fork lets it go only one tooth at a time, so the gear train moves forward step by step.", "aliases": ["escape wheel", "escapement"] },
+  "pallet_fork": { "name": "Pallet fork", "info": "A little anchor-shaped part with a ruby at each end. On every swing of the balance it flicks left or right, releasing the escape wheel by one tooth, and gives the balance a small push to make up for lost energy.", "aliases": ["pallet fork", "fork", "anchor", "lever"] },
+  "balance": { "name": "Balance wheel", "info": "The heart of the watch. With its fine hairspring it swings back and forth 8 times a second (4 Hz), and the steadiness of that swing decides how accurate the watch is.", "aliases": ["balance", "hairspring", "heart", "balance spring"] },
+  "balance_cock": { "name": "Balance cock", "info": "A bridge that holds the balance from one side only, so it can swing freely.", "aliases": ["cock", "bridge"] },
+  "train_bridge": { "name": "Train bridge", "info": "The bridge holding the upper pivots of the centre, third, fourth and escape wheels.", "aliases": ["bridge"] },
+  "minute_wheel": { "name": "Minute wheel", "info": "Under the dial, it works with the centre wheel and hour wheel to slow the speed by another 12 times for the hour hand.", "aliases": ["minute wheel", "hour wheel", "motion works"] },
+  "rotor": { "name": "Rotor", "info": "A half-moon weight. Whenever your wrist moves, its weight makes it turn, and whichever way it turns it winds the mainspring. That's \"automatic winding\".", "aliases": ["rotor", "oscillating weight", "winding weight", "automatic winding"] },
+  "strap_top": { "name": "Upper strap", "info": "The strap on the 12 o'clock side.", "aliases": ["strap", "band"] },
+  "strap_bottom": { "name": "Lower strap", "info": "The strap on the 6 o'clock side.", "aliases": ["strap", "band"] }
+ },
+ "drives": {
+  "run": "Keeping time (gear train and hands)",
+  "tick": "Balance wheel and pallet fork swinging (slowed down 8 times)",
+  "rotor": "Rotor swinging",
+  "crown": "Winding with the crown",
+  "bezel": "Turning the bezel anticlockwise"
+ },
+ "lessons": {
+  "train": { "title": "How the mainspring moves the hands", "steps": [
+   { "say": "The mainspring is coiled inside the barrel. As it slowly unwinds, it turns the barrel about once every 7 hours." },
+   { "say": "The barrel drives the centre wheel, which turns once an hour; the minute hand sits on it." },
+   { "say": "The third wheel speeds things up again and turns the fourth wheel once a minute: that's the seconds hand.",
+     "quiz": { "q": "Why is the seconds hand 60 times faster than the minute hand?", "options": [
+      ["The gears multiply the speed stage by stage", "Centre wheel to third wheel, third wheel to fourth: each time a big gear drives a small one and things speed up, and the stages multiply to exactly 60."],
+      ["The seconds hand has its own mainspring", "There is only one mainspring; every hand runs off the same gear train."],
+      ["It's lighter, so it turns faster", "Speed is set by the tooth ratios, not by weight."]] } },
+   { "say": "Under the dial, the minute wheel slows the minute hand's speed by 12 times for the hour hand.",
+     "quiz": { "q": "When the minute hand goes round once, how far does the hour hand go?", "options": [
+      ["1/12 of a turn: one number per hour", "The minute hand turns 12 times for each turn of the hour hand, so the hour hand moves one number every hour."],
+      ["A full turn too", "Then the two hands would move together and you couldn't tell the time."],
+      ["Half a turn", "Half a turn is 6 hours; the hour hand moves one number per hour."]] } }
+  ] },
+  "escapement": { "title": "Tick-tock: the balance and the escapement", "steps": [
+   { "say": "With only a mainspring and gears, the spring would run down in seconds. The escape wheel is the brake." },
+   { "say": "The balance wheel and its hairspring swing back and forth 8 times a second. Here it's slowed down 8 times." },
+   { "say": "On every swing of the balance the pallet fork flicks across, lets the escape wheel move one tooth and locks it again. That's where the tick-tock comes from.",
+     "quiz": { "q": "Which part mainly decides how accurate a mechanical watch is?", "options": [
+      ["The balance wheel", "The balance and hairspring swing at a steady beat, like a metronome, and the pallet fork releases the gears to that beat, so the balance sets the time."],
+      ["The mainspring", "The mainspring only supplies force; even when that force changes, the balance's beat barely does."],
+      ["The seconds hand", "The seconds hand only displays the time."]] } },
+   { "say": "As the pallet fork releases, it also gives the balance a little push to make up for friction, so the balance never stops." }
+  ] },
+  "winding": { "title": "Winding: by hand and automatic", "steps": [
+   { "say": "Turn the crown and the winding stem tightens the mainspring: that's hand winding." },
+   { "say": "The half-moon rotor on the back turns under its own weight whenever your wrist moves, and that winds the mainspring too.",
+     "quiz": { "q": "An automatic watch sits on a table for two or three days. What happens?", "options": [
+      ["The mainspring runs down and the watch stops", "The rotor only turns when your wrist moves; left still, nothing winds it. A mainspring typically lasts about 40 hours."],
+      ["It never stops", "An automatic watch isn't a perpetual motion machine; no movement, no winding."],
+      ["It winds itself with electricity", "There's no battery or motor in a mechanical watch."]] } },
+   { "say": "The outer bezel turns anticlockwise only and is used to time dives." }
+  ] }
+ },
+ "faults": {
+  "minute_wheel": {
+   "title": "Broken minute wheel",
+   "short": "The minute hand moves, the hour hand doesn't",
+   "symptom": "The watch is running: the seconds and minute hands are fine, but the hour hand stays on the same spot. What do you think is broken?",
+   "hint": "The hour hand turns 12 times slower than the minute hand. What slows the minute hand's turning down and hands it to the hour hand?",
+   "suspects": ["The mainspring is weak", "The minute wheel is broken", "The balance wheel stopped"],
+   "cause": "The minute wheel between the minute hand and the hour hand is broken. The minute hand keeps going, but its turning never reaches the hour hand.",
+   "why": "Why does the minute hand still move but the hour hand doesn't when the minute wheel breaks?",
+   "answer": "The minute hand sits on the centre wheel. The minute wheel slows its turning by 12 times and hands it to the hour hand, so 12 turns of the minute hand make 1 turn of the hour hand. With the minute wheel broken, the hour hand gets none of that turning."
+  }
+ }
+}

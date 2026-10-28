@@ -35,6 +35,8 @@
   .mark svg { width:26px; height:26px; color:var(--accent); }
   .pill { display:inline-flex; align-items:center; gap:8px; min-height:40px; padding:0 14px; border-radius:999px; font-size:14px; font-weight:600; background:rgba(255,255,255,.06); border:1px solid var(--line2); }
   .pill svg.i { width:18px; height:18px; }
+  .top { gap:8px; } .top .mark { margin-right:auto; }
+  .lang { font-size:13px; font-weight:700; letter-spacing:.02em; }
 
   section.block { padding:36px 0 0; }
   .h2 { display:flex; align-items:baseline; justify-content:space-between; gap:10px; margin:0 0 14px; }
@@ -99,7 +101,7 @@
   #ride label { color:var(--dim); font-size:13px; } #ride input { flex:1; height:44px; margin:0; accent-color:var(--accent); }
   #ride button { min-width:44px; height:44px; padding:0 10px; border-radius:12px; display:grid; place-items:center; }
   #r-see[aria-pressed=true], #r-gears button.on { background:var(--accent); color:#1a1205; border-color:transparent; }
-  #r-gears button { flex:1; min-width:0; white-space:nowrap; } #r-gears::before { content:"檔位"; color:var(--dim); font-size:13px; }
+  #r-gears button { flex:1; min-width:0; white-space:nowrap; } #r-gears::before { content:"檔位"; color:var(--dim); font-size:13px; } html:lang(en) #r-gears::before { content:"Gear"; }
   .chips { display:flex; gap:8px; overflow-x:auto; padding-bottom:2px; scrollbar-width:none; }
   .chips::-webkit-scrollbar { display:none; }
   .chip { flex:none; display:flex; align-items:center; gap:7px; min-height:44px; padding:0 14px 0 11px; font-size:14px; border-radius:999px; background:var(--glass); border:1px solid var(--line2); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); white-space:nowrap; }
@@ -197,12 +199,13 @@
   <div class="wrap">
     <nav class="top">
       <div class="mark"><svg class="i"><use href="#i-gear"/></svg>MECHANICA</div>
-      <button id="home-vr" class="pill" type="button" hidden><svg class="i"><use href="#i-vr"/></svg>VR 上課</button>
+      <button id="home-vr" class="pill" type="button" hidden><svg class="i"><use href="#i-vr"/></svg><span data-t="vrClass">VR 上課</span></button>
+      <button class="pill lang" type="button" aria-label="Switch to English">EN</button>
     </nav>
 
     <div class="pick">
-      <h1>選一台來<em>修</em></h1>
-      <p class="lede">每台機器都有一個地方壞了。看症狀、說出你的猜測，Meta AI 會在 3D 模型上幫你檢查，修好之後再說說看為什麼。</p>
+      <h1><span data-t="pickA">選一台來</span><em data-t="pickB">修</em></h1>
+      <p class="lede" data-t="pickLede">每台機器都有一個地方壞了。看症狀、說出你的猜測，Meta AI 會在 3D 模型上幫你檢查，修好之後再說說看為什麼。</p>
     </div>
 
     <section class="block" id="all">
@@ -210,49 +213,50 @@
     </section>
 
     <section class="block">
-      <button id="home-photo" type="button"><span class="ic"><svg class="i"><use href="#i-cam"/></svg></span><span><b>身邊有真的機器？</b><span>拍下來，幫你找到對應的機器和零件</span></span></button>
+      <button id="home-photo" type="button"><span class="ic"><svg class="i"><use href="#i-cam"/></svg></span><span><b data-t="photoB">身邊有真的機器？</b><span data-t="photoS">拍下來，幫你找到對應的機器和零件</span></span></button>
     </section>
-    <p class="foot">Mechanica · 手機、電腦和 VR 頭戴都能上課</p>
+    <p class="foot" data-t="foot">Mechanica · 手機、電腦和 VR 頭戴都能上課</p>
   </div>
 </section>
 
 <section id="app" hidden>
   <div id="view"><canvas id="c"></canvas></div>
   <header>
-    <button id="back" class="icon" type="button" aria-label="回首頁"><svg class="i"><use href="#i-back"/></svg></button>
+    <button id="back" class="icon" type="button" aria-label="回首頁" data-t-aria="back"><svg class="i"><use href="#i-back"/></svg></button>
     <div class="ttl"><h2 id="title"></h2><small id="subtitle"></small></div>
-    <div id="mode" class="seg" role="group" aria-label="模式"><button id="m-fix" type="button" aria-pressed="true">修理</button><button id="m-learn" type="button" aria-pressed="false">原理</button></div>
+    <div id="mode" class="seg" role="group" aria-label="模式" data-t-aria="mode"><button id="m-fix" type="button" aria-pressed="true" data-t="mFix">修理</button><button id="m-learn" type="button" aria-pressed="false" data-t="mLearn">原理</button></div>
     <button id="vr" class="icon" type="button" hidden><svg class="i"><use href="#i-vr"/></svg>VR</button>
-    <button id="reset" class="icon" type="button" aria-label="還原"><svg class="i"><use href="#i-reset"/></svg></button>
+    <button id="lang" class="icon lang" type="button" aria-label="Switch to English">EN</button>
+    <button id="reset" class="icon" type="button" aria-label="還原" data-t-aria="reset"><svg class="i"><use href="#i-reset"/></svg></button>
   </header>
   <div id="sheet">
     <div id="caption" class="glass"><b id="cap-title"></b><p id="cap-text"></p></div>
     <div id="quiz" hidden></div>
     <div id="fix" class="glass" hidden>
-      <div class="row"><b id="f-bar">修理挑戰</b><button id="f-help" type="button">提示</button></div>
-      <p id="f-v"></p><p id="f-q"></p><div id="f-choices"></div><small id="f-hint">按麥克風說你的猜測，或直接點你懷疑的零件</small>
+      <div class="row"><b id="f-bar" data-t="fixBar">修理挑戰</b><button id="f-help" type="button" data-t="help">提示</button></div>
+      <p id="f-v"></p><p id="f-q"></p><div id="f-choices"></div><small id="f-hint" data-t="fixHint">按麥克風說你的猜測，或直接點你懷疑的零件</small>
     </div>
     <div id="tutor" class="glass" hidden>
-      <div class="row"><b id="t-bar">AI 家教</b><button id="t-show" type="button">不會，示範給我看</button><button id="t-stop" type="button" aria-label="結束家教"><svg class="i"><use href="#i-x"/></svg></button></div>
-      <p id="t-v"></p><p id="t-q"></p><div id="t-choices"></div><small id="t-hint" hidden>按麥克風用說的，或點鍵盤打字回答</small>
+      <div class="row"><b id="t-bar" data-t="tutorName">AI 家教</b><button id="t-show" type="button" data-t="tShow">不會，示範給我看</button><button id="t-stop" type="button" aria-label="結束家教" data-t-aria="tStop"><svg class="i"><use href="#i-x"/></svg></button></div>
+      <p id="t-v"></p><p id="t-q"></p><div id="t-choices"></div><small id="t-hint" hidden data-t="tHint">按麥克風用說的，或點鍵盤打字回答</small>
     </div>
     <div id="lesson" class="row glass" hidden>
-      <button id="l-prev" type="button" aria-label="上一步"><svg class="i"><use href="#i-back"/></svg></button><span id="l-step"></span>
-      <button id="l-next" type="button" aria-label="下一步"><svg class="i"><use href="#i-next"/></svg></button><button id="l-all" class="mode" type="button" aria-label="連貫播放和分步切換">連貫</button><button id="l-stop" type="button" aria-label="結束"><svg class="i"><use href="#i-x"/></svg></button>
+      <button id="l-prev" type="button" aria-label="上一步" data-t-aria="prev"><svg class="i"><use href="#i-back"/></svg></button><span id="l-step"></span>
+      <button id="l-next" type="button" aria-label="下一步" data-t-aria="next"><svg class="i"><use href="#i-next"/></svg></button><button id="l-all" class="mode" type="button" aria-label="連貫播放和分步切換" data-t-aria="allAria" data-t="all">連貫</button><button id="l-stop" type="button" aria-label="結束" data-t-aria="end"><svg class="i"><use href="#i-x"/></svg></button>
     </div>
     <div id="ride" class="glass" hidden>
-      <div class="row"><b id="r-read"></b><button id="r-see" type="button" aria-pressed="false">透視</button><button id="r-stop" type="button" aria-label="下車"><svg class="i"><use href="#i-x"/></svg></button></div>
-      <label class="row">油門<input id="r-thr" type="range" min="0" max="1" step="0.01" value="0.3" aria-label="油門"></label>
+      <div class="row"><b id="r-read"></b><button id="r-see" type="button" aria-pressed="false" data-t="xray">透視</button><button id="r-stop" type="button" aria-label="下車" data-t-aria="getOff"><svg class="i"><use href="#i-x"/></svg></button></div>
+      <label class="row"><span data-t="throttle">油門</span><input id="r-thr" type="range" min="0" max="1" step="0.01" value="0.3" aria-label="油門" data-t-aria="throttle"></label>
       <div id="r-gears" class="row"></div>
     </div>
     <div id="chips" class="chips"></div>
     <div id="ai-chips" class="chips"></div>
-    <form id="ask" class="glass" hidden><input id="q" enterkeyhint="send" autocomplete="off" placeholder="問任何問題…"><button type="submit">送出</button></form>
+    <form id="ask" class="glass" hidden><input id="q" enterkeyhint="send" autocomplete="off" placeholder="問任何問題…"><button type="submit" data-t="send">送出</button></form>
     <div id="controls" class="row">
-      <label id="explode" class="glass"><svg class="i"><use href="#i-layers"/></svg>拆解<input id="explode-r" type="range" min="0" max="1" step="0.01" value="0" aria-label="拆解"></label>
-      <button id="type" class="icon" type="button" aria-label="打字提問"><svg class="i"><use href="#i-key"/></svg></button>
-      <button id="photo" class="icon" type="button" aria-label="拍真的機器"><svg class="i"><use href="#i-cam"/></svg></button>
-      <button id="mic" type="button" aria-label="按住說話"><svg class="i"><use href="#i-mic"/></svg></button>
+      <label id="explode" class="glass"><svg class="i"><use href="#i-layers"/></svg><span data-t="explode">拆解</span><input id="explode-r" type="range" min="0" max="1" step="0.01" value="0" aria-label="拆解" data-t-aria="explode"></label>
+      <button id="type" class="icon" type="button" aria-label="打字提問" data-t-aria="typeAria"><svg class="i"><use href="#i-key"/></svg></button>
+      <button id="photo" class="icon" type="button" aria-label="拍真的機器" data-t-aria="photoAria"><svg class="i"><use href="#i-cam"/></svg></button>
+      <button id="mic" type="button" aria-label="按住說話" data-t-aria="micAria"><svg class="i"><use href="#i-mic"/></svg></button>
     </div>
   </div>
 </section>
