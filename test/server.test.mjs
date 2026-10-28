@@ -13,6 +13,10 @@ const meta = createServer(async (req, res) => {
   if (req.url === '/v1/asr/transcribe') return res.end(JSON.stringify({ transcript: '链条怎么带动后轮' }));
   if (req.url === '/v1/responses') return res.end(JSON.stringify({ status: 'completed', output: [{ content: [{ type: 'output_text', text: b.input[0].content[0].text === 'bicycle chain' ? '' : samText }] }] }));
   const sys = b.messages[0].content, user = b.messages.at(-1).content;
+  if (b.tools?.some((t) => t.function.name === 'grade')) return msg({ content: '對一半：鏈條沒錯，但力量先到齒盤。', tool_calls: [
+    ['grade', { verdict: 'partial', concept: '鏈條傳動', gap: '漏了齒盤' }], ['isolate', { parts: ['chainring', 'chain'] }],
+    ['ask', { question: '齒盤轉一圈，後輪轉幾圈？', choices: ['不到一圈', '大約三圈', '', 'x', 'y'] }],
+  ].map(([name, a], i) => ({ id: 't' + i, type: 'function', function: { name, arguments: JSON.stringify(a) } })) });
   if (b.tools) return msg({ content: '踩踏板時大盤拉動鏈條，鏈條再帶飛輪和後輪。', tool_calls: [
     ['isolate', { parts: ['chainring', 'chain', 'cassette', 'rear_wheel', 'seat'], at: 0 }],
     ['drive', { drive: 'pedal', speed: 9, duration: 5, at: 1 }],
@@ -25,7 +29,7 @@ const meta = createServer(async (req, res) => {
   return msg({ content: '```json\n{"match":true,"exhibit":"bike","confidence":0.9,"machine":"公路車","parts":["chain","rear_derailleur","made_up","chain"],"say":"這是公路車，看看鏈條。"}\n```' });
 });
 await new Promise((ok) => meta.listen(0, ok));
-Object.assign(process.env, { META_API_KEY: 'test-key', META_BASE_URL: `http://127.0.0.1:${meta.address().port}/v1`, DAILY_LIMIT: '10' });
+Object.assign(process.env, { META_API_KEY: 'test-key', META_BASE_URL: `http://127.0.0.1:${meta.address().port}/v1`, DAILY_LIMIT: '12' });
 const { server, overBudget } = await import('../server/serve.mjs');
 await new Promise((ok) => server.listen(0, ok));
 const app = `http://127.0.0.1:${server.address().port}`;
@@ -70,6 +74,13 @@ try {
   assert.equal(r.text, '鏈條怎麼帶動後輪');
   assert.match(seen.at(-1).b.messages[0].content, /鏈條/);
   assert.match(seen.at(-2).raw.toString(), /PUSH_TO_TALK/);
+
+  // tutor turn: grade + demo + next question, choices capped at 3; the learner's record reaches the prompt
+  r = await (await post('/api/tutor', { exhibit: 'bike', answer: '鏈條帶後輪', known: [{ concept: '棘輪', verdict: 'wrong' }, { verdict: 'right' }], focus: 'chain' })).json();
+  assert.deepEqual([r.grade, r.question, r.steps], [{ verdict: 'partial', concept: '鏈條傳動', gap: '漏了齒盤' }, { q: '齒盤轉一圈，後輪轉幾圈？', choices: ['不到一圈', '大約三圈', 'x'] }, [{ do: 'isolate', at: 0, parts: ['chainring', 'chain'] }]]);
+  assert.match(seen.at(-1).b.messages[0].content, /棘輪：答錯[\s\S]*拍了真的鏈條/);
+  assert.equal(seen.at(-1).b.messages.at(-1).content, '我的回答：鏈條帶後輪');
+  assert.equal((await post('/api/tutor', { exhibit: 'nope' })).status, 400);
 
   // spend guard: per-visitor cap, then the whole-server cap; resets the next day
   assert.equal((await post('/api/ask', { exhibit: 'bike', text: 'x' })).status, 200);

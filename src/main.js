@@ -8,7 +8,7 @@ const $ = (id) => document.getElementById(id);
 const BASE = `${import.meta.env.BASE_URL}exhibits/`;
 const viewerModule = import('./viewer.js');   // three.js downloads while the landing page is up
 const exhibits = {};   // id -> manifest
-let viewer, ex, rig, chat = [], pointed = null, lesson = null, quiz = null, vr = null;
+let viewer, ex, rig, chat = [], pointed = null, lesson = null, quiz = null, vr = null, tutor = null;
 
 // ---------- landing ----------
 const list = (await (await fetch(`${BASE}index.json`)).json()).exhibits;
@@ -85,13 +85,13 @@ function pick(id) {
   say(p.name, p.info, false, true);
 }
 $('explode-r').oninput = (e) => rig?.setExplode(+e.target.value);
-function stopAll() { lesson = quiz = null; vr?.refresh(); document.body.classList.remove('lesson'); $('lesson').hidden = $('quiz').hidden = true; viewer?.choreo?.cancel(); rig?.reset(); $('explode-r').value = 0; }
+function stopAll() { lesson = quiz = tutor = null; vr?.refresh(); document.body.classList.remove('lesson', 'tutor'); $('lesson').hidden = $('quiz').hidden = $('tutor').hidden = true; $('q').placeholder = '問任何問題…'; viewer?.choreo?.cancel(); rig?.reset(); $('explode-r').value = 0; }
 $('reset').onclick = () => { stopAll(); speak(''); viewer.frame(); pointed = null; say(ex.name, ex.intro); };
 
 // ---------- suggestions: AI questions and lessons ----------
 function chips() {
-  const chip = (cls, label, run) => { const b = Object.assign(document.createElement('button'), { className: `chip ${cls}`, type: 'button', onclick: run }); b.innerHTML = icon({ lesson: 'book', quiz: 'q', ai: 'spark', ask: 'spark' }[cls.split(' ').pop()]) + '<span></span>'; b.lastChild.textContent = label; return b; };
-  $('ai-chips').replaceChildren(chip('ai ask', '問 AI 老師', () => $('type').onclick()), ...ex.suggest.map((q) => chip('ai', q, () => ask(q))));
+  const chip = (cls, label, run) => { const b = Object.assign(document.createElement('button'), { className: `chip ${cls}`, type: 'button', onclick: run }); b.innerHTML = icon({ lesson: 'book', quiz: 'q', ai: 'spark', ask: 'spark', tutor: 'cap' }[cls.split(' ').pop()]) + '<span></span>'; b.lastChild.textContent = label; return b; };
+  $('ai-chips').replaceChildren(chip('ai ask tutor', 'AI 家教', () => startTutor()), chip('ai', '問 AI 老師', () => $('type').onclick()), ...ex.suggest.map((q) => chip('ai', q, () => ask(q))));
   $('chips').replaceChildren(
     ...ex.lessons.map((l) => chip('lesson', l.title, () => startLesson(l, false))),
     ...(ex.lessons.some((l) => l.steps.some((s) => s.quiz)) ? [chip('lesson quiz', '先猜再看', () => startLesson(ex.lessons.find((l) => l.steps.some((s) => s.quiz)), true))] : []),
@@ -102,6 +102,7 @@ function chips() {
 async function ask(text) {
   text = text.trim();
   if (!text || !rig) return;
+  if (tutor) return tutorTurn(text);   // while the tutor runs, the mic and the keyboard answer its question
   stopAll();
   say('你問', text, true);
   try {
@@ -188,6 +189,56 @@ $('l-next').onclick = () => go(1);
 $('l-prev').onclick = () => go(-1);
 $('l-stop').onclick = () => { stopAll(); say(ex.name, ex.intro); };
 
+// ---------- AI 家教: Muse asks, grades the free-form answer, shows it on the model and adapts the next question ----------
+// The learner's record (concept → last verdict) stays in this browser and goes with every turn, so a return visit starts from the weak spots.
+const VERDICT = { right: '答對了', partial: '對一半', wrong: '再想想' };
+const record = (id) => { try { return JSON.parse(localStorage.getItem(`mechanica.tutor.${id}`)) || []; } catch { return []; } };
+function remember(g) {
+  const k = [...record(ex.id).filter((x) => x.concept !== g.concept), { concept: g.concept, verdict: g.verdict }].slice(-12);
+  try { localStorage.setItem(`mechanica.tutor.${ex.id}`, JSON.stringify(k)); } catch { /* private mode: this visit only */ }
+}
+function startTutor(focus) {
+  if (!rig) return;
+  stopAll(); speak('');
+  tutor = { history: [], n: 0, right: 0 };
+  document.body.classList.add('tutor'); $('tutor').hidden = false; $('q').placeholder = '輸入你的答案…';
+  $('t-bar').textContent = 'AI 家教';
+  tutorTurn('', focus);
+}
+async function tutorTurn(answer, focus) {
+  const t = tutor;
+  if (!t || t.busy) return;
+  t.busy = true; viewer.choreo.cancel(); speak('');
+  $('t-v').textContent = ''; $('t-q').textContent = answer ? `你答：${answer}` : ''; $('t-choices').replaceChildren(); $('t-hint').hidden = true;
+  say('AI 家教', answer ? '看看你答得怎麼樣' : '準備第一題', true);
+  const user = answer ? `我的回答：${answer}` : '開始上課，先問我第一題。';
+  try {
+    const res = await fetch('/api/tutor', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ exhibit: ex.id, answer, history: t.history, known: record(ex.id), focus }), signal: AbortSignal.timeout(30000) });
+    const r = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(r.error || `HTTP ${res.status}`);
+    if (tutor !== t) return;
+    if (r.grade) { t.n++; t.right += r.grade.verdict === 'right'; remember(r.grade); }
+    const q = r.question?.q || '還有哪個零件你想弄懂？';
+    t.history = [...t.history, { role: 'user', content: user }, { role: 'assistant', content: `${r.say} 問：${q}` }].slice(-6);
+    $('t-bar').textContent = t.n ? `AI 家教 · 答對 ${t.right}/${t.n}` : 'AI 家教';
+    $('t-v').textContent = r.grade ? `${VERDICT[r.grade.verdict]}${r.grade.gap ? `：${r.grade.gap}` : ''}` : '';
+    $('t-v').className = r.grade?.verdict || '';
+    $('t-q').textContent = q;
+    $('t-choices').replaceChildren(...(r.question?.choices || []).map((c) => Object.assign(document.createElement('button'), { type: 'button', textContent: c, onclick: () => tutorTurn(c) })));
+    $('t-hint').hidden = !!r.question?.choices?.length;
+    say(r.grade ? VERDICT[r.grade.verdict] : 'AI 家教', r.say);
+    speak(`${r.say} ${q}`);
+    vr?.say(q);
+    const steps = cleanSteps(r.steps, ex);
+    if (steps.length) viewer.choreo.play(steps);
+  } catch (e) {
+    if (tutor === t) { say('AI 家教暫時連不上', '再回答一次試試，或先上一堂課。'); $('t-hint').hidden = false; }
+    console.warn('tutor failed:', e.message);
+  } finally { t.busy = false; }
+}
+$('t-show').onclick = () => tutorTurn('我不知道，請動模型示範給我看，再問簡單一點的');
+$('t-stop').onclick = () => { stopAll(); speak(''); say(ex.name, ex.intro); };
+
 // ---------- 📷 a real machine → the matching exhibit, its part lit, and the AI shows how it moves ----------
 const photoIn = $('photo-in');
 $('photo').onclick = $('home-photo').onclick = () => photoIn.click();
@@ -205,7 +256,7 @@ photoIn.onchange = async () => {
     if (r.parts?.length) rig.isolate(r.parts);
     say('拍到的', r.say, false, true);
     const part = ex.parts.find((p) => p.id === r.parts?.[0]);
-    setTimeout(() => ask(part ? `讓我看${part.name}怎麼運作` : `讓我看${ex.name}怎麼動`), 3500);
+    setTimeout(() => startTutor(part?.id), 3500);   // the tutor starts its lesson from the part in the photo
   } catch { toast('現在認不出來，再拍一次試試', 4000); }
 };
 
@@ -214,7 +265,8 @@ photoIn.onchange = async () => {
 const app = {
   list: list.map((id) => ({ id, thumb: `${BASE}${id}/${exhibits[id].thumb}`, title: exhibits[id].name })),
   get ex() { return ex; }, get rig() { return rig; }, get lesson() { return lesson; }, get quiz() { return quiz; }, get recording() { return holding; },
-  open, pick, go, answer, startLesson,
+  get tutoring() { return !!tutor; },
+  open, pick, go, answer, startLesson, startTutor: () => startTutor(),
   quizLesson: () => startLesson(ex.lessons.find((l) => l.steps.some((s) => s.quiz)) || ex.lessons[0], true),
   stopLesson: () => { stopAll(); say(ex.name, ex.intro); },
   explode: (v) => { rig.setExplode(v); $('explode-r').value = v; },

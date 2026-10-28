@@ -12,7 +12,7 @@ try {
     if (value && !(key in process.env)) process.env[key] = value;
   }
 } catch { /* no .env */ }
-const { identify, segment, choreograph, transcribe, exhibit } = await import('./ai.mjs');
+const { identify, segment, choreograph, transcribe, tutor, exhibit } = await import('./ai.mjs');
 const { configured } = await import('./meta.mjs');
 
 const web = join(root, 'dist') + sep;
@@ -58,6 +58,13 @@ async function api(req, res, path, q) {
       exhibit(str(b.exhibit, 20));   // unknown exhibit -> 400 before any model call
       const history = (Array.isArray(b.history) ? b.history : []).slice(-4).map((m) => ({ role: m.role === 'assistant' ? 'assistant' : 'user', content: str(m.content, 400) }));
       return send(res, 200, await choreograph({ exhibit: b.exhibit, text: str(b.text, 300), pointed: str(b.pointed, 60), history }));
+    }
+    if (path === '/api/tutor') {
+      const b = JSON.parse(await body(req, 32 << 10));
+      exhibit(str(b.exhibit, 20));
+      const history = (Array.isArray(b.history) ? b.history : []).slice(-6).map((m) => ({ role: m.role === 'assistant' ? 'assistant' : 'user', content: str(m.content, 400) }));
+      const known = (Array.isArray(b.known) ? b.known : []).slice(-12).map((k) => ({ concept: str(k?.concept, 20), verdict: ['right', 'partial', 'wrong'].includes(k?.verdict) ? k.verdict : 'wrong' })).filter((k) => k.concept);
+      return send(res, 200, await tutor({ exhibit: b.exhibit, answer: str(b.answer, 300), history, known, focus: str(b.focus, 40) }));
     }
     return send(res, 404, { error: 'unknown endpoint' });
   } catch (e) {
