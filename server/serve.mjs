@@ -14,6 +14,7 @@ try {
 } catch { /* no .env */ }
 const { identify, segment, choreograph, transcribe, tutor, explainBack, fix, exhibit } = await import('./ai.mjs');
 const { configured } = await import('./meta.mjs');
+const tts = await import('./tts.mjs');
 
 const web = join(root, 'dist') + sep;
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.jpg': 'image/jpeg', '.svg': 'image/svg+xml', '.glb': 'model/gltf-binary', '.ktx2': 'image/ktx2', '.wasm': 'application/wasm' };
@@ -39,7 +40,8 @@ export function overBudget(who, day = new Date().toISOString().slice(0, 10)) {
 }
 
 async function api(req, res, path, q) {
-  if (path === '/api/status') return send(res, 200, { meta: configured() });
+  if (path === '/api/status') return send(res, 200, { meta: configured(), tts: tts.configured() });
+  if (path === '/api/tts') return speak(res, str(q.get('text'), 400).trim());
   if (req.method !== 'POST') return send(res, 405, { error: 'POST only' });
   const lang = q.get('lang') === 'en' ? 'en' : undefined;   // JSON bodies carry their own lang
   if (overBudget(String(req.headers['cf-connecting-ip'] || req.socket.remoteAddress))) return send(res, 429, { error: lang ? "Today's AI allowance is used up. Come back tomorrow." : '今天的 AI 額度用完了，明天再來。' });
@@ -84,6 +86,24 @@ async function api(req, res, path, q) {
     const code = [400, 413, 415, 503].includes(e.status) ? e.status : e instanceof SyntaxError ? 400 : 502;
     console.error(`${new Date().toISOString()} ${path} ${code} ${e.name === 'TimeoutError' ? 'timeout' : String(e.message).slice(0, 120)}`);   // never bodies or keys
     return send(res, code, { error: String(e.message).slice(0, 160) });
+  }
+}
+
+// GET so an <audio> element can stream it; the first chunk arrives before the headers go out, so a failure is still a JSON error
+async function speak(res, text) {
+  if (!text) return send(res, 400, { error: 'text expected' });
+  const audio = tts.speech(text);
+  try {
+    const { value: first } = await audio.next();
+    if (!first) throw Object.assign(new Error('no audio'), { status: 502 });
+    res.writeHead(200, { 'Content-Type': 'audio/mpeg', 'Cache-Control': 'public, max-age=86400' });
+    res.write(first);
+    for await (const c of audio) res.write(c);
+    res.end();
+  } catch (e) {
+    console.error(`${new Date().toISOString()} /api/tts ${e.status || 502} ${String(e.message).slice(0, 120)}`);
+    if (!res.headersSent) return send(res, [429, 503].includes(e.status) ? e.status : 502, { error: String(e.message).slice(0, 160) });
+    res.destroy();
   }
 }
 

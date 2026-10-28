@@ -2,7 +2,7 @@
 // or 原理 on the same exhibit (tap parts, explode, ask the AI, lessons, quiz, tutor); the landing page picks another machine.
 // Photo and VR are reachable from both.
 import { cleanSteps } from './choreo.js';
-import { Recorder, shrink, speak } from './media.js';
+import { Recorder, shrink, speak, unlockSpeech } from './media.js';
 import { t, lang, isEn, applyStatic, switchLang, here } from './i18n.js';
 import { localize } from './localize.js';
 
@@ -475,7 +475,7 @@ viewerModule.then(async ({ Viewer }) => { if (await Viewer.vrSupported()) $('hom
 $('home-vr').onclick = async () => { await learn(ex?.id || list[0]); enterVR(); };
 
 // first sound needs a tap on phones
-addEventListener('pointerdown', () => speechSynthesis?.speak(new SpeechSynthesisUtterance('')), { once: true });
+addEventListener('pointerdown', unlockSpeech, { once: true });
 // no landing page first: a broken machine is the way in (?ex= picks which, ?learn opens 原理)
 const qs = new URLSearchParams(location.search), start = exhibits[qs.get('ex')] ? qs.get('ex') : null;
 if (qs.has('learn') && start) learn(start);
