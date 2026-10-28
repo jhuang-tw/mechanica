@@ -12,6 +12,7 @@
 | `id`, `name`, `title` | 代號、短名、完整名稱 |
 | `model`, `thumb` | 同資料夾內的檔名 |
 | `view` | 選用：一開始從哪個方向看（`[x,y,z]`，例如切開的那一面） |
+| `ride` | 選用：「坐上去」第一人稱。`eye`／`look`（模型座標，公尺）、`wheel: {part, r}` 驅動輪和半徑、`gears` 每檔一個 drive id、`idle`／`redline` 引擎轉速範圍（儀表用真實數字）、`see` 按「透視」時顯示的零件、`hide` 坐上去時拿掉的外殼、`lane` 道路中線的 z、`hint` 開場說明 |
 | `look` | 選用：打光微調 `{exposure, env, key}`（曝光、環境反射強度、主光與輪廓光強度，預設都是 1），見 `src/look.js` |
 | `intro` | 打開展品時的一句話 |
 | `suggest[]` | 建議問題（畫面上的按鈕，送給 AI） |

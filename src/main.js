@@ -85,7 +85,7 @@ function pick(id) {
   say(p.name, p.info, false, true);
 }
 $('explode-r').oninput = (e) => rig?.setExplode(+e.target.value);
-function stopAll() { clearTimeout(flow); if (viewer) viewer.lessonMode = false; lesson = quiz = tutor = explain = null; vr?.refresh(); document.body.classList.remove('lesson', 'tutor'); $('lesson').hidden = $('quiz').hidden = $('tutor').hidden = true; $('q').placeholder = '問任何問題…'; viewer?.choreo?.cancel(); rig?.reset(); $('explode-r').value = 0; }
+function stopAll() { clearTimeout(flow); stopRide(); if (viewer) viewer.lessonMode = false; lesson = quiz = tutor = explain = null; vr?.refresh(); document.body.classList.remove('lesson', 'tutor'); $('lesson').hidden = $('quiz').hidden = $('tutor').hidden = true; $('q').placeholder = '問任何問題…'; viewer?.choreo?.cancel(); rig?.reset(); $('explode-r').value = 0; }
 $('reset').onclick = () => { stopAll(); speak(''); viewer.frame(); pointed = null; say(ex.name, ex.intro); };
 
 // ---------- suggestions: AI questions and lessons ----------
@@ -93,6 +93,7 @@ function chips() {
   const chip = (cls, label, run) => { const b = Object.assign(document.createElement('button'), { className: `chip ${cls}`, type: 'button', onclick: run }); b.innerHTML = icon({ lesson: 'book', quiz: 'q', ai: 'spark', ask: 'spark', tutor: 'cap' }[cls.split(' ').pop()]) + '<span></span>'; b.lastChild.textContent = label; return b; };
   $('ai-chips').replaceChildren(chip('ai ask tutor', 'AI 家教', () => startTutor()), chip('ai', '問 AI 老師', () => $('type').onclick()), ...ex.suggest.map((q) => chip('ai', q, () => ask(q))));
   $('chips').replaceChildren(
+    ...(ex.ride ? [chip('lesson', '坐上去', startRide)] : []),
     ...ex.lessons.map((l) => chip('lesson', l.title, () => startLesson(l, false))),
     ...(ex.lessons.some((l) => l.steps.some((s) => s.quiz)) ? [chip('lesson quiz', '先猜再看', () => startLesson(ex.lessons.find((l) => l.steps.some((s) => s.quiz)), true))] : []),
   );
@@ -204,6 +205,28 @@ function flowStep() {
   clearTimeout(flow);
   flow = setTimeout(() => { if (lesson?.all) { lesson.i = (i + 1) % l.steps.length; showStep(); } }, 2500 + s.say.length * 220);   // roughly the time to read or hear it
 }
+// ---------- 坐上去: first person on a vehicle, throttle and gears with the real rpm and speed ----------
+let ride = null;
+async function startRide() {
+  stopAll();
+  const { Ride } = await import('./ride.js');
+  ride = viewer.ride ||= new Ride(viewer);
+  ride.start(ex.ride);
+  document.body.classList.add('riding'); $('ride').hidden = false;
+  $('r-gears').replaceChildren(...ex.ride.gears.map((_, i) => Object.assign(document.createElement('button'), { type: 'button', textContent: `${i + 1}`, ariaLabel: `${i + 1} 檔`, onclick: () => { ride.gear(i); rideRead(); } })));
+  $('r-thr').value = ride.thr; $('r-see').setAttribute('aria-pressed', 'false');
+  rideRead();
+  say('坐上去', ex.ride.hint, false, true);
+}
+function rideRead() {
+  const r = ride.read;
+  $('r-read').textContent = `${r.gear} 檔 · 引擎 ${r.rpm} rpm · 時速 ${r.kmh} km/h`;
+  [...$('r-gears').children].forEach((b, i) => b.classList.toggle('on', i === ride.g));
+}
+function stopRide() { if (!ride) return; ride.stop(); ride = null; document.body.classList.remove('riding'); $('ride').hidden = true; }
+$('r-thr').oninput = (e) => { if (ride) { ride.throttle(+e.target.value); rideRead(); } };
+$('r-see').onclick = (e) => { if (!ride) return; ride.xray(!ride.see); e.currentTarget.setAttribute('aria-pressed', String(ride.see)); };
+$('r-stop').onclick = () => { stopAll(); say(ex.name, ex.intro); };
 const go = (d) => {
   if (!lesson) return;
   const n = lesson.i + d, len = lesson.l.steps.length;

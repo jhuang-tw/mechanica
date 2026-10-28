@@ -123,7 +123,14 @@
   #caption.thinking p::after { content:"…"; animation:blink 1s infinite; }
   @keyframes blink { 50% { opacity:.2; } }
   .row { display:flex; gap:8px; align-items:center; }
-  body.lesson .chips, body.lesson #controls { display:none; }
+  body.lesson .chips, body.lesson #controls, body.riding .chips, body.riding #controls { display:none; }
+  #ride { border-radius:16px; padding:8px 10px; display:grid; gap:8px; }
+  #ride .row { justify-content:space-between; }
+  #ride b { flex:1; font-size:14px; font-variant-numeric:tabular-nums; }
+  #ride label { color:var(--dim); font-size:13px; } #ride input { flex:1; height:44px; margin:0; accent-color:var(--accent); }
+  #ride button { min-width:44px; height:44px; padding:0 10px; border-radius:12px; display:grid; place-items:center; }
+  #r-see[aria-pressed=true], #r-gears button.on { background:var(--accent); color:#1a1205; border-color:transparent; }
+  #r-gears button { flex:1; min-width:0; white-space:nowrap; } #r-gears::before { content:"檔位"; color:var(--dim); font-size:13px; }
   .chips { display:flex; gap:8px; overflow-x:auto; padding-bottom:2px; scrollbar-width:none; }
   .chips::-webkit-scrollbar { display:none; }
   .chip { flex:none; display:flex; align-items:center; gap:7px; min-height:44px; padding:0 14px 0 11px; font-size:14px; border-radius:999px; background:var(--glass); border:1px solid var(--line2); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); white-space:nowrap; }
@@ -265,6 +272,11 @@
     <div id="lesson" class="row glass" hidden>
       <button id="l-prev" type="button" aria-label="上一步"><svg class="i"><use href="#i-back"/></svg></button><span id="l-step"></span>
       <button id="l-next" type="button" aria-label="下一步"><svg class="i"><use href="#i-next"/></svg></button><button id="l-all" class="mode" type="button" aria-label="連貫播放和分步切換">連貫</button><button id="l-stop" type="button" aria-label="結束"><svg class="i"><use href="#i-x"/></svg></button>
+    </div>
+    <div id="ride" class="glass" hidden>
+      <div class="row"><b id="r-read"></b><button id="r-see" type="button" aria-pressed="false">透視</button><button id="r-stop" type="button" aria-label="下車"><svg class="i"><use href="#i-x"/></svg></button></div>
+      <label class="row">油門<input id="r-thr" type="range" min="0" max="1" step="0.01" value="0.3" aria-label="油門"></label>
+      <div id="r-gears" class="row"></div>
     </div>
     <div id="chips" class="chips"></div>
     <div id="ai-chips" class="chips"></div>

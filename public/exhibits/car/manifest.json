@@ -883,6 +883,401 @@
      "ratio": 0.8
     }
    ]
+  },
+  {
+   "id": "gear1",
+   "name": "1 檔前進",
+   "rpm": 40,
+   "moves": [
+    {
+     "part": "crankshaft",
+     "ratio": 1
+    },
+    {
+     "part": "flywheel",
+     "ratio": 1
+    },
+    {
+     "part": "camshaft_intake",
+     "ratio": 0.5
+    },
+    {
+     "part": "camshaft_exhaust",
+     "ratio": 0.5
+    },
+    {
+     "part": "input_shaft",
+     "ratio": 1
+    },
+    {
+     "part": "gear_1",
+     "ratio": -0.3243
+    },
+    {
+     "part": "gear_2",
+     "ratio": -0.5077
+    },
+    {
+     "part": "gear_3",
+     "ratio": -0.7193
+    },
+    {
+     "part": "gear_4",
+     "ratio": -0.9216
+    },
+    {
+     "part": "gear_5",
+     "ratio": -1.1778
+    },
+    {
+     "part": "output_shaft",
+     "ratio": -0.3243
+    },
+    {
+     "part": "differential",
+     "ratio": 0.110055
+    },
+    {
+     "part": "driveshaft_l",
+     "ratio": 0.110055
+    },
+    {
+     "part": "driveshaft_r",
+     "ratio": 0.110055
+    },
+    {
+     "part": "wheel_fl",
+     "ratio": 0.110055
+    },
+    {
+     "part": "wheel_fr",
+     "ratio": 0.110055
+    },
+    {
+     "part": "wheel_rl",
+     "ratio": 0.110055
+    },
+    {
+     "part": "wheel_rr",
+     "ratio": 0.110055
+    }
+   ]
+  },
+  {
+   "id": "gear2",
+   "name": "2 檔前進",
+   "rpm": 40,
+   "moves": [
+    {
+     "part": "crankshaft",
+     "ratio": 1
+    },
+    {
+     "part": "flywheel",
+     "ratio": 1
+    },
+    {
+     "part": "camshaft_intake",
+     "ratio": 0.5
+    },
+    {
+     "part": "camshaft_exhaust",
+     "ratio": 0.5
+    },
+    {
+     "part": "input_shaft",
+     "ratio": 1
+    },
+    {
+     "part": "gear_1",
+     "ratio": -0.3243
+    },
+    {
+     "part": "gear_2",
+     "ratio": -0.5077
+    },
+    {
+     "part": "gear_3",
+     "ratio": -0.7193
+    },
+    {
+     "part": "gear_4",
+     "ratio": -0.9216
+    },
+    {
+     "part": "gear_5",
+     "ratio": -1.1778
+    },
+    {
+     "part": "output_shaft",
+     "ratio": -0.5077
+    },
+    {
+     "part": "differential",
+     "ratio": 0.172293
+    },
+    {
+     "part": "driveshaft_l",
+     "ratio": 0.172293
+    },
+    {
+     "part": "driveshaft_r",
+     "ratio": 0.172293
+    },
+    {
+     "part": "wheel_fl",
+     "ratio": 0.172293
+    },
+    {
+     "part": "wheel_fr",
+     "ratio": 0.172293
+    },
+    {
+     "part": "wheel_rl",
+     "ratio": 0.172293
+    },
+    {
+     "part": "wheel_rr",
+     "ratio": 0.172293
+    }
+   ]
+  },
+  {
+   "id": "gear3",
+   "name": "3 檔前進",
+   "rpm": 40,
+   "moves": [
+    {
+     "part": "crankshaft",
+     "ratio": 1
+    },
+    {
+     "part": "flywheel",
+     "ratio": 1
+    },
+    {
+     "part": "camshaft_intake",
+     "ratio": 0.5
+    },
+    {
+     "part": "camshaft_exhaust",
+     "ratio": 0.5
+    },
+    {
+     "part": "input_shaft",
+     "ratio": 1
+    },
+    {
+     "part": "gear_1",
+     "ratio": -0.3243
+    },
+    {
+     "part": "gear_2",
+     "ratio": -0.5077
+    },
+    {
+     "part": "gear_3",
+     "ratio": -0.7193
+    },
+    {
+     "part": "gear_4",
+     "ratio": -0.9216
+    },
+    {
+     "part": "gear_5",
+     "ratio": -1.1778
+    },
+    {
+     "part": "output_shaft",
+     "ratio": -0.7193
+    },
+    {
+     "part": "differential",
+     "ratio": 0.244102
+    },
+    {
+     "part": "driveshaft_l",
+     "ratio": 0.244102
+    },
+    {
+     "part": "driveshaft_r",
+     "ratio": 0.244102
+    },
+    {
+     "part": "wheel_fl",
+     "ratio": 0.244102
+    },
+    {
+     "part": "wheel_fr",
+     "ratio": 0.244102
+    },
+    {
+     "part": "wheel_rl",
+     "ratio": 0.244102
+    },
+    {
+     "part": "wheel_rr",
+     "ratio": 0.244102
+    }
+   ]
+  },
+  {
+   "id": "gear4",
+   "name": "4 檔前進",
+   "rpm": 40,
+   "moves": [
+    {
+     "part": "crankshaft",
+     "ratio": 1
+    },
+    {
+     "part": "flywheel",
+     "ratio": 1
+    },
+    {
+     "part": "camshaft_intake",
+     "ratio": 0.5
+    },
+    {
+     "part": "camshaft_exhaust",
+     "ratio": 0.5
+    },
+    {
+     "part": "input_shaft",
+     "ratio": 1
+    },
+    {
+     "part": "gear_1",
+     "ratio": -0.3243
+    },
+    {
+     "part": "gear_2",
+     "ratio": -0.5077
+    },
+    {
+     "part": "gear_3",
+     "ratio": -0.7193
+    },
+    {
+     "part": "gear_4",
+     "ratio": -0.9216
+    },
+    {
+     "part": "gear_5",
+     "ratio": -1.1778
+    },
+    {
+     "part": "output_shaft",
+     "ratio": -0.9216
+    },
+    {
+     "part": "differential",
+     "ratio": 0.312754
+    },
+    {
+     "part": "driveshaft_l",
+     "ratio": 0.312754
+    },
+    {
+     "part": "driveshaft_r",
+     "ratio": 0.312754
+    },
+    {
+     "part": "wheel_fl",
+     "ratio": 0.312754
+    },
+    {
+     "part": "wheel_fr",
+     "ratio": 0.312754
+    },
+    {
+     "part": "wheel_rl",
+     "ratio": 0.312754
+    },
+    {
+     "part": "wheel_rr",
+     "ratio": 0.312754
+    }
+   ]
+  },
+  {
+   "id": "gear5",
+   "name": "5 檔前進",
+   "rpm": 40,
+   "moves": [
+    {
+     "part": "crankshaft",
+     "ratio": 1
+    },
+    {
+     "part": "flywheel",
+     "ratio": 1
+    },
+    {
+     "part": "camshaft_intake",
+     "ratio": 0.5
+    },
+    {
+     "part": "camshaft_exhaust",
+     "ratio": 0.5
+    },
+    {
+     "part": "input_shaft",
+     "ratio": 1
+    },
+    {
+     "part": "gear_1",
+     "ratio": -0.3243
+    },
+    {
+     "part": "gear_2",
+     "ratio": -0.5077
+    },
+    {
+     "part": "gear_3",
+     "ratio": -0.7193
+    },
+    {
+     "part": "gear_4",
+     "ratio": -0.9216
+    },
+    {
+     "part": "gear_5",
+     "ratio": -1.1778
+    },
+    {
+     "part": "output_shaft",
+     "ratio": -1.1778
+    },
+    {
+     "part": "differential",
+     "ratio": 0.399698
+    },
+    {
+     "part": "driveshaft_l",
+     "ratio": 0.399698
+    },
+    {
+     "part": "driveshaft_r",
+     "ratio": 0.399698
+    },
+    {
+     "part": "wheel_fl",
+     "ratio": 0.399698
+    },
+    {
+     "part": "wheel_fr",
+     "ratio": 0.399698
+    },
+    {
+     "part": "wheel_rl",
+     "ratio": 0.399698
+    },
+    {
+     "part": "wheel_rr",
+     "ratio": 0.399698
+    }
+   ]
   }
  ],
  "linkages": [
@@ -1260,5 +1655,71 @@
     }
    ]
   }
- ]
+ ],
+ "ride": {
+  "eye": [
+   -0.15,
+   1.2,
+   -0.37
+  ],
+  "look": [
+   1,
+   -0.2,
+   0
+  ],
+  "wheel": {
+   "part": "wheel_fl",
+   "r": 0.315
+  },
+  "gears": [
+   "gear1",
+   "gear2",
+   "gear3",
+   "gear4",
+   "gear5"
+  ],
+  "idle": 800,
+  "redline": 6500,
+  "lane": -2.1,
+  "see": [
+   "block",
+   "head",
+   "crankshaft",
+   "flywheel",
+   "piston_1",
+   "piston_2",
+   "piston_3",
+   "piston_4",
+   "conrod_1",
+   "conrod_2",
+   "conrod_3",
+   "conrod_4",
+   "camshaft_intake",
+   "camshaft_exhaust",
+   "gearbox",
+   "input_shaft",
+   "output_shaft",
+   "gear_1",
+   "gear_2",
+   "gear_3",
+   "gear_4",
+   "gear_5",
+   "differential",
+   "driveshaft_l",
+   "driveshaft_r",
+   "wheel_fl",
+   "wheel_fr",
+   "steering_wheel",
+   "steering_column"
+  ],
+  "hint": "你坐在駕駛座（車殼先拿掉，像敞篷車）。拖動畫面可以四處看；拉油門、換檔，看引擎轉速和時速怎麼變；按「透視」看前面的引擎和變速箱。",
+  "hide": [
+   "body",
+   "door_fl",
+   "door_fr",
+   "door_rl",
+   "door_rr",
+   "trunk"
+  ]
+ }
 }

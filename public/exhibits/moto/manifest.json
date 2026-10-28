@@ -475,6 +475,162 @@
    ]
   },
   {
+   "id": "gear2",
+   "name": "2 檔前進",
+   "rpm": 40,
+   "moves": [
+    {
+     "part": "crankshaft",
+     "ratio": 1
+    },
+    {
+     "part": "camshaft_intake",
+     "ratio": 0.5
+    },
+    {
+     "part": "camshaft_exhaust",
+     "ratio": 0.5
+    },
+    {
+     "part": "clutch",
+     "ratio": 0.5517241379310345
+    },
+    {
+     "part": "mainshaft",
+     "ratio": 0.5517241379310345
+    },
+    {
+     "part": "countershaft",
+     "ratio": 0.280538
+    },
+    {
+     "part": "wheel_rear",
+     "ratio": 0.097862
+    },
+    {
+     "part": "wheel_front",
+     "ratio": 0.10092
+    }
+   ]
+  },
+  {
+   "id": "gear3",
+   "name": "3 檔前進",
+   "rpm": 40,
+   "moves": [
+    {
+     "part": "crankshaft",
+     "ratio": 1
+    },
+    {
+     "part": "camshaft_intake",
+     "ratio": 0.5
+    },
+    {
+     "part": "camshaft_exhaust",
+     "ratio": 0.5
+    },
+    {
+     "part": "clutch",
+     "ratio": 0.5517241379310345
+    },
+    {
+     "part": "mainshaft",
+     "ratio": 0.5517241379310345
+    },
+    {
+     "part": "countershaft",
+     "ratio": 0.357599
+    },
+    {
+     "part": "wheel_rear",
+     "ratio": 0.124744
+    },
+    {
+     "part": "wheel_front",
+     "ratio": 0.128642
+    }
+   ]
+  },
+  {
+   "id": "gear4",
+   "name": "4 檔前進",
+   "rpm": 40,
+   "moves": [
+    {
+     "part": "crankshaft",
+     "ratio": 1
+    },
+    {
+     "part": "camshaft_intake",
+     "ratio": 0.5
+    },
+    {
+     "part": "camshaft_exhaust",
+     "ratio": 0.5
+    },
+    {
+     "part": "clutch",
+     "ratio": 0.5517241379310345
+    },
+    {
+     "part": "mainshaft",
+     "ratio": 0.5517241379310345
+    },
+    {
+     "part": "countershaft",
+     "ratio": 0.430345
+    },
+    {
+     "part": "wheel_rear",
+     "ratio": 0.15012
+    },
+    {
+     "part": "wheel_front",
+     "ratio": 0.154812
+    }
+   ]
+  },
+  {
+   "id": "gear5",
+   "name": "5 檔前進",
+   "rpm": 40,
+   "moves": [
+    {
+     "part": "crankshaft",
+     "ratio": 1
+    },
+    {
+     "part": "camshaft_intake",
+     "ratio": 0.5
+    },
+    {
+     "part": "camshaft_exhaust",
+     "ratio": 0.5
+    },
+    {
+     "part": "clutch",
+     "ratio": 0.5517241379310345
+    },
+    {
+     "part": "mainshaft",
+     "ratio": 0.5517241379310345
+    },
+    {
+     "part": "countershaft",
+     "ratio": 0.49303
+    },
+    {
+     "part": "wheel_rear",
+     "ratio": 0.171987
+    },
+    {
+     "part": "wheel_front",
+     "ratio": 0.177362
+    }
+   ]
+  },
+  {
    "id": "gear6",
    "name": "6 檔前進",
    "rpm": 40,
@@ -810,5 +966,51 @@
     }
    ]
   }
- ]
+ ],
+ "ride": {
+  "eye": [
+   -0.62,
+   1.62,
+   0
+  ],
+  "look": [
+   1,
+   -0.38,
+   0
+  ],
+  "wheel": {
+   "part": "wheel_rear",
+   "r": 0.33
+  },
+  "gears": [
+   "gear1",
+   "gear2",
+   "gear3",
+   "gear4",
+   "gear5",
+   "gear6"
+  ],
+  "idle": 1500,
+  "redline": 9000,
+  "lane": -1.6,
+  "see": [
+   "piston_r",
+   "piston_l",
+   "conrod_r",
+   "conrod_l",
+   "crankshaft",
+   "primary_gear",
+   "camshaft_intake",
+   "camshaft_exhaust",
+   "clutch",
+   "mainshaft",
+   "countershaft",
+   "sprocket_front",
+   "chain",
+   "sprocket_rear",
+   "wheel_rear",
+   "wheel_front"
+  ],
+  "hint": "你坐在駕駛位置。拖動畫面可以四處看；拉油門、換檔，看引擎轉速和時速怎麼變；按「透視」看腳下的引擎和變速箱。"
+ }
 }

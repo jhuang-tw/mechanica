@@ -36,7 +36,7 @@ export class Viewer {
     const clock = new THREE.Clock();
     r.setAnimationLoop(() => {
       const dt = Math.min(clock.getDelta(), 0.1);
-      this.choreo?.update(dt); this.rig?.update(dt);
+      this.choreo?.update(dt); this.rig?.update(dt); this.ride?.update(dt);
       if (r.xr.isPresenting) this.vr?.update(dt);
       else if (this.goal) {   // glide to a framing, then hand the camera back to the user
         const k = Math.min(1, dt * 3);
@@ -65,7 +65,7 @@ export class Viewer {
     this.stage.add(this.model);
     this.rig = new Rig(this.model, manifest);
     this.studio.fit(this.model, manifest.look);
-    this.rig.onIsolate = (ids) => { if (!(this.lessonMode && this.userView)) this.focus(ids); };
+    this.rig.onIsolate = (ids) => { if (!this.riding && !(this.lessonMode && this.userView)) this.focus(ids); };
     this.choreo = new Choreo(this.rig);
     this.frame();
     this.vr?.fitStage();

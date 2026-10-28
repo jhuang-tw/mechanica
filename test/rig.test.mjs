@@ -214,3 +214,14 @@ test('hands-on: dragging a pedal turns the whole drive, a door stays within its 
   assert.ok(bat.offset.length() < 1e-9, 'but not pushed in past home');
   car.reset(); assert.equal(bat.offset.length(), 0);
 });
+
+test('ride: every gear drive exists, the wheel turns faster in each higher gear, and the eye sits on the vehicle', async () => {
+  for (const id of ['moto', 'car']) {
+    const m = exhibit(id), r = m.ride, box = new THREE.Box3().setFromObject(await loadModel(id));
+    const wheel = r.gears.map((g) => Math.abs(m.drives.find((d) => d.id === g).moves.find((mv) => mv.part === r.wheel.part).ratio));
+    assert.ok(wheel.every((w, i) => i === 0 || w > wheel[i - 1]), `${id}: gears go up`);
+    box.max.y += 0.4;   // a rider's head is above the bike
+    assert.ok(box.containsPoint(new THREE.Vector3(...r.eye)), `${id}: eye on the vehicle`);
+    for (const p of [...r.see, ...(r.hide || [])]) assert.ok(m.parts.some((x) => x.id === p), `${id}: ${p}`);
+  }
+});
