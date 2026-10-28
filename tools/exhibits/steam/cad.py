@@ -4,7 +4,7 @@
 # Wheels: axis z, outer face (crankpin side) towards +z, crankpin at +x. Cylinder: bore axis x, piston at the origin side.
 import os
 from math import sin, cos, pi
-from build123d import (BuildPart, BuildSketch, BuildLine, Polyline, Circle, Locations, PolarLocations, make_face,
+from build123d import (BuildPart, BuildSketch, BuildLine, Polyline, Polygon, Circle, Locations, PolarLocations, make_face,
                        extrude, revolve, Mode, Cylinder, Box, Plane, Axis, Pos, Rot, export_stl)
 
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'cad', 'out')
@@ -21,8 +21,10 @@ def wheel(counterweight=True):
                 with BuildLine(): Polyline(*prof, close=True)
                 make_face()
             revolve(axis=Axis.Z)
-        with PolarLocations(0, 14, start_angle=360 / 28):                  # tapered spokes
-            with Locations(Pos(345, 0, 0)): Box(370, 34, 42)
+        with BuildSketch(Plane.XY.offset(-22)):                            # spokes taper from hub to rim, like cast ones
+            with PolarLocations(0, 14, start_angle=360 / 28):
+                Polygon((160, -27), (525, -16), (525, 16), (160, 27), align=None)
+        extrude(amount=44)
         if counterweight:                                                   # crescent opposite the crankpin
             pts = [(r * cos(a), r * sin(a)) for r, a in [(520, pi + d) for d in [-0.75 + 1.5 * i / 12 for i in range(13)]]]
             pts += [(220 * cos(pi + d), 220 * sin(pi + d)) for d in [0.75 - 1.5 * i / 12 for i in range(13)]]
