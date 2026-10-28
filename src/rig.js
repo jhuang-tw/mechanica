@@ -106,6 +106,58 @@ export class Rig {
     this.paint();
   }
 
+  // ---- hands-on: drag a part with a finger or a VR hand. What it does comes from the manifest: a part in a drive
+  // (or a piston, rod or blade on its crank or mast, or a pedal riding its crank) turns the whole mechanism at its
+  // ratios, a door or lever stays within its swing, a part with its own axis turns alone, anything else pulls out
+  // along its explode direction. Parts marked `fixed` don't move (dragging them orbits the view instead).
+  grab(id) {
+    const members = (l) => [l.crank, l.mast, l.hub, ...(l.plates || []), ...(l.blades || []), ...(l.cylinders || []).flatMap((c) => [c.piston, c.rod, c.valve, ...(c.slides || []), ...(c.follow || [])])];
+    for (let o = this.parts.get(id)?.obj; o && o !== this.root; o = o.parent) {
+      const p = this.parts.get(o.name);
+      if (p?.obj !== o) continue;
+      if (p.def.fixed) { if (o.name === id) return null; break; }   // a part on a fixed base still moves itself
+      const l = this.linkages.find((x) => members(x).includes(o.name)), at = l ? l.crank || l.mast : o.name, drive = this.driveOf(at);
+      const mv = drive?.moves.find((m) => m.part === at);
+      if (drive) return this.hold(id, { part: at, mv, drive: drive.oneWay ? { ...drive, moves: [mv] } : drive });   // oneWay panels (doors, hood) hang on their own hinges
+    }
+    const p = this.parts.get(id);
+    if (!p) return null;
+    if (p.def.axis || p.obj.userData.axis) return this.hold(id, { part: id, mv: { part: id, ratio: 1 } });
+    return this.hold(id, { part: id, pull: (p.explodeVec.lengthSq() ? p.explodeVec.clone() : new THREE.Vector3(0, 1, 0)).normalize() });
+  }
+  // the drive this part is the input of (the biggest one), else the smallest it is in: a bike's rear wheel coasts without the crank
+  driveOf(id) {
+    const n = (d) => d.moves.length * (d.moves[0].part === id ? -1 : 1);
+    return (this.m.drives || []).filter((d) => d.moves.some((mv) => mv.part === id)).sort((a, b) => n(a) - n(b))[0];
+  }
+  hold(id, h) {
+    for (const mv of h.drive?.moves || []) { this.spins.delete(mv.part); this.swings.delete(mv.part); }   // the hand takes over from the motor
+    const p = this.parts.get(h.part), d = h.drive, slide = h.mv?.slide && new THREE.Vector3(...h.mv.slide);
+    if (d?.swing) { h.amp = (d.swing * h.mv.ratio * Math.PI) / 180; h.k = slide ? p.offset.dot(slide) / slide.lengthSq() : p.angle / h.amp; }
+    h.id = id; h.was = new Set(this.lit); this.lit.add(id); this.paint();
+    return h;
+  }
+  // move a held part as the hand goes from `from` to `to` (world points)
+  drag(h, from, to) {
+    const p = this.parts.get(h.part), par = p.obj.parent, a = par.worldToLocal(from.clone()), d = par.worldToLocal(to.clone()).sub(a);   // in the part's parent space
+    if (h.pull) { p.offset.copy(h.pull).multiplyScalar(Math.min(this.size * 0.3, Math.max(0, p.offset.dot(h.pull) + d.dot(h.pull)))); return; }
+    let da;
+    if (h.mv.slide) { const v = new THREE.Vector3(...h.mv.slide); da = (d.dot(v) / v.lengthSq()) * h.amp; }
+    else {   // the angle the hand sweeps around the part's axis
+      const axis = p.axis.clone().applyQuaternion(p.base.quat), r = a.sub(p.obj.position);
+      r.addScaledVector(axis, -r.dot(axis));
+      da = d.dot(axis.clone().cross(r)) / Math.max(r.lengthSq(), (this.size * 0.03) ** 2);
+    }
+    if (!h.drive) { p.angle += da; return; }
+    if (!h.drive.swing) { for (const mv of h.drive.moves) { const q = this.parts.get(mv.part); if (q) q.angle += (da * mv.ratio) / h.mv.ratio; } return; }
+    h.k = Math.min(1, Math.max(h.drive.oneWay ? 0 : -1, h.k + da / h.amp));
+    for (const mv of h.drive.moves) {
+      const q = this.parts.get(mv.part);
+      if (q && mv.slide) q.offset.set(...mv.slide).multiplyScalar(h.k); else if (q) q.angle = ((h.drive.swing * mv.ratio * Math.PI) / 180) * h.k;
+    }
+  }
+  release(h) { if (h) { this.lit = h.was; this.paint(); } }
+
   tween(dur, from, to, set) { this.tweens.push({ t: 0, dur: Math.max(dur, 0.01), from, to, set }); }
 
   update(dt) {

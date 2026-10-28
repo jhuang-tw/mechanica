@@ -237,6 +237,7 @@
   },
   {
    "id": "frame",
+   "fixed": true,
    "name": "車架",
    "en": "motorcycle frame",
    "info": "整台車的骨架，引擎、龍頭、後搖臂都掛在它上面。",

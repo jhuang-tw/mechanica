@@ -8,7 +8,7 @@
   "suggest": ["踩踏板怎麼讓後輪轉？", "為什麼不踩踏板輪子還會轉？", "讓我看齒盤和飛輪的齒數差多少"],
   "looksLike": "腳踏車、單車、公路車、登山車、鏈條、齒盤、變速器",
   "parts": [
-    { "id": "frame", "name": "車架", "en": "bicycle frame", "info": "前三角加後三角組成的菱形車架。三角形受力不容易變形，所以又輕又硬。", "aliases": ["車身", "骨架"] },
+    { "id": "frame", "fixed": true, "name": "車架", "en": "bicycle frame", "info": "前三角加後三角組成的菱形車架。三角形受力不容易變形，所以又輕又硬。", "aliases": ["車身", "骨架"] },
     { "id": "fork", "name": "前叉", "en": "bicycle front fork", "info": "夾住前輪，上端穿過頭管。轉動把手時，前叉帶著前輪一起轉向。", "aliases": ["叉子"] },
     { "id": "stem", "name": "龍頭", "en": "bicycle stem", "info": "把把手固定在前叉上。長短與角度決定把手位置。", "aliases": ["把立"] },
     { "id": "handlebar", "name": "把手", "en": "bicycle drop handlebar", "info": "公路車的彎把，握上把輕鬆、握下把風阻小。煞車和變速撥桿都在這裡。", "aliases": ["彎把", "手把", "龍頭把"] },

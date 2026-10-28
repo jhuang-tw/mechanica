@@ -24,6 +24,7 @@
   },
   {
    "id": "housing",
+   "fixed": true,
    "name": "外殼",
    "en": "VR headset housing",
    "info": "主體外殼，把所有零件包起來，也決定重量分布。",

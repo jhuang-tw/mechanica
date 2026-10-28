@@ -205,6 +205,7 @@
   },
   {
    "id": "stand",
+   "fixed": true,
    "name": "展示架",
    "en": "turbofan display stand",
    "info": "放引擎用的架子，不是引擎的一部分。",

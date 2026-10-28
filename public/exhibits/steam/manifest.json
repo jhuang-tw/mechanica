@@ -260,6 +260,7 @@
   },
   {
    "id": "frames",
+   "fixed": true,
    "name": "車架",
    "en": "steam locomotive frames",
    "info": "左右兩片鋼板做的主車架，鍋爐、汽缸和輪軸都裝在上面。",
@@ -329,6 +330,7 @@
   },
   {
    "id": "track",
+   "fixed": true,
    "name": "鐵軌",
    "en": "steam locomotive track",
    "info": "標準軌距的鐵軌。輪緣在鐵軌內側，所以火車不會滑出去。",
@@ -339,6 +341,7 @@
   },
   {
    "id": "footplate",
+   "fixed": true,
    "name": "走板",
    "en": "steam locomotive footplate",
    "info": "車架上面那一圈平台，司爐和檢修人員可以沿著它走到車頭。",

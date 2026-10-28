@@ -186,3 +186,31 @@ test('heli: all four cabin doors swing outward', async () => {
   assert.ok(edge('door_l', -1).z < -0.9 && edge('door_r', -1).z > 0.9, 'front doors: rear edge out');
   assert.ok(edge('rear_door_l', 1).z < -0.9 && edge('rear_door_r', 1).z > 0.9, 'rear doors: front edge out');
 });
+
+test('hands-on: dragging a pedal turns the whole drive, a door stays within its swing, a piston turns the crank, a loose part pulls out, a fixed base does not move', async () => {
+  const world = (rig, id) => rig.parts.get(id).obj.getWorldPosition(new THREE.Vector3());
+  const bike = new Rig(await load(), manifest); bike.update(0);
+  const g = bike.grab('pedal_r'), crank = bike.parts.get('crank'), wheel = bike.parts.get('rear_wheel');
+  assert.equal(g.part, 'crank', 'a pedal rides the crank');
+  const pivot = world(bike, 'crank'), at = world(bike, 'pedal_r'), r = at.clone().sub(pivot).setZ(0), tan = new THREE.Vector3(0, 0, 1).cross(r).normalize().multiplyScalar(r.length() * 0.1);
+  bike.drag(g, at, at.clone().add(tan));
+  assert.ok(Math.abs(Math.abs(crank.angle) - 0.1) < 0.02, `crank turned about 0.1 rad (its axis may point either way) (${crank.angle})`);
+  assert.ok(Math.abs(wheel.angle / crank.angle - 2.94) < 1e-6, 'rear wheel follows at the drive ratio');
+  bike.release(g);
+  assert.equal(bike.grab('frame'), null, 'frame is fixed');
+  const rw = bike.grab('rear_wheel'); assert.equal(rw.drive.id, 'coast', 'the rear wheel coasts on its own');
+
+  const car = new Rig(await loadModel('car'), exhibit('car')); car.update(0);
+  const d = car.grab('door_fl'), door = car.parts.get('door_fl'), p = world(car, 'door_fl');
+  for (let i = 0; i < 40; i++) car.drag(d, p, p.clone().add(new THREE.Vector3(0, 0, -0.05)));
+  assert.ok(Math.abs(Math.abs(door.angle) - (70 * Math.PI) / 180) < 1e-6 || Math.abs(door.angle) < 1e-6, 'door ends at a stop of its swing');
+  assert.ok(d.k === 0 || d.k === 1, 'oneWay range');
+  assert.equal(car.parts.get('door_fr').angle, 0, 'the other doors stay shut');
+  assert.equal(car.grab('piston_1').part, 'crankshaft', 'a piston turns the crankshaft');
+  const b = car.grab('battery'), bat = car.parts.get('battery');
+  car.drag(b, new THREE.Vector3(), b.pull.clone().multiplyScalar(0.2));
+  assert.ok(bat.offset.length() > 0.1, 'battery pulled out');
+  car.drag(b, new THREE.Vector3(), b.pull.clone().multiplyScalar(-5));
+  assert.ok(bat.offset.length() < 1e-9, 'but not pushed in past home');
+  car.reset(); assert.equal(bat.offset.length(), 0);
+});
