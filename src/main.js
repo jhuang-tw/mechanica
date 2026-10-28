@@ -8,7 +8,7 @@ const $ = (id) => document.getElementById(id);
 const BASE = `${import.meta.env.BASE_URL}exhibits/`;
 const viewerModule = import('./viewer.js');   // three.js downloads while the landing page is up
 const exhibits = {};   // id -> manifest
-let viewer, ex, rig, chat = [], pointed = null, lesson = null, quiz = null, vr = null, tutor = null, explain = null;
+let viewer, ex, rig, chat = [], pointed = null, lesson = null, quiz = null, vr = null, tutor = null, explain = null, flow;   // flow: the 連貫 caption timer
 
 // ---------- landing ----------
 const list = (await (await fetch(`${BASE}index.json`)).json()).exhibits;
@@ -85,7 +85,7 @@ function pick(id) {
   say(p.name, p.info, false, true);
 }
 $('explode-r').oninput = (e) => rig?.setExplode(+e.target.value);
-function stopAll() { lesson = quiz = tutor = explain = null; vr?.refresh(); document.body.classList.remove('lesson', 'tutor'); $('lesson').hidden = $('quiz').hidden = $('tutor').hidden = true; $('q').placeholder = '問任何問題…'; viewer?.choreo?.cancel(); rig?.reset(); $('explode-r').value = 0; }
+function stopAll() { clearTimeout(flow); if (viewer) viewer.lessonMode = false; lesson = quiz = tutor = explain = null; vr?.refresh(); document.body.classList.remove('lesson', 'tutor'); $('lesson').hidden = $('quiz').hidden = $('tutor').hidden = true; $('q').placeholder = '問任何問題…'; viewer?.choreo?.cancel(); rig?.reset(); $('explode-r').value = 0; }
 $('reset').onclick = () => { stopAll(); speak(''); viewer.frame(); pointed = null; say(ex.name, ex.intro); };
 
 // ---------- suggestions: AI questions and lessons ----------
@@ -154,13 +154,14 @@ const release = async () => {
 for (const ev of ['pointerup', 'pointercancel']) $('mic').addEventListener(ev, () => { if (!tapMode) lift(); });
 
 // ---------- 因果連動 / 先猜再看: manifest lessons, one cause → effect per step ----------
-function startLesson(l, quiz) { stopAll(); lesson = { l, quiz, i: 0 }; document.body.classList.add('lesson'); $('lesson').hidden = false; showStep(); }
+function startLesson(l, quiz) { stopAll(); lesson = { l, quiz, i: 0 }; Object.assign(viewer, { lessonMode: true, userView: false }); document.body.classList.add('lesson'); $('lesson').hidden = false; showStep(); }
 function showStep() {
   const { l, quiz: guess, i } = lesson, s = l.steps[i];
   $('l-step').textContent = `${l.title} · ${i + 1}/${l.steps.length}`;
   $('l-step').style.setProperty('--p', `${((i + 1) / l.steps.length) * 100}%`);
-  $('l-prev').disabled = i === 0;
-  if (guess && s.quiz) askQuiz(s); else playStep(s);
+  $('l-prev').disabled = i === 0 && !lesson.all;
+  $('l-all').textContent = lesson.all ? '分步' : '連貫';
+  if (lesson.all) flowStep(); else if (guess && s.quiz) askQuiz(s); else playStep(s);
   vr?.refresh();
 }
 function playStep(s) {
@@ -185,7 +186,31 @@ function answer(i) {
   say(right ? '答對了！' : '再想想', why, false, true);
   setTimeout(() => lesson && playStep(s), 2600);
 }
-const go = (d) => { if (!lesson) return; const n = lesson.i + d; if (n < 0) return; if (n >= lesson.l.steps.length) return startExplain(lesson.l); lesson.i = n; showStep(); };
+// 連貫: every step's parts and drives at once, the captions walking through the chain and starting over
+
+function playAll() {
+  const steps = lesson.l.steps, drives = new Map();
+  clearTimeout(flow); lesson.all = true; $('quiz').hidden = true; quiz = null;
+  viewer.choreo.cancel(); rig.stop();
+  rig.isolate([...new Set(steps.flatMap((s) => s.parts))]);
+  for (const s of steps) for (const d of [].concat(s.drive || [])) drives.set(d, s.speed ?? 0.5);   // a drive two steps share runs once, at the later step's speed
+  for (const [d, v] of drives) rig.drive(d, v);
+  showStep();
+}
+function flowStep() {
+  const { l, i } = lesson, s = l.steps[i];
+  rig.highlight(s.parts);
+  say(`第 ${i + 1} 步`, s.say, false, true);
+  clearTimeout(flow);
+  flow = setTimeout(() => { if (lesson?.all) { lesson.i = (i + 1) % l.steps.length; showStep(); } }, 2500 + s.say.length * 220);   // roughly the time to read or hear it
+}
+const go = (d) => {
+  if (!lesson) return;
+  const n = lesson.i + d, len = lesson.l.steps.length;
+  if (lesson.all) { lesson.i = (n + len) % len; return showStep(); }
+  if (n < 0) return; if (n >= len) return startExplain(lesson.l); lesson.i = n; showStep();
+};
+$('l-all').onclick = () => { if (!lesson) return; if (lesson.all) { lesson.all = false; rig.stop(); showStep(); } else playAll(); };
 $('l-next').onclick = () => go(1);
 $('l-prev').onclick = () => go(-1);
 $('l-stop').onclick = () => { stopAll(); say(ex.name, ex.intro); };

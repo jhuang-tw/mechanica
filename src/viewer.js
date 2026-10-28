@@ -25,6 +25,11 @@ export class Viewer {
     this.controls = new OrbitControls(this.camera, canvas);
     Object.assign(this.controls, { enableDamping: true, enablePan: false, minDistance: 0.4, maxDistance: 6, maxPolarAngle: Math.PI * 0.55 });
     this.onPick = onPick;
+    // a drag that turns or zooms the camera hands it to the user: no glide fights it, and in a lesson the steps stop re-aiming it
+    let dragging = false;
+    this.controls.addEventListener('start', () => (dragging = true));
+    this.controls.addEventListener('end', () => (dragging = false));
+    this.controls.addEventListener('change', () => { if (dragging) { this.goal = null; this.userView = true; } });
     this.pickTaps(canvas);
     addEventListener('resize', () => this.resize());
     this.resize();
@@ -60,7 +65,7 @@ export class Viewer {
     this.stage.add(this.model);
     this.rig = new Rig(this.model, manifest);
     this.studio.fit(this.model, manifest.look);
-    this.rig.onIsolate = (ids) => this.focus(ids);
+    this.rig.onIsolate = (ids) => { if (!(this.lessonMode && this.userView)) this.focus(ids); };
     this.choreo = new Choreo(this.rig);
     this.frame();
     this.vr?.fitStage();
@@ -69,7 +74,7 @@ export class Viewer {
 
   // camera to a three-quarter view of the whole model
   frame() {
-    this.goal = null;
+    this.goal = null; this.userView = false;
     const box = new THREE.Box3().setFromObject(this.model), s = box.getSize(new THREE.Vector3()).length();
     Object.assign(this.controls, { minDistance: s * 0.05, maxDistance: s * 4 });
     this.fit(box, new THREE.Vector3(...(this.rig?.m.view || [0.55, 0.35, 1])).normalize());   // manifest `view`: the side worth seeing first (a cutaway)
