@@ -16,7 +16,7 @@ def pitch_r(n): return PITCH / (2 * sin(pi / n))
 def tooth_outline(n, seg=5):
     """Sprocket outline: a roller seat (arc) in every gap, straight flanks up to a narrowed tip."""
     rp, rs = pitch_r(n), ROLLER / 2 * 1.02
-    tip = rp + 0.38 * PITCH if n > 20 else rp + 0.33 * PITCH
+    tip = rp + 0.31 * PITCH if n > 20 else rp + 0.27 * PITCH   # real tooth height ~4 mm, short on small cogs
     half = asin(min(0.95, rs / rp))       # half-angle the seat takes on the pitch circle
     pts = []
     for k in range(n):
@@ -26,7 +26,7 @@ def tooth_outline(n, seg=5):
             a = g + 1.5 * pi - pi * i / seg   # trailing side -> inward -> leading side
             pts.append((cx + rs * cos(a), cy + rs * sin(a)))
         t = g + pi / n                    # tooth centre
-        w = 0.18 * TAU / n
+        w = min(0.2 * TAU / n, 1.3 / tip)    # narrow flat tip, ~2.6 mm
         pts += [(tip * cos(t - w), tip * sin(t - w)), (tip * cos(t + w), tip * sin(t + w))]
     return pts
 
@@ -40,6 +40,7 @@ def sprocket(n, t, r_in):
     return p.part
 
 def chainring():
+    """Compact 50/34 double: the 50T outer ring (chain line) with four tabs to the spider, the 34T inner ring 5 mm inboard."""
     ring = sprocket(50, 4.0, pitch_r(50) - 13)
     with BuildPart() as tabs:              # four bolt tabs reaching in to the 110 BCD spider
         with BuildSketch():
@@ -51,7 +52,14 @@ def chainring():
         with BuildSketch():
             with PolarLocations(55, 4, start_angle=45): Circle(5)
         extrude(amount=2, both=True, mode=Mode.SUBTRACT)
-    return ring + tabs.part
+    with BuildPart() as inner:             # compact double: the 34T inner ring on the same 110 BCD, 5 mm inboard
+        with BuildSketch(Plane.XY.offset(-5)):
+            with BuildLine(): Polyline(*tooth_outline(34), close=True)
+            make_face()
+            Circle(50, mode=Mode.SUBTRACT)
+            with PolarLocations(55, 4, start_angle=45): Circle(5, mode=Mode.SUBTRACT)
+        extrude(amount=1.75, both=True)
+    return ring + tabs.part + inner.part
 
 def cassette():
     """11-28 eleven-speed: 11T at z = 0, each bigger cog 3.9 mm further along -z (towards the spokes)."""
