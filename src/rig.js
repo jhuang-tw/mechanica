@@ -58,7 +58,8 @@ export class Rig {
         if (o.material.transparent !== (ghost || base.transparent)) { o.material.transparent = ghost || base.transparent; o.material.needsUpdate = true; }
         o.material.opacity = ghost ? GHOST : base.opacity;
         o.material.depthWrite = !ghost;
-        if (o.material.emissive) o.material.emissive.copy(lit ? AMBER : base.emissive).multiplyScalar(lit ? 0.45 : 1);
+        if (o.material.userData.rim) o.material.userData.rim.value = lit ? 1 : 0;   // look.js: rim glow, the material stays visible
+        else if (o.material.emissive) o.material.emissive.copy(lit ? AMBER : base.emissive).multiplyScalar(lit ? 0.45 : 1);
       }
     }
   }
