@@ -1,6 +1,6 @@
 // App flow: landing → exhibit (tap parts, explode, ask the AI, lessons, quiz) → back. Photo and VR are reachable from both.
 import { cleanSteps } from './choreo.js';
-import { Recorder, shrink, speak } from './media.js';
+import { Recorder, shrink, speak, unlockSpeech } from './media.js';
 
 // dev only: ?xr emulates a headset (Meta's IWER) so the VR mode can be tried in a desktop browser
 if (import.meta.env.DEV && new URLSearchParams(location.search).has('xr')) { const { XRDevice, metaQuest3 } = await import('iwer'); (window.xrDevice = new XRDevice(metaQuest3)).installRuntime({ forceInstall: true }); }   // the desktop browser has its own (headset-less) navigator.xr
@@ -370,6 +370,6 @@ viewerModule.then(async ({ Viewer }) => { if (await Viewer.vrSupported()) $('hom
 $('home-vr').onclick = async () => { await open(ex?.id || list[0]); enterVR(); };
 
 // first sound needs a tap on phones
-addEventListener('pointerdown', () => speechSynthesis?.speak(new SpeechSynthesisUtterance('')), { once: true });
+addEventListener('pointerdown', unlockSpeech, { once: true });
 const start = new URLSearchParams(location.search).get('ex');
 if (exhibits[start]) open(start);

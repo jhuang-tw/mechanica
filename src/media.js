@@ -43,13 +43,37 @@ export async function shrink(file, max = 768) {
   return new Promise((ok) => c.toBlob(ok, 'image/jpeg', 0.8));
 }
 
-let voice;
-export function speak(text) {
-  if (!('speechSynthesis' in window)) return;
-  speechSynthesis.cancel();
+// Spoken answers: the server's neural voice (streamed MP3) when it has one, else the most natural voice this browser has.
+const zh = (text) => /[㐀-鿿]/.test(text);
+let neural = fetch('/api/status').then((r) => r.json()).then((s) => !!s.tts).catch(() => false);
+const audio = typeof Audio === 'undefined' ? null : new Audio();
+export function unlockSpeech() {   // call from the first tap: phones only let a page play sound it started from a gesture
+  window.speechSynthesis?.speak(new SpeechSynthesisUtterance(''));
+  if (audio) { audio.src = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA='; audio.play().catch(() => {}); }
+}
+
+let said = 0;
+export async function speak(text) {
+  const n = ++said;
+  audio?.pause();
+  if ('speechSynthesis' in window) speechSynthesis.cancel();
   if (!text) return;
-  voice ||= speechSynthesis.getVoices().find((v) => /zh[-_]TW/i.test(v.lang)) || speechSynthesis.getVoices().find((v) => /^zh/i.test(v.lang));
-  const u = Object.assign(new SpeechSynthesisUtterance(text), { lang: 'zh-TW', rate: 1.05 });
+  if (audio && await neural) {
+    if (n !== said) return;
+    audio.src = `/api/tts?text=${encodeURIComponent(text.slice(0, 400))}`;
+    try { return await audio.play(); } catch (e) { if (n !== said || e.name === 'AbortError') return; }   // fall through to the browser voice
+  }
+  browserSpeak(text);
+}
+
+// Prefer the cloud "Natural"/"Online"/Google voices browsers ship (Edge: HsiaoChen Online) over the old desktop ones.
+const natural = (v) => /natural|online|neural|google/i.test(v.name) * 2 + !v.localService;
+function browserSpeak(text) {
+  if (!('speechSynthesis' in window)) return;
+  const lang = zh(text) ? 'zh-TW' : 'en-US', all = speechSynthesis.getVoices();
+  const pool = zh(text) ? [/zh[-_]TW/i, /^zh/i] : [/^en[-_]US/i, /^en/i];
+  const voice = pool.map((re) => all.filter((v) => re.test(v.lang)).sort((a, b) => natural(b) - natural(a))[0]).find(Boolean);
+  const u = Object.assign(new SpeechSynthesisUtterance(text), { lang, rate: 1.05 });
   if (voice) u.voice = voice;
   speechSynthesis.speak(u);
 }
