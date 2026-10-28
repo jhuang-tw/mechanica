@@ -59,6 +59,7 @@ common.MATS.update({   # base colour (linear), metallic, roughness
     'carpet': ((0.025, 0.025, 0.028), 0.0, 0.95),
     'fluid':  ((0.55, 0.50, 0.38), 0.0, 0.45),      # translucent-looking reservoir plastic
     'white':  ((0.80, 0.80, 0.78), 0.0, 0.50),
+    'filter': ((0.04, 0.10, 0.30), 0.3, 0.40),
 })
 
 def helix(m, a, b, r, turns, wire, mat):
@@ -120,6 +121,8 @@ def band(m, centres, y, width, mat):
 def engine():
     for pid, mat, ex in (('block', 'alu', (0, 0, 0)), ('head', 'alu', (0, 0, 0.35)), ('valve_cover', 'black', (0, 0, 0.6)), ('oil_pan', 'cast', (0, 0, -0.35))):
         part(pid, explode=ex).stl(pid, mat, at(CRANK))
+    m = PARTS['block']['m']; X = V((1, 0, 0))                                 # spin-on oil filter on the boss at the back
+    m.disc(CRANK + V((-0.165, -0.11, 0.01)), X, 0.038, 0.085, 'filter', 32); m.disc(CRANK + V((-0.21, -0.11, 0.01)), X, 0.03, 0.008, 'filter', 24)
     m = part('crankshaft', pivot=CRANK, axis=Y, explode=(0, 0, -0.55))
     m.stl('crankshaft', 'steel', at(CRANK, NY, pi / 2))                       # throw 0 (cylinders 1, 4) points up
     fw = part('flywheel', pivot=CRANK + V((0, -0.218, 0)), axis=Y, explode=(0, -0.3, 0))

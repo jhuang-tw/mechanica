@@ -6,7 +6,7 @@
 # and the wrist pin on x; the con-rod lies in the xy plane, big end at the origin, small end at +y.
 import os
 from math import sin, cos, pi, atan2
-from build123d import (BuildPart, BuildSketch, BuildLine, Polyline, Circle, Rectangle, Locations, PolarLocations, make_face,
+from build123d import (add, fillet, BuildPart, BuildSketch, BuildLine, Polyline, Circle, Rectangle, Locations, PolarLocations, make_face,
                        extrude, revolve, Mode, Cylinder, Box, Plane, Axis, Pos, Rot, export_stl)
 
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'cad', 'out')
@@ -210,41 +210,87 @@ def diff_ring():
     parts += Cylinder(7, 92, rotation=(90, 0, 0))                   # cross pin
     return parts
 
+def soften(part, r):
+    """Round every edge of a casting (fillet radius r mm); keeps the part as is when the kernel can't."""
+    try: return fillet(part.edges(), r)
+    except Exception: return part
+
+def prism(pts, y0, y1):
+    """Polygon in the engine's xz plane (end view) extruded along the crank from y0 to y1."""
+    with BuildPart() as p:
+        with BuildSketch(Plane.XZ.offset(-y0)):
+            with BuildLine(): Polyline(*pts, close=True)
+            make_face()
+        extrude(amount=-(y1 - y0))
+    return p.part
+
 def engine_case():
     """Block, head, valve cover and oil pan in engine axes (mm): x forward, y along the crank (cylinder 1 at +y), z up,
-    origin on the crank centre. Bores are open so the pistons show when the head is lifted off."""
+    origin on the crank centre. Cast shapes, not boxes: a narrow cylinder bank on a skirt that flares out to the crankcase,
+    barrel bulges, freeze plugs and a deck flange; a tapered head with port flanges and a bolt ledge; a domed, ribbed cam
+    cover; a two-depth sump with a flange and drain plug. Bores are open so the pistons show when the head is lifted off."""
     DECK, HEAD, COVER = STROKE / 2 + ROD + 32, 130, 52
-    ys = [-z for z in CYL_Z]
+    ys = [-z for z in CYL_Z]; L = 205
+    BULK = [(k - 2) * PITCH_CYL for k in range(5)]
+    # ---- block: end-view profile (half width) from the pan rail up to the deck
+    prof = [(-115, -70), (115, -70), (115, -20), (92, 60), (92, DECK - 16), (98, DECK - 10), (98, DECK), (-98, DECK), (-98, DECK - 10),
+            (-92, DECK - 16), (-92, 60), (-115, -20)]
     with BuildPart() as b:
-        with Locations(Pos(0, 0, (DECK - 70) / 2)): Box(230, 410, DECK + 70)
+        add(soften(prism(prof, -L, L), 6))
+        for y in ys:                                                                        # gentle bulges over the cylinder barrels
+            for sx in (-1, 1):
+                with Locations(Pos(sx * 62, y, (60 + DECK - 16) / 2)): Cylinder(44, DECK - 76)
+        for y in (-88, 0, 88):                                                              # freeze plugs between the barrels
+            for sx in (-1, 1):
+                with Locations(Pos(sx * 94, y, 125) * Rot(0, 90, 0)): Cylinder(13, 6)
+        with Locations(Pos(-112, -110, 10) * Rot(0, 90, 0)): Cylinder(30, 22)                # oil filter boss (rear side)
+        with Locations(Pos(0, L + 4, 10) * Rot(90, 0, 0)): Cylinder(70, 8)                   # front cover seat round the crank nose
         for y in ys:
             with Locations(Pos(0, y, DECK / 2 + 20)): Cylinder(BORE / 2, DECK, mode=Mode.SUBTRACT)
             with Locations(Pos(0, y, 30)): Box(140, 60, 120, mode=Mode.SUBTRACT)            # throw clearance
         with Locations(Pos(0, 0, -40)): Box(160, 420, 80, mode=Mode.SUBTRACT)               # crankcase opening
-        for y in [(k - 2) * PITCH_CYL for k in range(5)]:
+        for y in BULK:
             with Locations(Pos(0, y, 0)): Cylinder(40, 22, rotation=(90, 0, 0))             # main bearing saddles
             with Locations(Pos(0, y, 0)): Cylinder(26, 24, rotation=(90, 0, 0), mode=Mode.SUBTRACT)
+    # ---- head: tapered sides, port flanges front (exhaust) and back (intake), a ledge with bolt heads round the cam cover
+    T = DECK + HEAD
     with BuildPart() as h:
-        with Locations(Pos(0, 0, DECK + HEAD / 2)): Box(230, 410, HEAD)
+        add(soften(prism([(-100, DECK), (100, DECK), (100, DECK + 30), (94, T), (-94, T), (-100, DECK + 30)], -200, 200), 6))
+        for sx in (-1, 1):
+            with Locations(Pos(sx * 104, 0, DECK + 62)): Box(12, 370, 54)                   # manifold flange face
+            for y in ys:
+                with Locations(Pos(sx * 104, y, DECK + 62)): Box(18, 52, 40)               # port bosses
+        for y in [-176, -88, 0, 88, 176]:                                                   # head bolts on the ledge
+            for sx in (-1, 1):
+                with Locations(Pos(sx * 84, y, T + 4)): Cylinder(8, 8)
         for x in (-35, 35):                                                                 # cam tunnels
             with Locations(Pos(x, 0, DECK + 95)): Cylinder(20, 420, rotation=(90, 0, 0), mode=Mode.SUBTRACT)
         for y in ys:
             with Locations(Pos(0, y, DECK)): Cylinder(BORE / 2 - 2, 20, mode=Mode.SUBTRACT)  # combustion chambers
-            with Locations(Pos(0, y, DECK + 60)): Cylinder(9, 140, rotation=(0, 0, 0))      # spark plug tube
+            for sx in (-1, 1):
+                with Locations(Pos(sx * 108, y, DECK + 62)): Box(12, 34, 26, mode=Mode.SUBTRACT)   # port openings
+    # ---- cam cover: domed, two ribs on top, plug wells and an oil filler neck
+    C0 = T - 4
+    dome = [(-80, C0), (80, C0), (80, C0 + 8), (74, C0 + 10), (74, C0 + 28)] + \
+           [(74 * cos(a), C0 + 28 + 24 * sin(a)) for a in [pi * k / 10 for k in range(1, 10)]] + [(-74, C0 + 28), (-74, C0 + 10), (-80, C0 + 8)]
     with BuildPart() as v:
-        with Locations(Pos(0, 0, DECK + HEAD + COVER / 2 - 4)): Box(210, 400, COVER)
-        with Locations(Pos(0, 0, DECK + HEAD - 4)): Box(196, 386, 20, mode=Mode.SUBTRACT)
+        add(soften(prism(dome, -190, 190), 5))
+        for x in (-28, 28):
+            with Locations(Pos(x, 0, C0 + 50)): Box(6, 330, 8)                              # ribs
+        for y in [-170, -60, 60, 170]:
+            for sx in (-1, 1):
+                with Locations(Pos(sx * 77, y, C0 + 10)): Cylinder(6, 6)                     # cover bolts
+        with Locations(Pos(40, 130, C0 + 52)): Cylinder(22, 14)                             # oil filler neck
+        with Locations(Pos(0, 0, C0)): Box(140, 360, 24, mode=Mode.SUBTRACT)                 # hollow underside
         for y in ys:
-            with Locations(Pos(0, y, DECK + HEAD + COVER)): Cylinder(14, 30, mode=Mode.SUBTRACT)   # plug wells
+            with Locations(Pos(0, y, C0 + 50)): Cylinder(15, 60, mode=Mode.SUBTRACT)        # plug wells
+    # ---- oil pan: flange, a shallow front and a deep sump at the back, drain plug
     with BuildPart() as o:
-        with BuildSketch(Plane.XZ.offset(-200)):
-            with BuildLine(): Polyline((-110, -80), (110, -80), (110, -150), (40, -210), (-110, -210), close=True)
-            make_face()
-        extrude(amount=-400)
-        with BuildSketch(Plane.XZ.offset(-192)):
-            with BuildLine(): Polyline((-102, -78), (102, -78), (102, -146), (36, -202), (-102, -202), close=True)
-            make_face()
-        extrude(amount=-384, mode=Mode.SUBTRACT)
+        add(prism([(-122, -70), (122, -70), (122, -78), (-122, -78)], -212, 212))          # flange
+        add(soften(prism([(-110, -76), (110, -76), (110, -140), (60, -150), (40, -212), (-110, -212)], -198, 198), 10))
+        with Locations(Pos(-40, 0, -214)): Box(80, 120, 4)                                  # baffle bump
+        with Locations(Pos(-112, -60, -190) * Rot(0, 90, 0)): Cylinder(11, 10)                # drain plug
+        with Locations(Pos(0, 0, -74)): Box(196, 380, 10, mode=Mode.SUBTRACT)
     return {'block': b.part, 'head': h.part, 'valve_cover': v.part, 'oil_pan': o.part}
 
 def cv_shaft(length):
