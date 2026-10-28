@@ -33,6 +33,7 @@ None of its code, models or media are in this repository; everything here was re
 | Hands-on parts (touch and VR): drag a pedal, wheel or piston and the whole drive follows at its ratios through the linkages; doors, hood and cowls swing on their own hinges within range; levers stay in their swing; loose parts pull out along their explode direction; `fixed` bases orbit instead. VR: hold the trigger or pinch on a part and move the ray | — | `9374549` | 2026-10-28 |
 | Studio look and PBR pass on all 8 exhibits: softbox reflections, neutral tone mapping, key/fill/rim lights with soft shadow, faded floor and contact shadow, metal roughness grain, per-exhibit `look`; models get rounded edges, baked AO in vertex colours and clear-coat paint | — | `7db46ac` | 2026-10-28 |
 | Highlights keep the real material (rim glow, no colour override) on all exhibits; moto engine sealed like a real parallel twin with a right-side cover | — | `fd8d7af` | 2026-10-28 |
+| Moto right mirror stalk restored | — | `5a17edc` | 2026-10-28 |
 | ⛓ Cause-and-effect lessons and ❓ guess-first quiz (from the manifest) | — | `44fe640` | 2026-10-27 |
 | Voice and text questions in the app, spoken answers, AI demo playback | Muse Spark, Muse Voice Transcribe (via server) | `44fe640` | 2026-10-27 |
 | Bicycle exhibit: manifest (18 parts, 2 drives, 2 lessons with quiz), placeholder model script | — | `7dcf6c0` | 2026-10-27 |
