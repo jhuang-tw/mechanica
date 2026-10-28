@@ -123,14 +123,17 @@
   #caption.thinking p::after { content:"…"; animation:blink 1s infinite; }
   @keyframes blink { 50% { opacity:.2; } }
   .row { display:flex; gap:8px; align-items:center; }
-  body.lesson #chips, body.lesson #controls { display:none; }
-  #chips { display:flex; gap:8px; overflow-x:auto; padding-bottom:2px; scrollbar-width:none; -webkit-mask-image:linear-gradient(90deg, #000 85%, transparent); mask-image:linear-gradient(90deg, #000 85%, transparent); }
-  #chips::-webkit-scrollbar { display:none; }
+  body.lesson .chips, body.lesson #controls { display:none; }
+  .chips { display:flex; gap:8px; overflow-x:auto; padding-bottom:2px; scrollbar-width:none; }
+  .chips::-webkit-scrollbar { display:none; }
   .chip { flex:none; display:flex; align-items:center; gap:7px; min-height:44px; padding:0 14px 0 11px; font-size:14px; border-radius:999px; background:var(--glass); border:1px solid var(--line2); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); white-space:nowrap; }
   .chip svg.i { width:17px; height:17px; }
   .chip.lesson { border-color:rgba(255,176,46,.45); }
   .chip.lesson svg.i { color:var(--accent); }
+  .chip.ai { border-color:rgba(120,180,255,.4); }
   .chip.ai svg.i { color:#8ec5ff; }
+  .chip.ask { font-weight:700; color:#0b1a2e; background:#8ec5ff; border:0; }
+  .chip.ask svg.i { color:#0b1a2e; }
   #explode { flex:1; min-width:0; display:flex; align-items:center; gap:10px; height:48px; padding:0 14px; border-radius:14px; font-size:13px; color:var(--dim); }
   #explode svg.i { width:20px; height:20px; color:var(--text); }
   #explode input { flex:1; min-width:0; height:44px; margin:0; accent-color:var(--accent); }
@@ -238,7 +241,8 @@
       <button id="l-prev" type="button" aria-label="上一步"><svg class="i"><use href="#i-back"/></svg></button><span id="l-step"></span>
       <button id="l-next" type="button" aria-label="下一步"><svg class="i"><use href="#i-next"/></svg></button><button id="l-stop" type="button" aria-label="結束"><svg class="i"><use href="#i-x"/></svg></button>
     </div>
-    <div id="chips"></div>
+    <div id="chips" class="chips"></div>
+    <div id="ai-chips" class="chips"></div>
     <form id="ask" class="glass" hidden><input id="q" enterkeyhint="send" autocomplete="off" placeholder="問任何問題…"><button type="submit">送出</button></form>
     <div id="controls" class="row">
       <label id="explode" class="glass"><svg class="i"><use href="#i-layers"/></svg>拆解<input id="explode-r" type="range" min="0" max="1" step="0.01" value="0" aria-label="拆解"></label>

@@ -90,11 +90,11 @@ $('reset').onclick = () => { stopAll(); speak(''); viewer.frame(); pointed = nul
 
 // ---------- suggestions: AI questions and lessons ----------
 function chips() {
-  const chip = (cls, label, run) => { const b = Object.assign(document.createElement('button'), { className: `chip ${cls}`, type: 'button', onclick: run }); b.innerHTML = icon({ lesson: 'book', quiz: 'q', ai: 'spark' }[cls.split(' ').pop()]) + '<span></span>'; b.lastChild.textContent = label; return b; };
+  const chip = (cls, label, run) => { const b = Object.assign(document.createElement('button'), { className: `chip ${cls}`, type: 'button', onclick: run }); b.innerHTML = icon({ lesson: 'book', quiz: 'q', ai: 'spark', ask: 'spark' }[cls.split(' ').pop()]) + '<span></span>'; b.lastChild.textContent = label; return b; };
+  $('ai-chips').replaceChildren(chip('ai ask', '問 AI 老師', () => $('type').onclick()), ...ex.suggest.map((q) => chip('ai', q, () => ask(q))));
   $('chips').replaceChildren(
     ...ex.lessons.map((l) => chip('lesson', l.title, () => startLesson(l, false))),
     ...(ex.lessons.some((l) => l.steps.some((s) => s.quiz)) ? [chip('lesson quiz', '先猜再看', () => startLesson(ex.lessons.find((l) => l.steps.some((s) => s.quiz)), true))] : []),
-    ...ex.suggest.map((q) => chip('ai', q, () => ask(q))),
   );
 }
 
@@ -130,10 +130,13 @@ const rec = new Recorder();
 let holding = false;
 const talk = async () => {
   holding = true; speak('');
-  try { await rec.start(); $('mic').classList.add('rec'); toast('說吧，放開就送出'); vr?.say('🎤 說吧，說完按 ⏹'); if (!holding) release(); }
+  try { await rec.start(); $('mic').classList.add('rec'); toast(tapMode ? '說完再點一下送出' : '說吧，放開就送出'); vr?.say('🎤 說吧，說完按 ⏹'); if (!holding) release(); }
   catch { holding = false; toast('沒有麥克風權限，改用鍵盤打字'); vr?.say('沒有麥克風權限'); }
 };
-$('mic').onpointerdown = (e) => { e.preventDefault(); talk(); };
+let tapMode = false, downAt = 0;
+$('mic').onpointerdown = (e) => { e.preventDefault(); if (holding) return release(); downAt = Date.now(); tapMode = false; talk(); };
+// a quick tap keeps recording until the next tap; a long press sends on release
+const lift = () => { if (!holding) return; if (Date.now() - downAt < 400) { tapMode = true; return toast('說完再點一下送出', 20000); } release(); };
 const release = async () => {
   if (!holding) return;
   holding = false; $('mic').classList.remove('rec'); toast('');
@@ -146,7 +149,7 @@ const release = async () => {
     if (text) ask(text); else say('', '沒聽清楚，再說一次？');
   } catch { say('', '語音暫時不能用，改用鍵盤打字。'); }
 };
-for (const ev of ['pointerup', 'pointercancel', 'pointerleave']) $('mic').addEventListener(ev, release);
+for (const ev of ['pointerup', 'pointercancel']) $('mic').addEventListener(ev, () => { if (!tapMode) lift(); });
 
 // ---------- 因果連動 / 先猜再看: manifest lessons, one cause → effect per step ----------
 function startLesson(l, quiz) { stopAll(); lesson = { l, quiz, i: 0 }; document.body.classList.add('lesson'); $('lesson').hidden = false; showStep(); }
