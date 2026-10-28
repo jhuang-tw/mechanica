@@ -99,22 +99,39 @@ export class Viewer {
     this.goal = { target, pos: target.clone().addScaledVector(dir, (s / 2) / Math.sin(fov / 2) * 0.95) };
   }
 
-  // a tap (not a drag) on a part
+  // a tap (not a drag) on a part picks it; one finger dragging a movable part moves it (rig.grab), anywhere else orbits
   pickTaps(canvas) {
-    const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
+    const ray = new THREE.Raycaster(), ndc = new THREE.Vector2(), plane = new THREE.Plane(), at = new THREE.Vector3();
+    const cast = (e) => { const b = canvas.getBoundingClientRect(); ndc.set(((e.clientX - b.left) / b.width) * 2 - 1, -((e.clientY - b.top) / b.height) * 2 + 1); ray.setFromCamera(ndc, this.camera); return ray; };
     let down = null;
-    canvas.addEventListener('pointerdown', (e) => (down = [e.clientX, e.clientY]));
-    canvas.addEventListener('pointerup', (e) => {
-      if (!down || !this.rig || Math.hypot(e.clientX - down[0], e.clientY - down[1]) > 8) return;
-      const b = canvas.getBoundingClientRect();
-      ndc.set(((e.clientX - b.left) / b.width) * 2 - 1, -((e.clientY - b.top) / b.height) * 2 + 1);
-      ray.setFromCamera(ndc, this.camera);
-      this.onPick?.(this.hit(ray));
+    // capture phase, so a grab is decided before OrbitControls sees the finger
+    canvas.addEventListener('pointerdown', (e) => {
+      if (down?.g) return e.stopImmediatePropagation();   // a second finger during a drag does nothing
+      if (down || !this.rig) return;
+      down = { x: e.clientX, y: e.clientY, id: e.pointerId, g: this.grabAt(cast(e)) };
+      if (!down.g) return;
+      e.stopImmediatePropagation();
+      plane.setFromNormalAndCoplanarPoint(this.camera.getWorldDirection(at), down.g.at);   // the finger moves the part across the screen
+      canvas.setPointerCapture(e.pointerId);
+    }, true);
+    canvas.addEventListener('pointermove', (e) => {
+      if (e.pointerId !== down?.id || !down.g) return;
+      if (cast(e).ray.intersectPlane(plane, at)) { this.rig.drag(down.g, down.g.at, at); down.g.at.copy(at); }
     });
+    const up = (e) => {
+      if (e.pointerId !== down?.id) return;
+      const tap = Math.hypot(e.clientX - down.x, e.clientY - down.y) <= 8, id = down.g?.id;
+      this.rig?.release(down.g); down = null;
+      if (tap && e.type === 'pointerup' && this.rig) this.onPick?.(id ?? this.hit(cast(e)));
+    };
+    canvas.addEventListener('pointerup', up); canvas.addEventListener('pointercancel', up);
   }
-  hit(ray) {
-    const hits = ray.intersectObject(this.model, true).filter((h) => h.object.visible && !(h.object.material.opacity < 0.5));
-    return hits.length ? this.rig.partOf(hits[0].object) : null;
+  hits(ray) { return ray.intersectObject(this.model, true).filter((h) => h.object.visible && !(h.object.material.opacity < 0.5)); }
+  hit(ray) { const h = this.hits(ray)[0]; return h ? this.rig.partOf(h.object) : null; }
+  // the movable part under a ray, held: {…rig handle, at: the world point grabbed, dist: along the ray}
+  grabAt(ray) {
+    const h = this.hits(ray)[0], id = h && this.rig.partOf(h.object), g = id && this.rig.grab(id);
+    return g ? Object.assign(g, { at: h.point.clone(), dist: h.distance }) : null;
   }
 
   // ---- VR (optional): see vr.js ----

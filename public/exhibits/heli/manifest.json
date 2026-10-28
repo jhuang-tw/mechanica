@@ -301,6 +301,7 @@
   },
   {
    "id": "fuselage",
+   "fixed": true,
    "name": "機身",
    "en": "helicopter fuselage",
    "info": "直升機的主體，前面是駕駛艙，裡面有座椅和儀表板。拆開（🧩）就看得到上面的引擎、齒輪箱和下面的操縱桿。",

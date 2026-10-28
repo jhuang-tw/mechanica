@@ -19,6 +19,7 @@
  "parts": [
   {
    "id": "case",
+   "fixed": true,
    "name": "錶殼",
    "en": "watch case",
    "info": "包住整個機芯的金屬殼，直徑 42 毫米，要防水、防灰塵。",
@@ -109,6 +110,7 @@
   },
   {
    "id": "mainplate",
+   "fixed": true,
    "name": "主夾板",
    "en": "watch mainplate",
    "info": "機芯的底板，所有齒輪的軸都插在它和上面的夾板之間。",

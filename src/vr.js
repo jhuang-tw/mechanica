@@ -1,6 +1,6 @@
 // VR mode: the exhibit at arm's length, hands drawn as joint nodes, a gear on the left inner wrist (or Y/B on a
 // controller) opens the menu, two fists pull the model apart / turn / move it, a one-line subtitle fades out while
-// the full answer is spoken. Panels are canvas textures; a controller trigger, a pinch ray or an index-finger poke presses them.
+// the full answer is spoken. Holding the trigger or a pinch on a part drags it (see Rig.grab). Panels are canvas textures; a controller trigger, a pinch ray or an index-finger poke presses them.
 import * as THREE from 'three';
 import { isFist, isOpen, isPinch, palmNormal, twoHand, twoHandStart } from './gestures.js';
 
@@ -77,7 +77,7 @@ export class VR {
     for (let k = 0; k < JOINTS.length; k++) s.nodes.setColorAt(k, WHITE);
     // the renderer keeps these objects across sessions, so the listeners come off again in end()
     // hands and controllers can swap in either order, so a late "disconnected" must not clear the new source
-    const on = { connected: (e) => (s.src = e.data), disconnected: (e) => { if (e.data === s.src) s.src = null; }, select: () => this.select(ctl) };
+    const on = { connected: (e) => (s.src = e.data), disconnected: (e) => { if (e.data === s.src) s.src = null; }, select: () => this.select(s) };
     for (const k in on) ctl.addEventListener(k, on[k]);
     s.off = () => { for (const k in on) ctl.removeEventListener(k, on[k]); ctl.remove(line); };
     this.scene.add(ctl, hand); this.root.add(s.nodes);
@@ -124,6 +124,7 @@ export class VR {
     }
     // pokes on the panels
     for (const [i, s] of this.inputs.entries()) { const tip = js[i]?.['index-finger-tip']; if (tip) for (const p of [this.menu, this.lessonPanel]) this.poke(s, p, tip); }
+    for (const [i, s] of this.inputs.entries()) this.dragHeld(s, js[i]);
     // two fists: explode / turn / move, one gesture per hold
     const a = this.inputs[L], b = this.inputs[R], pa = this.grabPoint(a, js[L]), pb = this.grabPoint(b, js[R]);
     if (pa && pb && a.fist && b.fist) {
@@ -170,14 +171,30 @@ export class VR {
     s.poke.set(p, l.z);
     if (was > 0.004 && l.z <= 0.004 && Math.abs(l.x) < p.w / 2 && Math.abs(l.y) < p.h / 2) { const b = p.at(l); if (b) this.once(() => b.on()); }
   }
-  // trigger / pinch ray: panels first, then the parts
-  select(ctl) {
+  aim(ctl) {
     this.ray.ray.origin.setFromMatrixPosition(ctl.matrixWorld);
     this.ray.ray.direction.set(0, 0, -1).transformDirection(ctl.matrixWorld);
     const panels = [this.menu, this.lessonPanel].filter((p) => p.mesh.visible).map((p) => p.mesh);
-    const hit = this.ray.intersectObjects(panels, false)[0];
+    return this.ray.intersectObjects(panels, false)[0];
+  }
+  // trigger / pinch ray: panels first, then the parts (unless that press dragged a part)
+  select(s) {
+    const hit = this.aim(s.ctl);
     if (hit) { const p = hit.object === this.menu.mesh ? this.menu : this.lessonPanel, b = p.at(p.mesh.worldToLocal(hit.point.clone())); return b && this.once(() => b.on(), 0.2); }
-    this.app.pick(this.v.hit(this.ray));
+    if (!s.grab?.moved && !s.dragged) this.app.pick(this.v.hit(this.ray));
+  }
+  // holding the trigger / pinch on a part drags it: the grabbed point stays on the ray at the distance it was caught
+  // polled each frame (trigger, or pinch for a hand) rather than selectstart/selectend, whose order differs between runtimes
+  dragHeld(s, j) {
+    const down = j ? isPinch(j) : !!s.src?.gamepad?.buttons[0]?.pressed;
+    if (down && !s.down && !this.aim(s.ctl)) { s.grab = this.v.grabAt(this.ray); s.dragged = false; if (s.grab) s.grab.from = s.grab.at.clone(); }
+    if (!down && s.grab) { s.dragged = s.grab.moved; this.v.rig.release(s.grab); s.grab = null; }
+    s.down = down;
+    const g = s.grab;
+    if (!g) return;
+    const o = new THREE.Vector3().setFromMatrixPosition(s.ctl.matrixWorld), to = new THREE.Vector3(0, 0, -1).transformDirection(s.ctl.matrixWorld).multiplyScalar(g.dist).add(o);
+    this.v.rig.drag(g, g.at, to); g.at.copy(to);
+    g.moved ||= to.distanceTo(g.from) > 0.02;
   }
 
   // ---- panels ----
