@@ -156,6 +156,8 @@
    "symptom": "You turn the key: the crankshaft and pistons move, but the engine just won't start. What do you think is broken?",
    "hint": "To start, the valves have to open at the right time. When the crankshaft turns, do the camshafts up top turn with it?",
    "suspects": ["The battery is flat", "The timing belt broke", "A piston is stuck"],
+   "observe": "The crankshaft turns. Check whether anything in the top half of the engine moves with it.",
+   "whys": ["With a flat battery the starter couldn't turn the crankshaft at all, but the crankshaft is turning.", "", "A stuck piston would lock the crankshaft too, but the pistons are moving up and down smoothly."],
    "cause": "The timing belt has snapped. The crankshaft still turns, but the camshafts up top aren't driven, so the valves don't open and close.",
    "why": "Why won't the engine start with a broken timing belt, even though the crankshaft turns?",
    "answer": "The timing belt makes the camshafts follow the crankshaft (two crank turns, one cam turn). With the camshafts stopped, the valves don't open and close at the right time, so the cylinders can't take in fuel and air or push out exhaust, and the engine can't fire."

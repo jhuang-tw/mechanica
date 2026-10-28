@@ -77,6 +77,8 @@
    "symptom": "Ten minutes into a game, the headset gets very hot and the picture starts to stutter. Take a look inside: what do you think is broken?",
    "hint": "The chip heats up while it draws. How does that heat get carried out of the headset? What on that path isn't moving?",
    "suspects": ["The battery is faulty", "The cooling fan isn't spinning", "The screen is broken"],
+   "observe": "Getting hot means the heat isn't getting out. Open it up: which way should the heat leave?",
+   "whys": ["A faulty battery would make the headset die or shut down, not get hotter and slower as you play.", "", "A broken screen shows glitches or goes black; it wouldn't make the whole headset heat up."],
    "cause": "The cooling fan's blades have stopped. The chip's heat reaches the heatsink, but there's no airflow to blow it out.",
    "why": "Why does a stopped fan make the headset hot and the picture stutter?",
    "answer": "The chip heats up while drawing; the heat goes into the heatsink, and the fan blows it out of the housing. With the fan stopped the heat can't escape, the chip gets too hot and slows itself down to stay safe, so the picture stutters."

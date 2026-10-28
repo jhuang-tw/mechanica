@@ -63,6 +63,8 @@
    "symptom": "When you pedal, the crank and the chainring turn, but the rear wheel doesn't move at all. What do you think is broken?",
    "hint": "Follow the force: foot → crank → chainring → ? → cassette → rear wheel. After which step does the motion stop?",
    "suspects": ["The rear brake is stuck", "The chain fell off", "The rear wheel is broken"],
+   "observe": "Pedal and follow the motion: where along the way does it stop?",
+   "whys": ["The brake pads aren't gripping the rim, and a stuck brake wouldn't leave the chain hanging there. Look between the chainring and the cassette.", "", "The rear wheel itself is fine; no force reaches it at all. Look further forward: where does the motion stop?"],
    "cause": "The chain has fallen off the chainring. The chainring turns, but nothing pulls the force back to the cassette.",
    "why": "Why does the chainring still turn but the rear wheel doesn't, once the chain is off?",
    "answer": "The chain carries the force from the chainring to the cassette, and the cassette turns the rear wheel. When the chain comes off, that drive path is broken, so the parts after it get no force."

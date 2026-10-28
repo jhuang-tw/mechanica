@@ -29,7 +29,7 @@ for (const id of ids) {
         if (s.quiz) assert.equal(x.steps[i].quiz.options.length, s.quiz.options.length, `${id} ${l.id}[${i}] options`);
       });
     }
-    for (const f of m.faults || []) for (const k of ['title', 'short', 'symptom', 'hint', 'suspects', 'cause', 'why', 'answer']) assert.ok(o.faults[f.id]?.[k], `${id} fault ${f.id}.${k}`);
+    for (const f of m.faults || []) for (const k of ['title', 'short', 'symptom', 'observe', 'hint', 'suspects', 'whys', 'cause', 'why', 'answer']) assert.ok(o.faults[f.id]?.[k], `${id} fault ${f.id}.${k}`);
     if (m.ride) assert.ok(o.ride?.hint, `${id} ride.hint`);
   });
   test(`${id}: no Chinese left in English`, () => {

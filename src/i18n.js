@@ -28,7 +28,8 @@ export const S = {
   // exhibit chrome
   back: ['回首頁', 'Home'], mode: ['模式', 'Mode'], mFix: ['修理', 'Fix'], mLearn: ['原理', 'Learn'], reset: ['還原', 'Reset'],
   fixBar: ['修理挑戰', 'Repair challenge'], help: ['提示', 'Hint'],
-  fixHint: ['按麥克風說你的猜測，或直接點你懷疑的零件', 'Tap the mic and say your guess, or tap the part you suspect'],
+  fixHint: ['選一個猜測，或按麥克風說你自己的想法、直接點你懷疑的零件', 'Pick a guess, or say your own with the mic, or tap the part you suspect'],
+  look: ['先看：', 'Look:'], tryAgain: ['那會是哪一個？', 'So which one is it?'], clueLine: [(h) => `線索：${h}`, (h) => `Clue: ${h}`],
   tutorName: ['AI 家教', 'AI tutor'], tShow: ['不會，示範給我看', "I don't know, show me"], tStop: ['結束家教', 'End tutor'],
   tHint: ['按麥克風用說的，或點鍵盤打字回答', 'Answer with the mic, or tap the keyboard to type'],
   prev: ['上一步', 'Previous step'], next: ['下一步', 'Next step'], allAria: ['連貫播放和分步切換', 'Switch between playing it all and step by step'],

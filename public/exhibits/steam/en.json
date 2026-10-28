@@ -101,6 +101,8 @@
    "symptom": "Steam pushes the pistons and the middle pair of driving wheels turns, but the front and rear pairs stay still. What do you think is broken?",
    "hint": "The connecting rod only reaches the middle pair of wheels. What normally makes the front and rear pairs turn with it?",
    "suspects": ["A cylinder is leaking steam", "The coupling rods came off", "The wheels are stuck on the track"],
+   "observe": "Compare the middle wheels with the front and rear pairs. What is missing between them?",
+   "whys": ["A leaking cylinder couldn't push the piston, so the middle wheels wouldn't turn either. But they turn fine.", "", "The wheels aren't stuck; the front and rear pairs just aren't being driven. What normally links them to the middle pair?"],
    "cause": "The coupling rods on both sides have come off. The connecting rods only push the middle pair, and nothing carries the front and rear pairs round.",
    "why": "Why does only the middle pair of wheels turn once the coupling rods are off?",
    "answer": "The cylinders' force goes through the connecting rods to the middle pair only. The coupling rods link the crank pins of all three pairs so the front and rear pairs turn too. Without them, the front and rear pairs get no force."

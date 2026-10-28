@@ -23,7 +23,7 @@
 | `linkages[]` | 曲柄滑塊（引擎）`{type:"slider_crank", crank, r, L, up, cylinders:[{piston, rod, phase, slides?, follow?, valve?, valveAmp?, valveLead?}]}`：活塞（和 `slides`，如十字頭）沿 `up` 滑動、連桿從曲柄銷擺到活塞銷、`follow`（聯結桿）跟著曲柄銷平移不轉、`valve` 領先 `valveLead` 弧度滑動 `valveAmp` 公尺，跟著 `crank` 的角度。<br>斜盤（直升機）`{type:"swashplate", mast, plates[], hub, blades[], collective:{part,max}, cyclic:{part,max}, rise, tilt, pitch, cyclicPitch, flap}`：總距桿角度（÷max）讓斜盤上升 `rise` 公尺、槳葉一起變距 `pitch` 度；週期桿讓斜盤前傾 `tilt` 度、每片槳葉變距 `cyclicPitch`·sin(方位角)、蹺蹺板旋翼頭傾 `flap` 度 |
 | `lessons[]` | 因果連動 `{id, title, steps:[{say, parts[], drive?, speed?, quiz?}]}`（`drive` 可以是 id 或 id 陣列，一起跑）；`quiz` = `{q, options:[[文字, 是否正確, 為什麼]]}`，只有一個正確 |
 
-| `faults[]` | 修理挑戰 `{id, title, short, symptom, drive, speed?, broken[], stops[], look?, see?, hint, suspects[], cause, why, answer, lesson}`：`drive` 照常運轉，但 `stops` 裡的零件（都要在這個 drive 的 moves 裡）不動；`broken` 是壞掉的零件（答案）；`look.detach {parts?, dir?, amount}` 讓壞的零件歪掉、`look.hide[]` 拿掉擋住的外殼；`see[]` 一開始只看這些（其他變透明）；`short` 首頁的一句症狀；`symptom` 開場題目；`hint` 提示；`suspects` 卡住時給的 3 個猜測（含對的）；`cause` 找到後的說明；`why` 修好後追問；`answer` 正確解釋（評分用）；`lesson` 對應的原理課 |
+| `faults[]` | 修理挑戰 `{id, title, short, symptom, drive, speed?, broken[], stops[], look?, see?, observe, hint, suspects[], right, whys[], show[][], cause, why, answer, lesson}`：`drive` 照常運轉，但 `stops` 裡的零件（都要在這個 drive 的 moves 裡）不動；`broken` 是壞掉的零件（答案）；`look.detach {parts?, dir?, amount}` 讓壞的零件歪掉、`look.hide[]` 拿掉擋住的外殼；`see[]` 一開始只看這些（其他變透明）；`short` 首頁的一句症狀；`symptom` 開場題目；`observe` 開場的一句「先看哪裡」；`hint` 提示（選錯後也會出現）；`suspects` 一開始就給的 3 個猜測，`right` 是對的那個的索引；`whys[]` 跟 `suspects` 對齊，每個錯的猜測為什麼不是（對的那格是空字串）；`show[][]` 選錯時要亮起來、示範它其實正常的零件；`cause` 找到後的說明；`why` 修好後追問；`answer` 正確解釋（評分用）；`lesson` 對應的原理課 |
 
 用手拖零件（`Rig.grab/drag`）：在 drive 裡的零件（或曲柄上的活塞、連桿，主軸上的槳葉，掛在曲柄上的踏板）帶動整個機構；`oneWay` 的門、蓋各自沿鉸鏈開關；swing 的桿在範圍內；只有 axis 的零件自己轉；其他零件沿爆炸方向拉出來。
 
@@ -31,7 +31,7 @@
 
 ### en.json（英文版）
 
-`manifest.json` 是唯一的來源（id、數字、動作、中文）；同一個資料夾的 `en.json` 只放英文字，用 id 對應：`{name, title, intro, suggest[], looksLike, ride?{hint}, parts:{id:{name, info, aliases[]}}, drives:{id: name}, lessons:{id:{title, steps:[{say, quiz?{q, options:[[text, why]]}}]}}, faults:{id:{title, short, symptom, hint, suspects[], cause, why, answer}}}`。`src/localize.js` 把它疊上去，瀏覽器和伺服器共用。新增零件還沒翻譯時，英文版先用它的 `en` 名稱。`test/i18n.test.mjs` 會檢查每個字都有英文、英文版沒有殘留中文。
+`manifest.json` 是唯一的來源（id、數字、動作、中文）；同一個資料夾的 `en.json` 只放英文字，用 id 對應：`{name, title, intro, suggest[], looksLike, ride?{hint}, parts:{id:{name, info, aliases[]}}, drives:{id: name}, lessons:{id:{title, steps:[{say, quiz?{q, options:[[text, why]]}}]}}, faults:{id:{title, short, symptom, observe, hint, suspects[], whys[], cause, why, answer}}}`。`src/localize.js` 把它疊上去，瀏覽器和伺服器共用。新增零件還沒翻譯時，英文版先用它的 `en` 名稱。`test/i18n.test.mjs` 會檢查每個字都有英文、英文版沒有殘留中文。
 
 語言：`?lang=en|zh` → 切換鈕存的選擇 → 預設英文。index.html 本身是英文。介面字串在 `src/i18n.js`。
 

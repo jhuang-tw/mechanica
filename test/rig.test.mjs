@@ -37,7 +37,12 @@ for (const id of JSON.parse(read('index.json')).exhibits) {
       assert.ok(d, `${f.id}: drive ${f.drive}`);
       for (const p of [...f.broken, ...f.stops, ...(f.see || []), ...(f.look?.detach?.parts || []), ...(f.look?.hide || [])]) assert.ok(ids.has(p), `${f.id}: ${p}`);
       for (const p of f.stops) assert.ok(d.moves.some((mv) => mv.part === p), `${f.id}: ${p} is in ${d.id}`);
-      for (const k of ['title', 'short', 'symptom', 'hint', 'cause', 'why', 'answer']) assert.ok(f[k], `${f.id}: ${k}`);
+      for (const k of ['title', 'short', 'symptom', 'observe', 'hint', 'cause', 'why', 'answer']) assert.ok(f[k], `${f.id}: ${k}`);
+      // three guesses from the start: one right, and a reason plus parts to show for each wrong one
+      assert.equal(f.suspects.length, 3, `${f.id}: 3 suspects`);
+      assert.ok(f.suspects[f.right], `${f.id}: right suspect`);
+      f.suspects.forEach((_, i) => { assert.equal(!!f.whys[i], i !== f.right, `${f.id}: whys[${i}]`); assert.ok(f.show[i]?.length, `${f.id}: show[${i}]`); });
+      for (const p of f.show.flat()) assert.ok(ids.has(p), `${f.id}: show ${p}`);
       assert.ok(m.lessons.some((l) => l.id === f.lesson), `${f.id}: lesson ${f.lesson}`);
     }
   });
