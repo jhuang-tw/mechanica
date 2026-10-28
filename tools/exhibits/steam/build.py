@@ -7,6 +7,7 @@
 # the app moves pistons, crossheads, rods and valve gear as linkages (see the node list sent with the model).
 # The outer shell is a Tripo3D mesh (tools/exhibits/steam/tripo/body.glb, kept out of git): aligned to the CAD axles, its wheels,
 # motion and frames cut away, decimated and split along its panel lines into smokebox, boiler cladding, side tanks, cab and roof.
+# Without it, `--shell <glb>` reuses the shell parts of a published model (node tools/decode-glb.mjs public/exhibits/steam/model.glb <glb>).
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from common import *   # Mesh, part, run, V, Matrix, Y, TAU, maths
@@ -49,25 +50,63 @@ common.MATS.update({   # base colour (linear), metallic, roughness
     'glow':   ((1.00, 0.35, 0.05), 0.0, 0.60),
 })
 
-def rod(m, a, b, w0, w1, t, mat, bosses=()):
-    """Flat rod in the xz plane at a.y: tapered web from a to b (heights w0 -> w1), thickness t along y, round bosses (pos, r)."""
+X, Z = V((1, 0, 0)), V((0, 0, 1))
+
+def closed(m, make):
+    """Run make() and point the faces it added outwards (a closed solid)."""
+    n = len(m.bm.faces); make(); m.bm.faces.ensure_lookup_table()
+    bmesh.ops.recalc_face_normals(m.bm, faces=m.bm.faces[n:])
+
+def rod(m, a, b, w0, w1, t, mat, bosses=(), flute=False, cups=()):
+    """Flat rod in the xz plane at a.y: tapered web from a to b (heights w0 -> w1), thickness t along y, round bosses (pos, r).
+    flute: raised flanges along both edges of the outer face (an I-section, as forged rods are); cups: oil cups on these bosses."""
     d = (b - a); L = d.length; d.normalize(); n = V((-d.z, 0, d.x))
     pts = [a + n * w0 / 2, b + n * w1 / 2, b - n * w1 / 2, a - n * w0 / 2]
     vs = [[m.bm.verts.new(p + V((0, dy, 0))) for p in pts] for dy in (-t / 2, t / 2)]
     m.face(vs[0][::-1], mat); m.face(vs[1], mat)
     for i in range(4): m.face([vs[0][i], vs[0][(i + 1) % 4], vs[1][(i + 1) % 4], vs[1][i]], mat)
     for c, r in bosses: m.disc(c, Y, r, t * 1.3, mat, 20)
+    if flute:
+        ra, rb = bosses[0][1], bosses[-1][1]; out = V((0, (1 if a.y > 0 else -1) * t / 2, 0))
+        for e in (1, -1):
+            p0 = a + d * ra * 0.9 + n * e * (w0 / 2 - 0.011) + out; p1 = b - d * rb * 0.9 + n * e * (w1 / 2 - 0.011) + out
+            rod(m, p0, p1, 0.022, 0.022, 0.014, mat)
+        for c, r in bosses: m.disc(c + out, Y, r * 0.55, 0.014, mat, 16)                  # bush faces
+    for c, r in cups: oil_cup(m, c, r, mat)
+
+def oil_cup(m, c, r, mat):
+    """Oil cup with its cap on top of a boss of radius r."""
+    m.tube(c + Z * r * 0.8, c + Z * (r + 0.05), 0.022, mat, 10); m.disc(c + Z * (r + 0.058), Z, 0.026, 0.016, mat, 10)
+
+def prism(m, prof, x0, x1, mat):
+    """Straight extrusion along x of a closed (y, z) profile."""
+    def make():
+        r0 = [m.bm.verts.new(V((x0, y, z))) for y, z in prof]; r1 = [m.bm.verts.new(V((x1, y, z))) for y, z in prof]
+        m.bridge(r0, r1, mat); m.cap(r0, mat, True); m.cap(r1, mat)
+    closed(m, make)
+
+def arc_block(m, c, r0, r1, a0, a1, w, mat, seg=6):
+    """Solid ring segment about the y axis through c (angles in the xz plane from +x towards +z), width w along y."""
+    def make():
+        ring = lambda r, dy: [m.bm.verts.new(c + V((r * cos(a), dy, r * sin(a)))) for a in (a0 + (a1 - a0) * i / seg for i in range(seg + 1))]
+        q = [ring(r0, -w / 2), ring(r1, -w / 2), ring(r1, w / 2), ring(r0, w / 2)]
+        for k in range(4):
+            for i in range(seg): m.face([q[k][i], q[k][i + 1], q[(k + 1) % 4][i + 1], q[(k + 1) % 4][i]], mat)
+        m.face([q[k][0] for k in range(4)], mat); m.face([q[k][-1] for k in range(4)][::-1], mat)
+    closed(m, make)
 
 def wheelsets():
     for i, x in enumerate(AXLES, 1):
         m = part(f'wheelset_{i}', pivot=V((x, 0, AZ)), axis=Y, explode=(0, 0, -0.9))
-        m.tube(V((x, -WY + 0.1, AZ)), V((x, WY - 0.1, AZ)), 0.09, 'steel', 16)                       # axle
+        m.tube(V((x, -WY - 0.085, AZ)), V((x, WY + 0.085, AZ)), 0.079, 'steel', 16)                    # axle, through the hubs
         for side in (1, -1):
             c = V((x, side * WY, AZ))
             m.stl('wheel', 'red', at(c, PY if side > 0 else NY, -PHI[side] if side > 0 else PHI[side]))
             p = Yv(pin(x, side), side * WY)
             reach = 0.20 if x == 0 else 0.15
             m.tube(p + V((0, side * 0.05, 0)), p + V((0, side * reach, 0)), 0.05, 'steel', 14)           # crankpin
+            m.disc(c + V((0, side * 0.095, 0)), Y, 0.06, 0.02, 'steel', 16)                              # axle end
+            if x != 0: m.disc(p + V((0, side * (reach + 0.01), 0)), Y, 0.068, 0.025, 'steel', 16)       # crankpin collar
             if x == 0:                                                                                   # return crank on the main pin
                 e = Yv(pin(0, side, 0.13, -pi / 2 * side), side * (GY - 0.02))
                 rod(m, Yv(p, side * (GY - 0.02)), e, 0.12, 0.08, 0.04, 'steel', [(e, 0.045)])
@@ -76,7 +115,13 @@ def wheelsets():
 def motion(side):
     s = 'l' if side > 0 else 'r'; y = side * CY
     xc = crosshead_x(side); X = V((xc, y, AZ))
-    part(f'cylinder_{s}', explode=(0.35, side * 0.6, 0)).stl(f'cylinder_{s}', 'iron', at(V((CYL0, y, AZ))))
+    m = part(f'cylinder_{s}', explode=(0.35, side * 0.6, 0)); m.stl(f'cylinder_{s}', 'iron', at(V((CYL0, y, AZ))))
+    for c, r, nb in ((V((CYL0 + 0.762, y, AZ)), 0.27, 12), (V((CYL0 + 0.782, y, VZ)), 0.16, 8)):     # front covers, studded
+        m.disc(c, X, r, 0.025, 'iron', 32); m.disc(c + X * 0.03, X, r * 0.45, 0.04, 'iron', 20)
+        for k in range(nb):
+            t = TAU * (k + 0.5) / nb; m.disc(c + V((0.018, r * 0.86 * cos(t), r * 0.86 * sin(t))), X, 0.016, 0.016, 'iron', 6)
+    for x in (CYL0 + 0.09, CYL0 + 0.66):                                                                 # drain cocks
+        m.tube(V((x, y, AZ - 0.25)), V((x, y, AZ - 0.33)), 0.018, 'iron', 8); m.box(V((x, y, AZ - 0.30)), (0.05, 0.04, 0.03), 'iron')
     part(f'piston_{s}', pivot=X, explode=(0.9, side * 0.9, 0)).stl('piston', 'steel', at(X + V((0.85, 0, 0))))
     part(f'crosshead_{s}', pivot=X, explode=(0.4, side * 0.9, -0.2)).stl('crosshead', 'steel', at(X))
     vc = V((CYL0 + 0.375, y, VZ))
@@ -84,10 +129,14 @@ def motion(side):
 
     mp = Yv(pin(0, side), side * 0.95)
     m = part(f'connecting_rod_{s}', pivot=mp, axis=Y, explode=(0.2, side * 0.6, -0.15))
-    rod(m, mp, Yv(X, side * 0.95), 0.16, 0.11, 0.05, 'steel', [(mp, 0.11), (Yv(X, side * 0.95), 0.075)])
+    rod(m, mp, Yv(X, side * 0.95), 0.16, 0.11, 0.05, 'steel', [(mp, 0.11), (Yv(X, side * 0.95), 0.075)], flute=True,
+        cups=[(mp, 0.11), (Yv(X, side * 0.95), 0.075)])
     a, b = Yv(pin(AXLES[0], side), side * 0.875), Yv(pin(AXLES[2], side), side * 0.875)
     m = part(f'coupling_rod_{s}', pivot=Yv(pin(0, side), side * 0.875), explode=(0, side * 0.45, -0.1))
-    rod(m, a, b, 0.11, 0.11, 0.045, 'steel', [(a, 0.09), (Yv(pin(0, side), side * 0.875), 0.1), (b, 0.09)])
+    mid = Yv(pin(0, side), side * 0.875)
+    for p0, p1, ra, rb in ((a, mid, 0.09, 0.1), (mid, b, 0.1, 0.09)):
+        rod(m, p0, p1, 0.11, 0.11, 0.045, 'steel', [(p0, ra), (p1, rb)], flute=True)
+    for c, r in ((a, 0.09), (mid, 0.1), (b, 0.09)): oil_cup(m, c, r, 'steel')
 
     # Walschaerts gear, in the plane |y| = GY
     e = Yv(pin(0, side, 0.13, -pi / 2 * side), side * GY)
@@ -119,13 +168,72 @@ def frames():
             m.box(V((x, side * 0.63, AZ)), (0.30, 0.06, 0.34), 'iron')
         m.box(V((LINK.x, side * (GY - 0.08), LINK.z)), (0.12, 0.08, 0.5), 'paint')                     # motion bracket
         for z in (AZ - 0.12, AZ + 0.12): m.tube(V((CYL0 - 1.04, side * CY, z)), V((CYL0 - 1.04, side * 0.62, z)), 0.02, 'paint', 8)   # slide bar hangers
-    for x in BEAMS:                                                                                     # buffer beams up to the footplate, buffers
+    for x in BEAMS:                                                                                     # buffer beams up to the footplate
         m.box(V((x, 0, 1.07)), (0.12, 2.4, 0.58), 'red')
-        for side in (1, -1):
-            sx = 1 if x > 0 else -1
-            m.tube(V((x, side * 0.87, 1.0)), V((x + sx * 0.32, side * 0.87, 1.0)), 0.06, 'iron', 14)
-            m.disc(V((x + sx * 0.33, side * 0.87, 1.0)), V((1, 0, 0)), 0.19, 0.03, 'steel', 20)
+        sx = 1 if x > 0 else -1; face = x + sx * 0.06
+        for side in (1, -1): buffer(m, V((face, side * 0.87, 1.0)), sx)
+        coupling(m, V((face, 0, 1.0)), sx)
+        for y in (-0.6, 0, 0.6): m.box(V((face + sx * 0.03, y, 1.30)), (0.06, 0.05, 0.12), 'iron')        # lamp irons
+        m.sweep([V((face + sx * 0.02, 0.42, 0.86)), V((face + sx * 0.08, 0.42, 0.86)), V((face + sx * 0.08, 0.42, 1.28)),
+                 V((face + sx * 0.14, 0.42, 1.32))], 0.035, 'iron', 10)                                    # brake pipe standpipe
+        m.sweep([V((face + sx * 0.14, 0.42, 1.32)), V((face + sx * 0.24, 0.40, 1.15)), V((face + sx * 0.26, 0.36, 0.86))],
+                0.045, 'paint', 10)                                                                          # its hose, hung up
+        m.disc(V((face + sx * 0.26, 0.36, 0.84)), Z, 0.06, 0.05, 'iron', 12)
+        for side in (1, -1):                                                                                 # guard irons ahead of the end wheels
+            gx = sx * 2.22
+            m.sweep([V((gx, side * 0.6, 0.48)), V((gx, side * 0.7, 0.30)), V((gx, side * 0.76, 0.07))], 0.018, 'paint', 8)
     m.tube(V((-0.2, -0.55, 1.08)), V((-0.2, 0.55, 1.08)), 0.03, 'paint', 8)
+    for side in (1, -1):
+        m.box(V(((BEAMS[0] + BEAMS[1]) / 2, side * 1.368, 1.28)), (BEAMS[0] - BEAMS[1] - 0.12, 0.012, 0.11), 'paint')   # valance
+        step(m, -2.35, side); step(m, 3.29, side, w=0.28)
+        for x in AXLES: brake(m, x, side)
+        m.tube(V((AXLES[0] - 0.63, side * 0.40, 0.42)), V((AXLES[2] - 0.63, side * 0.40, 0.42)), 0.02, 'iron', 8)   # pull rods
+        m.box(V((0.70, side * 0.71, 1.14)), (0.24, 0.14, 0.18), 'paint')                                    # sandbox, its pipe to the rail
+        m.sweep([V((0.70, side * 0.71, 1.05)), V((0.70, side * 0.73, 0.5)), V((0.68, side * 0.765, 0.12)), V((0.66, side * 0.765, 0.06))],
+                0.02, 'iron', 8)
+    for x in AXLES: m.tube(V((x - 0.63, -0.79, 0.42)), V((x - 0.63, 0.79, 0.42)), 0.025, 'iron', 8)      # brake beams
+
+def buffer(m, c, sx):
+    """Long-case buffer: square flange bolted to the beam, tapered case, plunger, slightly domed head."""
+    m.box(c + X * sx * 0.015, (0.03, 0.30, 0.30), 'iron')
+    for dy in (-0.11, 0.11):
+        for dz in (-0.11, 0.11): m.disc(c + V((sx * 0.035, dy, dz)), X, 0.018, 0.02, 'iron', 6)
+    m.sweep([c + X * sx * 0.03, c + X * sx * 0.06, c + X * sx * 0.25], [0.12, 0.11, 0.085], 'iron', 20)
+    m.disc(c + X * sx * 0.25, X, 0.095, 0.02, 'iron', 20)
+    m.tube(c + X * sx * 0.25, c + X * sx * 0.315, 0.058, 'steel', 16)
+    m.disc(c + X * sx * 0.33, X, 0.19, 0.03, 'steel', 32); m.disc(c + X * sx * 0.35, X, 0.15, 0.012, 'steel', 32)
+
+def coupling(m, c, sx):
+    """Draw hook through the beam and a screw coupling hung on it: links, screw with its handle."""
+    m.box(c + V((sx * 0.07, 0, 0)), (0.14, 0.05, 0.10), 'iron')
+    m.sweep(smooth([c + V((sx * 0.12, 0, 0)), c + V((sx * 0.20, 0, -0.01)), c + V((sx * 0.25, 0, 0.05)), c + V((sx * 0.23, 0, 0.12))], 3),
+            [0.034] * 6 + [0.026] * 4, 'iron', 10)
+    pin = c + V((sx * 0.19, 0, 0.02))
+    m.tube(pin + V((0, -0.06, 0)), pin + V((0, 0.06, 0)), 0.014, 'steel', 8)
+    for dy in (-0.05, 0.05): rod(m, pin + V((0, dy, 0)), pin + V((sx * 0.03, dy, -0.24)), 0.035, 0.035, 0.012, 'iron')
+    sc = pin + V((sx * 0.03, 0, -0.24))
+    m.tube(sc + V((-0.09, 0, 0)), sc + V((0.09, 0, 0)), 0.016, 'steel', 8)                                   # the screw
+    m.box(sc, (0.06, 0.11, 0.05), 'iron')
+    m.sweep([sc, sc + V((0, 0.03, -0.12)), sc + V((0, 0.03, -0.20))], 0.012, 'iron', 6); m.disc(sc + V((0, 0.03, -0.22)), Z, 0.03, 0.04, 'iron', 10)
+
+def step(m, x, side, w=0.34, rungs=(0.95, 0.62), top=1.27):
+    """Open step hung under the footplate edge: two flat-bar hangers, two treads with non-slip ribs and an upturned lip."""
+    y0, y1 = side * 1.16, side * 1.38; yc = (y0 + y1) / 2; h = top - rungs[-1] + 0.03
+    for dx in (-w / 2, w / 2):
+        m.box(V((x + dx, side * 1.35, top - h / 2)), (0.014, 0.06, h), 'paint')
+        for z in rungs: m.box(V((x + dx, yc, z - 0.02)), (0.014, 0.22, 0.05), 'paint')                  # tread brackets
+    for z in rungs:
+        m.box(V((x, yc, z)), (w, 0.22, 0.014), 'iron'); m.box(V((x, y1 - side * 0.006, z + 0.018)), (w, 0.012, 0.05), 'iron')
+        for k in range(4): m.box(V((x, y0 + side * (0.035 + k * 0.045), z + 0.011)), (w - 0.03, 0.012, 0.008), 'iron')
+
+def brake(m, x, side):
+    """Cast-iron block on the back of the tread, its hanger from a frame bracket."""
+    c = V((x, side * 0.77, AZ))
+    arc_block(m, c, 0.607, 0.66, pi - 0.30, pi + 0.30, 0.09, 'iron')
+    m.box(c + V((-0.67, 0, 0)), (0.04, 0.05, 0.16), 'iron')
+    m.tube(c + V((-0.68, 0, 0.02)), V((x - 0.70, side * 0.77, 1.06)), 0.018, 'iron', 8)
+    m.box(V((x - 0.70, side * 0.69, 1.06)), (0.06, 0.18, 0.06), 'paint')
+    m.tube(c + V((-0.62, 0, -0.19)), V((x - 0.63, side * 0.77, 0.42)), 0.02, 'iron', 8)
 
 def boiler():
     m = part('firebox', explode=(-0.6, 0, 0.6))
@@ -171,10 +279,16 @@ def cab_controls():
 
 def rails():
     m = part('track', explode=(0, 0, 0))
+    half = [(0.07, -0.16), (0.07, -0.15), (0.012, -0.135), (0.009, -0.052), (0.035, -0.042), (0.035, -0.01), (0.027, 0)]   # flat-bottom rail
+    prof = [(-y, z) for y, z in half[::-1]] + half
     for side in (1, -1):
         y = side * (0.7175 + 0.036)
-        m.box(V((0, y, -0.08)), (9.0, 0.07, 0.16), 'steel')
-    for k in range(13): m.box(V((-4.2 + k * 0.7, 0, -0.24)), (0.25, 2.6, 0.16), 'wood')
+        prism(m, [(y + dy, z) for dy, z in prof[::-1]], -4.5, 4.5, 'steel')
+        for k in range(13):                                                                          # base plates and clips
+            x = -4.2 + k * 0.7
+            m.box(V((x, y, -0.168)), (0.18, 0.30, 0.016), 'iron')
+            for e in (1, -1): m.box(V((x, y + e * 0.095, -0.148)), (0.06, 0.04, 0.03), 'iron')
+    for k in range(13): m.box(V((-4.2 + k * 0.7, 0, -0.256)), (0.25, 2.6, 0.16), 'wood')
 
 # ---------------------------------------------------------------- Tripo shell
 TRIPO = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'tripo', 'body.glb')
@@ -242,8 +356,26 @@ HINGES = {   # id -> (pivot, axis, explode); the door and roof swing about their
     'tank_l': (None, None, (0, 1.4, 0.3)), 'tank_r': (None, None, (0, -1.4, 0.3)),
     'cab': (None, None, (-1.3, 0, 0.6)), 'cab_roof': (V((-1.0, 0, 3.45)), Y, (-1.4, 0, 1.8))}
 
+def reused_shell(path):
+    """Without the Tripo body (it stays out of git): take the shell parts as they are from a published model, decoded first
+    with tools/decode-glb.mjs (the bpy wheel's glTF importer has no meshopt decoder). They were bevelled once already."""
+    before, mats = set(bpy.data.objects), set(bpy.data.materials)
+    bpy.ops.import_scene.gltf(filepath=path); bpy.context.view_layer.update()
+    new = {o.name: o for o in bpy.data.objects if o not in before}
+    for pid, (piv, ax, ex) in HINGES.items():
+        o = new[pid]; me = o.data.copy(); me.transform(o.matrix_world)
+        m = part(pid, pivot=piv, axis=ax, explode=ex); m.mats = ['shell']; m.bm.from_mesh(me)
+        for f in m.bm.faces: f.material_index = 0; f.smooth = True
+        bpy.data.meshes.remove(me)
+    for o in new.values(): bpy.data.objects.remove(o)
+    for mt in list(bpy.data.materials):
+        if mt not in mats and mt.name != 'shell': bpy.data.materials.remove(mt)
+    common.SHELLS.add('shell'); print('shell reused from', path)
+
 def tripo_body():
-    if not os.path.exists(TRIPO): print('no Tripo body, shell skipped:', TRIPO); return
+    if not os.path.exists(TRIPO):
+        if '--shell' in sys.argv: return reused_shell(sys.argv[sys.argv.index('--shell') + 1])
+        print('no Tripo body, shell skipped:', TRIPO); return
     bpy.ops.import_scene.gltf(filepath=TRIPO)
     ob = next(o for o in bpy.context.selected_objects if o.type == 'MESH'); me = ob.data
     me.transform(Matrix.Rotation(pi / 2, 4, 'Z') @ ob.matrix_world)            # Tripo front is -y: turn it to +x
@@ -314,8 +446,18 @@ def make_objects():
     return obs
 common.make_objects = make_objects
 
+def grab_rails():
+    """Handrails either side of the cab entrance, over the steps, stood off the cab side."""
+    if 'cab' not in PARTS: return
+    m = PARTS['cab']['m']
+    for side in (1, -1):
+        for x in (-2.18, -2.52):
+            y = side * 1.166
+            m.tube(V((x, y, 1.45)), V((x, y, 2.55)), 0.014, 'steel', 8); m.disc(V((x, y, 1.45)), Z, 0.02, 0.02, 'steel', 8)
+            for z in (1.55, 2.45): m.tube(V((x, side * 1.09, z)), V((x, y, z)), 0.01, 'steel', 6)
+
 def build():
-    wheelsets(); frames(); boiler(); cab_controls(); rails(); tripo_body()
+    wheelsets(); frames(); boiler(); cab_controls(); rails(); tripo_body(); grab_rails()
     for side in (1, -1): motion(side)
 
 VIEWS = {'left_34': ((5.4, 5.6, 2.6), (0.4, 0, 1.0), 35), 'right_side': ((0.4, -8.5, 1.3), (0.4, 0, 1.0), 35),
