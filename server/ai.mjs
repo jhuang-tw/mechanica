@@ -139,6 +139,21 @@ export function cleanTurn(calls, e) {
   const choices = (Array.isArray(q?.choices) ? q.choices : []).map((c) => clip(c, 40)).filter(Boolean).slice(0, 3);
   return { grade, question: clip(q?.question, 80) ? { q: clip(q.question, 80), choices: choices.length >= 2 ? choices : [] } : null, steps: cleanSteps(calls, e) };
 }
+// ---------- explain it back: the learner retells a lesson, Muse checks each cause → effect link ----------
+export async function explainBack({ exhibit: id, lesson, text }) {
+  const e = exhibit(id), l = (e.lessons || []).find((x) => x.id === lesson);
+  if (!l) throw fail('unknown lesson');
+  const n = l.steps.length;
+  const system = `學生剛上完「${l.title}」，現在用自己的話講一遍。逐一對照下面 ${n} 個因果環節，判斷他有沒有講到：意思對就算，用詞不必一樣，口語和錯字照意思評；講錯的算沒講到。
+只輸出 JSON：{"covered":[${n} 個 true/false],"wrong":"他講錯的地方 ≤ 30 字，沒有就空字串","say":"≤ 60 字台灣繁體中文口語，直接對他說（用「你」）：先肯定講對的，再點出漏掉的第一個環節"}
+環節：
+${l.steps.map((s, i) => `${i + 1}. ${s.say}`).join('\n')}`;
+  const r = await chat({ system, json: true, temperature: 0, maxTokens: 300, messages: [{ role: 'user', content: text }] });
+  const j = json(r.text);
+  if (!j) throw fail('Muse returned no verdict', 502);
+  return { covered: l.steps.map((_, i) => j.covered?.[i] === true), wrong: clip(j.wrong, 60), say: clip(j.say, 200), model: r.model };
+}
+
 export async function tutor({ exhibit: id, answer, history = [], known = [], focus }) {
   const e = exhibit(id), part = e.parts.find((p) => p.id === focus);
   const course = (e.lessons || []).map((l) => `${l.title}：${l.steps.map((s) => s.say).join(' ')}`).join('\n');

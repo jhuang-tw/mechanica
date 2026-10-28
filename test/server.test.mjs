@@ -24,12 +24,13 @@ const meta = createServer(async (req, res) => {
     ['detach', { parts: ['nope'] }],
     ['rotate', { parts: ['rear_wheel'], degrees: 99999, at: 50 }],
   ].map(([name, a], i) => ({ id: 'c' + i, type: 'function', function: { name, arguments: JSON.stringify(a) } })) });
+  if (sys.includes('講一遍')) return msg({ content: '{"covered":[true,"yes",false],"wrong":"","say":"你講對了踩踏板。"}' });
   if (sys.includes('語音辨識')) return msg({ content: '鏈條怎麼帶動後輪' });
   if (JSON.stringify(user).includes('Y2F0')) return msg({ content: '{"match":false,"say":"這是一隻貓。"}' });
   return msg({ content: '```json\n{"match":true,"exhibit":"bike","confidence":0.9,"machine":"公路車","parts":["chain","rear_derailleur","made_up","chain"],"say":"這是公路車，看看鏈條。"}\n```' });
 });
 await new Promise((ok) => meta.listen(0, ok));
-Object.assign(process.env, { META_API_KEY: 'test-key', META_BASE_URL: `http://127.0.0.1:${meta.address().port}/v1`, DAILY_LIMIT: '12' });
+Object.assign(process.env, { META_API_KEY: 'test-key', META_BASE_URL: `http://127.0.0.1:${meta.address().port}/v1`, DAILY_LIMIT: '14' });
 const { server, overBudget } = await import('../server/serve.mjs');
 await new Promise((ok) => server.listen(0, ok));
 const app = `http://127.0.0.1:${server.address().port}`;
@@ -81,6 +82,12 @@ try {
   assert.match(seen.at(-1).b.messages[0].content, /棘輪：答錯[\s\S]*拍了真的鏈條/);
   assert.equal(seen.at(-1).b.messages.at(-1).content, '我的回答：鏈條帶後輪');
   assert.equal((await post('/api/tutor', { exhibit: 'nope' })).status, 400);
+
+  // explain it back: one verdict per lesson step, anything but true counts as missed
+  r = await (await post('/api/explain', { exhibit: 'bike', lesson: 'drive', text: '踩踏板曲柄帶齒盤' })).json();
+  assert.deepEqual([r.covered, r.say], [[true, false, false, false], '你講對了踩踏板。']);
+  assert.match(seen.at(-1).b.messages[0].content, /4 個因果環節[\s\S]*1\. 腳踩踏板/);
+  assert.equal((await post('/api/explain', { exhibit: 'bike', lesson: 'nope', text: 'x' })).status, 400);
 
   // spend guard: per-visitor cap, then the whole-server cap; resets the next day
   assert.equal((await post('/api/ask', { exhibit: 'bike', text: 'x' })).status, 200);
