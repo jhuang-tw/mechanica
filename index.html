@@ -3,109 +3,248 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#10151c">
+<meta name="theme-color" content="#0a0d12">
+<meta name="description" content="互動機械教室：挑一台機器，跟著課程拆開來、看它動，先猜再看答案，還能問 AI 老師。">
 <title>Mechanica · 拆開來看懂機械</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&display=swap">
 <style>
-  :root { --bg:#10151c; --panel:rgba(16,22,30,.88); --line:#2b3644; --text:#eef3f8; --dim:#9aa8b8; --accent:#ffb02e; --blue:#6cb8ff; --ok:#57d18b; --bad:#ff6b5e; }
+  :root {
+    --bg:#0a0d12; --card:#141a22; --card2:#1a222c; --line:rgba(255,255,255,.08); --line2:rgba(255,255,255,.14);
+    --text:#f2f5f8; --dim:#9aa6b4; --mute:#6b7785; --accent:#ffb02e; --accent2:#ffc861; --ink:#1c1303; --ok:#4fd08a; --bad:#ff6b5e;
+    --glass:rgba(14,19,26,.72); --well:#babbbd; --r:18px;
+    --sans: system-ui, -apple-system, "Segoe UI", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+    --display: "Space Grotesk", var(--sans);
+  }
   * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-  html, body { margin:0; height:100%; background:var(--bg); color:var(--text); font:16px/1.45 system-ui, -apple-system, "Noto Sans TC", "PingFang TC", sans-serif; overflow:hidden; }
-  button { font:inherit; color:inherit; background:#1d2733; border:1px solid var(--line); border-radius:12px; cursor:pointer; }
+  html, body { margin:0; height:100%; background:var(--bg); color:var(--text); font:16px/1.5 var(--sans); overflow:hidden; -webkit-font-smoothing:antialiased; }
+  button { font:inherit; color:inherit; background:var(--card2); border:1px solid var(--line); border-radius:12px; cursor:pointer; transition:transform .12s, background .15s, border-color .15s; }
   button:active { transform:scale(.97); }
+  button:focus-visible, input:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
   [hidden] { display:none !important; }
+  svg.i { width:22px; height:22px; flex:none; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
 
-  /* landing */
-  #home { position:fixed; inset:0; overflow:auto; padding:calc(28px + env(safe-area-inset-top)) 16px calc(24px + env(safe-area-inset-bottom)); display:flex; flex-direction:column; align-items:center; gap:18px; }
-  #home h1 { margin:0; font-size:34px; letter-spacing:.5px; }
-  #home .tag { margin:-10px 0 0; color:var(--dim); text-align:center; }
-  #tiles { width:min(560px,100%); display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:12px; }
-  .tile { padding:0; overflow:hidden; text-align:left; border-radius:16px; }
-  .tile img { display:block; width:100%; aspect-ratio:1; object-fit:cover; background:#18212b; }
-  .tile span { display:block; padding:10px 12px; font-weight:600; }
-  .big { width:min(560px,100%); padding:16px; font-size:18px; font-weight:600; border-radius:16px; }
-  .tile small { display:block; padding:0 12px 10px; margin-top:-6px; color:var(--dim); font-size:13px; }
-  /* photo is an extra, not the way in: a quiet text button under the grid */
-  #home-photo { width:auto; min-height:44px; padding:10px 16px; font-size:15px; font-weight:500; background:none; border:1px solid #ffffff22; color:var(--dim); }
-  #home-vr { background:#24364a; }
-  #home .how { width:min(560px,100%); margin:0; padding:0; list-style:none; color:var(--dim); font-size:14px; display:grid; gap:4px; }
+  /* ---------- landing ---------- */
+  #home { position:fixed; inset:0; overflow-y:auto; overflow-x:hidden; background:
+      radial-gradient(900px 500px at 85% -10%, rgba(255,176,46,.13), transparent 60%),
+      radial-gradient(700px 500px at -10% 30%, rgba(90,150,255,.08), transparent 60%), var(--bg); }
+  .wrap { width:min(1080px,100%); margin:0 auto; padding:0 16px; }
+  .top { display:flex; align-items:center; justify-content:space-between; min-height:40px; padding-top:calc(14px + env(safe-area-inset-top)); }
+  .mark { display:flex; align-items:center; gap:10px; font:700 17px/1 var(--display); letter-spacing:.14em; }
+  .mark svg { width:26px; height:26px; color:var(--accent); }
+  .pill { display:inline-flex; align-items:center; gap:8px; min-height:40px; padding:0 14px; border-radius:999px; font-size:14px; font-weight:600; background:rgba(255,255,255,.06); border:1px solid var(--line2); }
+  .pill svg.i { width:18px; height:18px; }
 
-  /* exhibit */
-  #app { position:fixed; inset:0; }
+  .hero { display:grid; gap:24px; padding:26px 0 8px; }
+  .eyebrow { display:inline-flex; align-items:center; gap:8px; margin:0; font-size:13px; color:var(--accent2); letter-spacing:.04em; }
+  .eyebrow::before { content:""; width:6px; height:6px; border-radius:50%; background:var(--accent); box-shadow:0 0 10px var(--accent); }
+  .hero h1 { margin:12px 0 0; font-size:clamp(34px, 9.4vw, 58px); line-height:1.14; letter-spacing:-.01em; font-weight:800; }
+  .hero h1 em { font-style:normal; background:linear-gradient(90deg, var(--accent), #ffd98a); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .hero .lede { margin:14px 0 0; color:var(--dim); font-size:16px; max-width:34em; }
+  .cta { display:flex; flex-wrap:wrap; gap:10px; margin-top:22px; }
+  .btn { display:inline-flex; align-items:center; justify-content:center; gap:10px; min-height:52px; padding:0 22px; border-radius:14px; font-size:16px; font-weight:700; }
+  .btn.primary { flex:1 1 auto; background:var(--accent); color:var(--ink); border:0; box-shadow:0 8px 28px -8px rgba(255,176,46,.6); }
+  .btn.primary:hover { background:var(--accent2); }
+  .btn.ghost { background:transparent; border:1px solid var(--line2); color:var(--text); }
+  .btn svg.i { width:18px; height:18px; fill:currentColor; }
+
+  /* the featured machine, on a blueprint grid with part callouts */
+  .stage { position:relative; display:block; width:100%; padding:0; aspect-ratio:1.15; border-radius:24px; overflow:hidden; background:var(--well); border:1px solid var(--line2); box-shadow:0 30px 60px -30px rgba(0,0,0,.8); text-align:left; }
+  .stage img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 55%; }
+  .stage::before { content:""; position:absolute; inset:0; z-index:1; pointer-events:none; background:
+      linear-gradient(rgba(20,40,70,.09) 1px, transparent 1px) 0 0/24px 24px,
+      linear-gradient(90deg, rgba(20,40,70,.09) 1px, transparent 1px) 0 0/24px 24px; }
+  .stage::after { content:""; position:absolute; inset:0; z-index:1; pointer-events:none; background:radial-gradient(closest-side, transparent 60%, rgba(0,0,0,.22)); }
+  .callout { position:absolute; z-index:2; display:flex; align-items:center; gap:6px; padding:5px 10px 5px 6px; border-radius:999px; font-size:12px; font-weight:600; color:#10151c; background:rgba(255,255,255,.9); box-shadow:0 4px 14px rgba(0,0,0,.18); animation:float 4s ease-in-out infinite; }
+  .callout b { width:12px; height:12px; border-radius:50%; background:var(--accent); box-shadow:0 0 0 4px rgba(255,176,46,.3); }
+  .callout + .callout { animation-delay:-2s; }
+  @keyframes float { 50% { transform:translateY(-4px); } }
+  .stage .badge { position:absolute; z-index:2; left:12px; bottom:12px; right:12px; display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 14px; border-radius:14px; background:rgba(10,13,18,.8); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); color:var(--text); font-size:15px; font-weight:600; }
+  .stage .badge small { display:block; color:var(--dim); font-size:12px; font-weight:400; }
+  .stage .badge > span:last-child { color:var(--accent2); white-space:nowrap; }
+
+  section.block { padding:36px 0 0; }
+  .h2 { display:flex; align-items:baseline; justify-content:space-between; gap:10px; margin:0 0 14px; }
+  .h2 h2 { margin:0; font-size:22px; }
+  .h2 span { color:var(--mute); font-size:13px; }
+
+  .ways { display:grid; gap:10px; margin:0; padding:0; list-style:none; }
+  .ways li { display:flex; gap:14px; align-items:flex-start; padding:14px; border-radius:var(--r); background:var(--card); border:1px solid var(--line); }
+  .ic { display:grid; place-items:center; width:42px; height:42px; flex:none; border-radius:12px; background:rgba(255,176,46,.12); color:var(--accent); }
+  .ways b { display:block; font-size:16px; }
+  .ways p { margin:2px 0 0; color:var(--dim); font-size:14px; }
+
+  #tiles { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:12px; }
+  .tile { display:flex; flex-direction:column; padding:0; overflow:hidden; text-align:left; border-radius:var(--r); background:var(--card); border:1px solid var(--line); }
+  .tile:hover { border-color:var(--line2); background:var(--card2); }
+  .tile .well { position:relative; aspect-ratio:1; background:var(--well); overflow:hidden; }
+  .tile .well::after { content:""; position:absolute; inset:0; background:radial-gradient(closest-side, transparent 62%, rgba(0,0,0,.18)); }
+  .tile img { display:block; width:100%; height:100%; object-fit:cover; transition:transform .4s; }
+  .tile:hover img { transform:scale(1.04); }
+  .tile .n { position:absolute; z-index:1; top:8px; left:8px; padding:2px 8px; border-radius:999px; font-size:11px; font-weight:600; color:#10151c; background:rgba(255,255,255,.85); }
+  .tile .body { display:flex; flex-direction:column; gap:3px; padding:12px 12px 14px; flex:1; }
+  .tile b { font-size:17px; line-height:1.25; }
+  .tile small { color:var(--mute); font-size:12px; line-height:1.4; }
+  .tile .first { margin-top:auto; padding-top:8px; display:flex; align-items:center; gap:6px; color:var(--dim); font-size:13px; line-height:1.3; }
+  .tile .first svg.i { width:15px; height:15px; color:var(--accent); }
+
+  #home-photo { display:flex; align-items:center; gap:14px; width:100%; margin:0; padding:16px; text-align:left; border-radius:var(--r); background:transparent; border:1px dashed var(--line2); color:var(--dim); }
+  #home-photo .ic { background:rgba(255,255,255,.06); color:var(--text); }
+  #home-photo b { display:block; color:var(--text); font-size:15px; }
+  #home-photo span span { font-size:13px; }
+  .foot { padding:28px 0 calc(28px + env(safe-area-inset-bottom)); color:var(--mute); font-size:12px; text-align:center; }
+
+  @media (min-width:760px) {
+    .hero { grid-template-columns:1.05fr 1fr; align-items:center; gap:40px; padding:56px 0 20px; }
+    .btn.primary { flex:0 0 auto; }
+    .ways { grid-template-columns:repeat(3,1fr); }
+    #tiles { grid-template-columns:repeat(4, minmax(0,1fr)); gap:16px; }
+  }
+
+  /* ---------- exhibit ---------- */
+  #app { position:fixed; inset:0; background:var(--bg); }
   #view { position:absolute; inset:0; }
   #view canvas { display:block; width:100%; height:100%; touch-action:none; }
-  header { position:absolute; top:0; left:0; right:0; display:flex; align-items:center; gap:8px; padding:calc(10px + env(safe-area-inset-top)) 12px 8px; pointer-events:none; z-index:1; }
+  header { position:absolute; top:0; left:0; right:0; display:flex; align-items:center; gap:10px; padding:calc(10px + env(safe-area-inset-top)) 12px 24px; pointer-events:none; z-index:1; background:linear-gradient(rgba(10,13,18,.75), transparent); }
   header > * { pointer-events:auto; }
-  header h2 { flex:1; margin:0; font-size:17px; text-shadow:0 1px 3px #000; }
-  .icon { width:44px; height:44px; padding:0; font-size:20px; background:var(--panel); }
-  #vr { width:auto; padding:0 14px; font-weight:700; }
+  header .ttl { flex:1; min-width:0; pointer-events:none; }
+  header h2 { margin:0; font-size:17px; line-height:1.25; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  header small { display:block; color:var(--dim); font-size:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .icon { display:grid; place-items:center; width:44px; height:44px; padding:0; background:var(--glass); border:1px solid var(--line2); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); }
+  #vr { display:flex; width:auto; gap:6px; padding:0 14px; font-size:14px; font-weight:700; color:var(--ink); background:var(--accent); border:0; }
+  #vr svg.i { width:18px; height:18px; }
   #sheet { position:absolute; left:0; right:0; bottom:0; margin:0 auto; width:min(640px,100%); padding:0 10px calc(10px + env(safe-area-inset-bottom)); display:flex; flex-direction:column; gap:8px; z-index:1; }
-  #caption { background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:10px 14px; max-height:30vh; overflow:auto; }
-  #caption b { display:block; color:var(--accent); font-size:13px; }
-  #caption p { margin:2px 0 0; }
+  .glass { background:var(--glass); border:1px solid var(--line2); backdrop-filter:blur(16px) saturate(1.2); -webkit-backdrop-filter:blur(16px) saturate(1.2); }
+  #caption { border-radius:var(--r); padding:12px 16px 13px; max-height:30vh; overflow:auto; box-shadow:0 12px 30px -12px rgba(0,0,0,.6); }
+  #caption b { display:inline-block; margin-bottom:4px; padding:2px 9px; border-radius:999px; font-size:12px; color:var(--accent2); background:rgba(255,176,46,.14); }
+  #caption b:empty { display:none; }
+  #caption p { margin:0; font-size:15px; line-height:1.6; }
   #caption.thinking p::after { content:"…"; animation:blink 1s infinite; }
   @keyframes blink { 50% { opacity:.2; } }
   .row { display:flex; gap:8px; align-items:center; }
   body.lesson #chips, body.lesson #controls { display:none; }
-  #chips { display:flex; gap:8px; overflow-x:auto; padding-bottom:2px; scrollbar-width:none; }
-  .chip { flex:none; min-height:44px; padding:8px 14px; font-size:14px; border-radius:999px; background:var(--panel); white-space:nowrap; }
-  .chip.ai { border-color:#4b6d8f; }
-  .chip.lesson { border-color:#7a5a24; }
-  #controls .icon { flex:none; }
-  #explode { flex:1; display:flex; align-items:center; gap:8px; height:44px; padding:0 12px; background:var(--panel); border:1px solid var(--line); border-radius:12px; font-size:14px; color:var(--dim); }
-  #explode input { flex:1; height:44px; margin:0; accent-color:var(--accent); }
-  #mic { width:56px; height:56px; border-radius:50%; background:var(--accent); color:#1a1205; border:0; font-size:24px; }
-  #mic.rec { background:var(--bad); color:#fff; box-shadow:0 0 0 6px rgba(255,107,94,.3); }
-  #ask { display:flex; gap:8px; }
-  #ask input { flex:1; min-width:0; padding:12px; font:inherit; color:var(--text); background:#0c1117; border:1px solid var(--line); border-radius:12px; }
-  #ask button { padding:0 16px; background:var(--accent); color:#1a1205; border:0; font-weight:700; }
-  #lesson { justify-content:space-between; background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:4px; }
-  #lesson span { font-size:14px; color:var(--dim); }
-  #lesson button { width:44px; height:44px; padding:0; border:0; background:none; font-size:18px; }
+  #chips { display:flex; gap:8px; overflow-x:auto; padding-bottom:2px; scrollbar-width:none; -webkit-mask-image:linear-gradient(90deg, #000 85%, transparent); mask-image:linear-gradient(90deg, #000 85%, transparent); }
+  #chips::-webkit-scrollbar { display:none; }
+  .chip { flex:none; display:flex; align-items:center; gap:7px; min-height:44px; padding:0 14px 0 11px; font-size:14px; border-radius:999px; background:var(--glass); border:1px solid var(--line2); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); white-space:nowrap; }
+  .chip svg.i { width:17px; height:17px; }
+  .chip.lesson { border-color:rgba(255,176,46,.45); }
+  .chip.lesson svg.i { color:var(--accent); }
+  .chip.ai svg.i { color:#8ec5ff; }
+  #explode { flex:1; min-width:0; display:flex; align-items:center; gap:10px; height:48px; padding:0 14px; border-radius:14px; font-size:13px; color:var(--dim); }
+  #explode svg.i { width:20px; height:20px; color:var(--text); }
+  #explode input { flex:1; min-width:0; height:44px; margin:0; accent-color:var(--accent); }
+  #controls .icon { flex:none; width:48px; height:48px; border-radius:14px; }
+  #mic { display:grid; place-items:center; flex:none; width:60px; height:60px; padding:0; border-radius:50%; background:var(--accent); color:var(--ink); border:0; box-shadow:0 8px 24px -6px rgba(255,176,46,.6); }
+  #mic svg.i { width:26px; height:26px; stroke-width:2; }
+  #mic.rec { background:var(--bad); color:#fff; box-shadow:0 0 0 8px rgba(255,107,94,.25); animation:pulse 1.2s infinite; }
+  @keyframes pulse { 50% { box-shadow:0 0 0 14px rgba(255,107,94,.1); } }
+  #ask { display:flex; gap:8px; padding:6px; border-radius:16px; }
+  #ask input { flex:1; min-width:0; padding:10px 12px; font:inherit; color:var(--text); background:transparent; border:0; outline:none; }
+  #ask button { padding:0 18px; background:var(--accent); color:var(--ink); border:0; font-weight:700; }
+  #lesson { justify-content:space-between; border-radius:16px; padding:4px; }
+  #lesson span { flex:1; text-align:center; font-size:14px; color:var(--dim); }
+  #lesson span::before { content:""; display:block; height:3px; margin:0 8px 6px; border-radius:2px; background:linear-gradient(90deg, var(--accent) var(--p,0%), rgba(255,255,255,.12) 0); }
+  #lesson button { display:grid; place-items:center; width:44px; height:44px; padding:0; border:0; background:none; }
+  #lesson button:disabled { opacity:.3; }
   #quiz { display:grid; gap:8px; }
-  #quiz button { padding:12px; text-align:left; background:var(--panel); }
-  #quiz button.right { border-color:var(--ok); background:#173323; }
-  #quiz button.wrong { border-color:var(--bad); background:#3a1a18; }
-  #toast { position:fixed; left:50%; top:calc(64px + env(safe-area-inset-top)); transform:translateX(-50%); padding:8px 14px; background:var(--panel); border-radius:999px; font-size:14px; }
+  #quiz button { padding:13px 16px; text-align:left; border-radius:14px; background:var(--glass); border:1px solid var(--line2); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); }
+  #quiz button.right { border-color:var(--ok); background:rgba(40,120,75,.55); }
+  #quiz button.wrong { border-color:var(--bad); background:rgba(130,40,35,.55); }
+  #toast { position:fixed; left:50%; top:calc(70px + env(safe-area-inset-top)); transform:translateX(-50%); z-index:5; padding:9px 16px; border-radius:999px; font-size:14px; background:var(--glass); border:1px solid var(--line2); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); white-space:nowrap; max-width:calc(100% - 32px); overflow:hidden; text-overflow:ellipsis; }
   @media (min-width:900px) { #sheet { left:auto; right:16px; margin:0; width:420px; } }
   /* phone on its side: the sheet moves to the right so the model keeps the full height */
   @media (orientation:landscape) and (max-height:500px) { #sheet { left:auto; right:0; top:0; margin:0; width:min(400px,50vw); justify-content:flex-end; padding:calc(64px + env(safe-area-inset-top)) calc(10px + env(safe-area-inset-right)) calc(10px + env(safe-area-inset-bottom)) 10px; overflow-y:auto; } }
+  @media (prefers-reduced-motion:reduce) { *, *::before, *::after { animation:none !important; transition:none !important; } }
 </style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/><circle cx="12" cy="12" r="6.5"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 19V5.5A2.5 2.5 0 0 1 6.5 3H20v14H6.5A2.5 2.5 0 0 0 4 19.5 2.5 2.5 0 0 0 6.5 22H20v-5"/><path d="M8.5 7.5h7M8.5 11h4.5"/></symbol>
+  <symbol id="i-q" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5"/><path d="M9.3 9.2a2.8 2.8 0 0 1 5.4 1c0 2-2.7 2.4-2.7 4.1"/><path d="M12 17.6h.01"/></symbol>
+  <symbol id="i-spark" viewBox="0 0 24 24"><path d="M11 3l1.8 5.2L18 10l-5.2 1.8L11 17l-1.8-5.2L4 10l5.2-1.8z"/><path d="M18.5 15.5l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z"/></symbol>
+  <symbol id="i-tap" viewBox="0 0 24 24"><path d="M9 11V5.5a1.5 1.5 0 0 1 3 0V11"/><path d="M12 10.5a1.5 1.5 0 0 1 3 0V12M15 11.5a1.5 1.5 0 0 1 3 0V15a6 6 0 0 1-6 6h-.6a6 6 0 0 1-4.8-2.4L4.3 15.5a1.6 1.6 0 0 1 2.5-2L9 15.5"/></symbol>
+  <symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="2.5" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3.5"/></symbol>
+  <symbol id="i-cam" viewBox="0 0 24 24"><path d="M3 8.5A2.5 2.5 0 0 1 5.5 6h1.8l1.5-2.2h6.4L16.7 6h1.8A2.5 2.5 0 0 1 21 8.5v9A2.5 2.5 0 0 1 18.5 20h-13A2.5 2.5 0 0 1 3 17.5z"/><circle cx="12" cy="12.8" r="3.6"/></symbol>
+  <symbol id="i-key" viewBox="0 0 24 24"><rect x="2.5" y="6" width="19" height="12" rx="2.5"/><path d="M6 10h.01M9.5 10h.01M13 10h.01M16.5 10h.01M7.5 14h9"/></symbol>
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></symbol>
+  <symbol id="i-reset" viewBox="0 0 24 24"><path d="M3.5 12a8.5 8.5 0 1 0 2.6-6.1"/><path d="M3.5 3.5v5h5"/></symbol>
+  <symbol id="i-layers" viewBox="0 0 24 24"><path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5" opacity=".7"/><path d="M3 17.5l9 5 9-5" opacity=".4"/></symbol>
+  <symbol id="i-next" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 4.5v15l12-7.5z"/></symbol>
+  <symbol id="i-vr" viewBox="0 0 24 24"><path d="M3 9a2.5 2.5 0 0 1 2.5-2.5h13A2.5 2.5 0 0 1 21 9v6a2.5 2.5 0 0 1-2.5 2.5h-3l-2-2.5h-3l-2 2.5h-3A2.5 2.5 0 0 1 3 15z"/><circle cx="8" cy="12" r="1.6"/><circle cx="16" cy="12" r="1.6"/></symbol>
+</svg>
+
 <section id="home">
-  <h1>Mechanica</h1>
-  <p class="tag">互動機械教室：挑一台機器，跟著課程拆開來、看它動、答小測驗。</p>
-  <div id="tiles"></div>
-  <ul class="how">
-    <li>📘 課程：一步一步帶你看，每一步先猜再看答案</li>
-    <li>👆 點零件：看它叫什麼、做什麼</li>
-    <li>🎤 問問題：AI 老師會挑零件動給你看</li>
-  </ul>
-  <button id="home-vr" class="big" type="button" hidden>🥽 用 VR 上課</button>
-  <button id="home-photo" class="big" type="button">📷 看到真的機器？拍下來找對應的展品</button>
+  <div class="wrap">
+    <nav class="top">
+      <div class="mark"><svg class="i"><use href="#i-gear"/></svg>MECHANICA</div>
+      <button id="home-vr" class="pill" type="button" hidden><svg class="i"><use href="#i-vr"/></svg>VR 上課</button>
+    </nav>
+
+    <div class="hero">
+      <div>
+        <p class="eyebrow" id="stats">互動機械教室</p>
+        <h1>拆開來，<br><em>看懂</em>機器怎麼動。</h1>
+        <p class="lede">挑一台機器，跟著課程一步一步拆解。每一步先猜再看答案，點任何零件聽說明，或直接問 AI 老師。</p>
+        <div class="cta">
+          <button id="start" class="btn primary" type="button"><svg class="i"><use href="#i-play"/></svg><span>開始第一堂課</span></button>
+          <button id="browse" class="btn ghost" type="button">看全部展品</button>
+        </div>
+      </div>
+      <button id="feature" class="stage" type="button">
+        <img id="feature-img" alt="">
+        <span class="callout" style="left:8%; top:15%"><b></b><span id="co1"></span></span>
+        <span class="callout" style="right:7%; top:28%"><b></b><span id="co2"></span></span>
+        <span class="badge"><span><span id="feature-name"></span><small id="feature-lesson"></small></span><span>上課 →</span></span>
+      </button>
+    </div>
+
+    <section class="block">
+      <div class="h2"><h2>三種學法</h2></div>
+      <ul class="ways">
+        <li><span class="ic"><svg class="i"><use href="#i-book"/></svg></span><div><b>跟著課程拆解</b><p>一步一步看力量怎麼傳下去，每一步都先猜再看答案。</p></div></li>
+        <li><span class="ic"><svg class="i"><use href="#i-tap"/></svg></span><div><b>點零件、拉開來看</b><p>點任何零件聽它叫什麼、做什麼，拉滑桿把整台拆成爆炸圖。</p></div></li>
+        <li><span class="ic"><svg class="i"><use href="#i-spark"/></svg></span><div><b>問 AI 老師</b><p>用說的或打字，老師會挑出相關零件，動給你看。</p></div></li>
+      </ul>
+    </section>
+
+    <section class="block" id="all">
+      <div class="h2"><h2>展品</h2><span id="count"></span></div>
+      <div id="tiles"></div>
+    </section>
+
+    <section class="block">
+      <button id="home-photo" type="button"><span class="ic"><svg class="i"><use href="#i-cam"/></svg></span><span><b>看到真的機器？</b><span>拍下來，幫你找到對應的展品和零件</span></span></button>
+    </section>
+    <p class="foot">Mechanica · 手機、電腦和 VR 頭戴都能上課</p>
+  </div>
 </section>
 
 <section id="app" hidden>
   <div id="view"><canvas id="c"></canvas></div>
   <header>
-    <button id="back" class="icon" type="button" aria-label="回首頁">‹</button>
-    <h2 id="title"></h2>
-    <button id="vr" class="icon" type="button" hidden>VR</button>
-    <button id="reset" class="icon" type="button" aria-label="還原">↩</button>
+    <button id="back" class="icon" type="button" aria-label="回首頁"><svg class="i"><use href="#i-back"/></svg></button>
+    <div class="ttl"><h2 id="title"></h2><small id="subtitle"></small></div>
+    <button id="vr" class="icon" type="button" hidden><svg class="i"><use href="#i-vr"/></svg>VR</button>
+    <button id="reset" class="icon" type="button" aria-label="還原"><svg class="i"><use href="#i-reset"/></svg></button>
   </header>
   <div id="sheet">
-    <div id="caption"><b id="cap-title"></b><p id="cap-text"></p></div>
+    <div id="caption" class="glass"><b id="cap-title"></b><p id="cap-text"></p></div>
     <div id="quiz" hidden></div>
-    <div id="lesson" class="row" hidden>
-      <button id="l-prev" type="button" aria-label="上一步">⏮</button><span id="l-step"></span>
-      <button id="l-next" type="button" aria-label="下一步">⏭</button><button id="l-stop" type="button" aria-label="結束">✕</button>
+    <div id="lesson" class="row glass" hidden>
+      <button id="l-prev" type="button" aria-label="上一步"><svg class="i"><use href="#i-back"/></svg></button><span id="l-step"></span>
+      <button id="l-next" type="button" aria-label="下一步"><svg class="i"><use href="#i-next"/></svg></button><button id="l-stop" type="button" aria-label="結束"><svg class="i"><use href="#i-x"/></svg></button>
     </div>
     <div id="chips"></div>
-    <form id="ask" hidden><input id="q" enterkeyhint="send" autocomplete="off" placeholder="問任何問題…"><button type="submit">送出</button></form>
+    <form id="ask" class="glass" hidden><input id="q" enterkeyhint="send" autocomplete="off" placeholder="問任何問題…"><button type="submit">送出</button></form>
     <div id="controls" class="row">
-      <label id="explode">🧩<input id="explode-r" type="range" min="0" max="1" step="0.01" value="0" aria-label="拆解"></label>
-      <button id="type" class="icon" type="button" aria-label="打字提問">⌨</button>
-      <button id="photo" class="icon" type="button" aria-label="拍真的機器">📷</button>
-      <button id="mic" type="button" aria-label="按住說話">🎤</button>
+      <label id="explode" class="glass"><svg class="i"><use href="#i-layers"/></svg>拆解<input id="explode-r" type="range" min="0" max="1" step="0.01" value="0" aria-label="拆解"></label>
+      <button id="type" class="icon" type="button" aria-label="打字提問"><svg class="i"><use href="#i-key"/></svg></button>
+      <button id="photo" class="icon" type="button" aria-label="拍真的機器"><svg class="i"><use href="#i-cam"/></svg></button>
+      <button id="mic" type="button" aria-label="按住說話"><svg class="i"><use href="#i-mic"/></svg></button>
     </div>
   </div>
 </section>

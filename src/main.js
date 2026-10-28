@@ -13,15 +13,37 @@ let viewer, ex, rig, chat = [], pointed = null, lesson = null, quiz = null, vr =
 // ---------- landing ----------
 const list = (await (await fetch(`${BASE}index.json`)).json()).exhibits;
 await Promise.all(list.map(async (id) => (exhibits[id] = await (await fetch(`${BASE}${id}/manifest.json`)).json())));
-$('tiles').replaceChildren(...list.map((id) => {
+const icon = (id) => `<svg class="i"><use href="#i-${id}"/></svg>`;
+const thumb = (id) => `${BASE}${id}/${exhibits[id].thumb}`;
+const warm = (id) => viewerModule.then((m) => m.preload(BASE + id + '/' + exhibits[id].model));   // start the model download on touch
+$('tiles').replaceChildren(...list.map((id, i) => {
   const e = exhibits[id], b = Object.assign(document.createElement('button'), { className: 'tile', type: 'button' });
-  b.innerHTML = `<img alt="" src="${BASE}${id}/${e.thumb}" onerror="this.style.visibility='hidden'"><span></span><small></small>`;
-  b.querySelector('span').textContent = e.title;
-  b.querySelector('small').textContent = `${e.lessons?.length || 0} 堂課`;
-  b.onpointerdown = () => viewerModule.then((m) => m.preload(BASE + id + '/' + e.model));   // start the model download on touch
+  b.innerHTML = `<span class="well"><span class="n"></span><img alt="" loading="${i < 4 ? 'eager' : 'lazy'}" src="${thumb(id)}" onerror="this.style.visibility='hidden'"></span><span class="body"><b></b><small></small><span class="first">${icon('book')}<span></span></span></span>`;
+  b.querySelector('.n').textContent = `${e.lessons?.length || 0} 堂課`;
+  b.querySelector('b').textContent = e.name;
+  b.querySelector('small').textContent = e.title;
+  b.querySelector('.first span').textContent = e.lessons?.[0]?.title || '點零件看說明';
+  b.onpointerdown = () => warm(id);
   b.onclick = () => open(id);
   return b;
 }));
+// hero: the first exhibit is the way in, its first lesson one tap away
+{
+  const id = list[0], e = exhibits[id], parts = e.parts.filter((p) => !p.fixed);
+  const lessons = list.reduce((n, x) => n + (exhibits[x].lessons?.length || 0), 0);
+  $('stats').textContent = `${list.length} 台機器 · ${lessons} 堂課 · 免安裝`;
+  $('count').textContent = `${list.length} 台`;
+  $('feature-img').src = thumb(id);
+  $('feature-name').textContent = e.title;
+  $('feature-lesson').textContent = e.lessons?.[0] ? `第一課：${e.lessons[0].title}` : e.intro;
+  // shortcut: callout spots are placed for the bike thumbnail; move them if another exhibit leads
+  $('co1').textContent = (e.parts.find((p) => p.id === 'saddle') || parts[0]).name;
+  $('co2').textContent = (e.parts.find((p) => p.id === 'handlebar') || parts[1]).name;
+  const begin = async () => { await open(id); if (ex.lessons?.[0]) startLesson(ex.lessons[0], true); };
+  $('start').onpointerdown = $('feature').onpointerdown = () => warm(id);
+  $('start').onclick = $('feature').onclick = begin;
+  $('browse').onclick = () => $('all').scrollIntoView({ behavior: 'smooth' });
+}
 const toast = (t, ms = 2500) => { $('toast').textContent = t; $('toast').hidden = !t; clearTimeout(toast.t); if (t) toast.t = setTimeout(() => ($('toast').hidden = true), ms); };
 
 async function open(id) {
@@ -30,7 +52,7 @@ async function open(id) {
   window.history.replaceState(null, '', `?ex=${id}`);
   if (ex?.id === id) return;
   ex = exhibits[id];
-  $('title').textContent = ex.title;
+  $('title').textContent = ex.name; $('subtitle').textContent = ex.title;
   say('', '載入中…', true);
   const { Viewer } = await viewerModule;
   viewer ||= new Viewer($('c'), { onPick: pick, panel: $('sheet') });
@@ -68,11 +90,11 @@ $('reset').onclick = () => { stopAll(); speak(''); viewer.frame(); pointed = nul
 
 // ---------- suggestions: AI questions and lessons ----------
 function chips() {
-  const chip = (cls, label, run) => Object.assign(document.createElement('button'), { className: `chip ${cls}`, type: 'button', textContent: label, onclick: run });
+  const chip = (cls, label, run) => { const b = Object.assign(document.createElement('button'), { className: `chip ${cls}`, type: 'button', onclick: run }); b.innerHTML = icon({ lesson: 'book', quiz: 'q', ai: 'spark' }[cls.split(' ').pop()]) + '<span></span>'; b.lastChild.textContent = label; return b; };
   $('chips').replaceChildren(
-    ...ex.lessons.map((l) => chip('lesson', `⛓ ${l.title}`, () => startLesson(l, false))),
-    ...(ex.lessons.some((l) => l.steps.some((s) => s.quiz)) ? [chip('lesson', '❓ 先猜再看', () => startLesson(ex.lessons.find((l) => l.steps.some((s) => s.quiz)), true))] : []),
-    ...ex.suggest.map((q) => chip('ai', `✨ ${q}`, () => ask(q))),
+    ...ex.lessons.map((l) => chip('lesson', l.title, () => startLesson(l, false))),
+    ...(ex.lessons.some((l) => l.steps.some((s) => s.quiz)) ? [chip('lesson quiz', '先猜再看', () => startLesson(ex.lessons.find((l) => l.steps.some((s) => s.quiz)), true))] : []),
+    ...ex.suggest.map((q) => chip('ai', q, () => ask(q))),
   );
 }
 
@@ -92,7 +114,7 @@ async function ask(text) {
     if (steps.length) viewer.choreo.play(steps);
   } catch (e) {
     const local = offline(text);
-    say(local ? local.name : 'AI 暫時連不上', local ? local.info : '可以先試試 ⛓ 因果連動，或點零件看說明。', false, true);
+    say(local ? local.name : 'AI 暫時連不上', local ? local.info : '可以先上一堂課，或點零件看說明。', false, true);
     if (local) rig.isolate([local.id]);
     console.warn('ask failed:', e.message);
   }
@@ -109,7 +131,7 @@ let holding = false;
 const talk = async () => {
   holding = true; speak('');
   try { await rec.start(); $('mic').classList.add('rec'); toast('說吧，放開就送出'); vr?.say('🎤 說吧，說完按 ⏹'); if (!holding) release(); }
-  catch { holding = false; toast('沒有麥克風權限，改用 ⌨ 打字'); vr?.say('沒有麥克風權限'); }
+  catch { holding = false; toast('沒有麥克風權限，改用鍵盤打字'); vr?.say('沒有麥克風權限'); }
 };
 $('mic').onpointerdown = (e) => { e.preventDefault(); talk(); };
 const release = async () => {
@@ -122,7 +144,7 @@ const release = async () => {
     const res = await fetch(`/api/stt?exhibit=${ex.id}`, { method: 'POST', headers: { 'Content-Type': 'audio/wav' }, body: wav, signal: AbortSignal.timeout(20000) });
     const { text } = await res.json();
     if (text) ask(text); else say('', '沒聽清楚，再說一次？');
-  } catch { say('', '語音暫時不能用，改用 ⌨ 打字。'); }
+  } catch { say('', '語音暫時不能用，改用鍵盤打字。'); }
 };
 for (const ev of ['pointerup', 'pointercancel', 'pointerleave']) $('mic').addEventListener(ev, release);
 
@@ -131,6 +153,7 @@ function startLesson(l, quiz) { stopAll(); lesson = { l, quiz, i: 0 }; document.
 function showStep() {
   const { l, quiz: guess, i } = lesson, s = l.steps[i];
   $('l-step').textContent = `${l.title} · ${i + 1}/${l.steps.length}`;
+  $('l-step').style.setProperty('--p', `${((i + 1) / l.steps.length) * 100}%`);
   $('l-prev').disabled = i === 0;
   if (guess && s.quiz) askQuiz(s); else playStep(s);
   vr?.refresh();
