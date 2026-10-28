@@ -557,5 +557,50 @@
     }
    ]
   }
+ ],
+ "faults": [
+  {
+   "id": "minute_wheel",
+   "title": "跨輪壞了",
+   "short": "分針在走，時針不動",
+   "symptom": "錶在走，秒針、分針都正常，時針卻一直停在同一格。你覺得哪裡壞了？",
+   "drive": "run",
+   "speed": 0.5,
+   "broken": [
+    "minute_wheel"
+   ],
+   "stops": [
+    "minute_wheel",
+    "hour_hand"
+   ],
+   "look": {
+    "hide": [
+     "crystal",
+     "dial"
+    ]
+   },
+   "see": [
+    "barrel",
+    "center_wheel",
+    "third_wheel",
+    "fourth_wheel",
+    "escape_wheel",
+    "minute_wheel",
+    "hour_hand",
+    "minute_hand",
+    "seconds_hand",
+    "mainplate"
+   ],
+   "hint": "時針轉得比分針慢 12 倍。是什麼把分針的轉動放慢再交給時針？",
+   "suspects": [
+    "發條沒力",
+    "跨輪壞了",
+    "擺輪停了"
+   ],
+   "cause": "分針和時針之間的跨輪壞了。分針照走，但轉動傳不到時針。",
+   "why": "為什麼跨輪壞了，分針會走，時針卻不動？",
+   "answer": "分針裝在中心輪上；跨輪把分針的轉動減速 12 倍再交給時針，所以分針轉 12 圈時針轉 1 圈。跨輪壞了，時針就收不到這個轉動。",
+   "lesson": "train"
+  }
  ]
 }

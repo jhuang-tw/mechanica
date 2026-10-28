@@ -43,6 +43,7 @@ export class Rig {
     this.swings = new Map();   // part id -> { amp (rad), w (rad/s), t }: back-and-forth, like a steering wheel
     this.linkages = (manifest.linkages || []).filter((l) => (l.type === 'slider_crank' && this.parts.has(l.crank)) || (l.type === 'swashplate' && this.parts.has(l.mast)));
     this.lit = new Set(); this.isolated = null;
+    this.fault = null;   // a repair challenge: { def, stops } — the parts in `stops` don't take the drive's motion until repair
   }
 
   ids(list) { return (list || []).filter((id) => this.parts.has(id)); }
@@ -89,7 +90,7 @@ export class Rig {
     if (!d) return false;
     for (const mv of d.moves) {
       const p = this.parts.get(mv.part);
-      if (!p) continue;
+      if (!p || this.fault?.stops.has(mv.part)) continue;
       if (!d.swing) { this.spin(mv.part, speed ? (d.rpm / 60) * TAU * speed * mv.ratio : 0); continue; }
       // a move with `slide` (metres, at full swing) slides back and forth instead of turning, like the lenses on an IPD rail
       if (speed) this.swings.set(mv.part, { amp: (d.swing * mv.ratio * Math.sign(speed) * Math.PI) / 180, w: (TAU / (mv.period || d.period || 4)) * Math.abs(speed), t: 0, oneWay: !!d.oneWay, slide: mv.slide && new THREE.Vector3(...mv.slide).multiplyScalar(Math.sign(speed)) });
@@ -104,7 +105,19 @@ export class Rig {
   reset() {
     this.tweens = []; this.stop(); this.lit.clear(); this.isolated = null; this.explodeTarget = 0;
     for (const p of this.parts.values()) { p.angle = 0; p.offset.set(0, 0, 0); p.obj.visible = true; }
+    this.brokenLook();
     this.paint();
+  }
+  // ---- repair challenge: a manifest fault breaks the drive (parts in `stops` stay still) and can show the damage
+  // (`look.detach`: the broken part sits out of place). reset() keeps the fault; setFault(null) repairs it.
+  setFault(def) { this.fault = def ? { def, stops: new Set(this.ids(def.stops)) } : null; this.reset(); }
+  brokenLook() {
+    const l = this.fault?.def.look;
+    if (l?.detach) for (const id of this.ids(l.detach.parts || this.fault.def.broken)) {
+      const p = this.parts.get(id);
+      p.offset.copy(DIRS[l.detach.dir] ? new THREE.Vector3(...DIRS[l.detach.dir]) : p.explodeVec.clone().normalize()).multiplyScalar((l.detach.amount ?? 0.1) * this.size * 0.5);
+    }
+    for (const id of this.ids(l?.hide)) this.parts.get(id).obj.visible = false;
   }
 
   // ---- hands-on: drag a part with a finger or a VR hand. What it does comes from the manifest: a part in a drive
@@ -150,10 +163,13 @@ export class Rig {
       da = d.dot(axis.clone().cross(r)) / Math.max(r.lengthSq(), (this.size * 0.03) ** 2);
     }
     if (!h.drive) { p.angle += da; return; }
-    if (!h.drive.swing) { for (const mv of h.drive.moves) { const q = this.parts.get(mv.part); if (q) q.angle += (da * mv.ratio) / h.mv.ratio; } return; }
+    // a fault splits the drive: turning the input leaves the stopped parts still, turning a stopped part moves only those
+    const side = (mv) => !this.fault || this.fault.stops.has(mv.part) === this.fault.stops.has(h.part);
+    if (!h.drive.swing) { for (const mv of h.drive.moves) { const q = this.parts.get(mv.part); if (q && side(mv)) q.angle += (da * mv.ratio) / h.mv.ratio; } return; }
     h.k = Math.min(1, Math.max(h.drive.oneWay ? 0 : -1, h.k + da / h.amp));
     for (const mv of h.drive.moves) {
       const q = this.parts.get(mv.part);
+      if (!side(mv)) continue;
       if (q && mv.slide) q.offset.set(...mv.slide).multiplyScalar(h.k); else if (q) q.angle = ((h.drive.swing * mv.ratio * Math.PI) / 180) * h.k;
     }
   }

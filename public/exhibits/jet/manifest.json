@@ -497,5 +497,50 @@
     }
    ]
   }
+ ],
+ "faults": [
+  {
+   "id": "hp_shaft",
+   "title": "高壓軸斷了",
+   "short": "渦輪在轉，壓縮機卻停了",
+   "symptom": "引擎運轉時，風扇和後面的渦輪都在轉，中間的高壓壓縮機卻停住了，推力掉很多。你覺得哪裡壞了？",
+   "drive": "run",
+   "speed": 0.5,
+   "broken": [
+    "hp_shaft"
+   ],
+   "stops": [
+    "hp_compressor"
+   ],
+   "look": {
+    "hide": [
+     "fan_cowl_left",
+     "fan_cowl_right",
+     "core_cowl"
+    ]
+   },
+   "see": [
+    "fan",
+    "booster",
+    "lp_shaft",
+    "lp_turbine",
+    "hp_compressor",
+    "hp_shaft",
+    "hp_turbine",
+    "combustor",
+    "radial_driveshaft",
+    "core_case"
+   ],
+   "hint": "壓縮機自己沒有馬達。是誰在後面轉，再透過什麼把力量傳到前面？",
+   "suspects": [
+    "燃燒室熄火",
+    "高壓軸斷了",
+    "風扇葉片壞了"
+   ],
+   "cause": "連接高壓渦輪和高壓壓縮機的高壓軸斷了。渦輪還在轉，力量卻傳不到前面的壓縮機。",
+   "why": "為什麼高壓軸斷了，壓縮機不轉，推力就掉了？",
+   "answer": "高壓渦輪被燃燒後的熱氣推著轉，再經高壓軸帶動前面的高壓壓縮機把空氣壓緊；軸斷了壓縮機不轉，進燃燒室的空氣不夠、燒出來的氣體少，推力就掉了。",
+   "lesson": "spools"
+  }
  ]
 }

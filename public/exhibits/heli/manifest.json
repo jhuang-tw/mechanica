@@ -743,5 +743,47 @@
     }
    ]
   }
+ ],
+ "faults": [
+  {
+   "id": "tail_shaft",
+   "title": "尾傳動軸斷了",
+   "short": "主旋翼在轉，尾旋翼停了",
+   "symptom": "渦輪引擎轉起來，主旋翼正常在轉，尾巴的小旋翼卻停了。真的飛起來，機身會一直打轉。你覺得哪裡壞了？",
+   "drive": "power",
+   "speed": 0.5,
+   "broken": [
+    "tail_driveshaft"
+   ],
+   "stops": [
+    "tail_driveshaft",
+    "tail_rotor"
+   ],
+   "see": [
+    "engine",
+    "turbine",
+    "input_shaft",
+    "main_gearbox",
+    "bevel_gear",
+    "mast",
+    "rotor_hub",
+    "blade_1",
+    "blade_2",
+    "tail_driveshaft",
+    "tail_gearbox",
+    "tail_rotor",
+    "tail_boom"
+   ],
+   "hint": "尾旋翼自己沒有引擎。它的力量是從哪裡、經過什麼一路傳到尾巴的？",
+   "suspects": [
+    "尾旋翼的槳葉壞了",
+    "尾傳動軸斷了",
+    "引擎沒力"
+   ],
+   "cause": "主齒輪箱通到尾巴的傳動軸斷了。主旋翼照轉，尾旋翼收不到動力。",
+   "why": "為什麼尾傳動軸斷了，直升機就會一直打轉？",
+   "answer": "主旋翼轉的時候，機身會被反作用力往反方向推；尾旋翼由尾傳動軸從主齒輪箱帶動，往側面推，抵消這個反扭力。傳動軸斷了尾旋翼不轉，就沒有東西抵消，機身會跟著打轉。",
+   "lesson": "power"
+  }
  ]
 }

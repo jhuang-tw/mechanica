@@ -32,6 +32,14 @@ for (const id of JSON.parse(read('index.json')).exhibits) {
       for (const d of [].concat(s.drive || [])) assert.ok(m.drives.some((x) => x.id === d), d);
       if (s.quiz) assert.equal(s.quiz.options.filter((o) => o[1] === true).length, 1, `${s.quiz.q}: one right answer`);
     }
+    for (const f of m.faults || []) {
+      const d = m.drives.find((x) => x.id === f.drive);
+      assert.ok(d, `${f.id}: drive ${f.drive}`);
+      for (const p of [...f.broken, ...f.stops, ...(f.see || []), ...(f.look?.detach?.parts || []), ...(f.look?.hide || [])]) assert.ok(ids.has(p), `${f.id}: ${p}`);
+      for (const p of f.stops) assert.ok(d.moves.some((mv) => mv.part === p), `${f.id}: ${p} is in ${d.id}`);
+      for (const k of ['title', 'short', 'symptom', 'hint', 'cause', 'why', 'answer']) assert.ok(f[k], `${f.id}: ${k}`);
+      assert.ok(m.lessons.some((l) => l.id === f.lesson), `${f.id}: lesson ${f.lesson}`);
+    }
   });
 }
 
@@ -224,4 +232,25 @@ test('ride: every gear drive exists, the wheel turns faster in each higher gear,
     assert.ok(box.containsPoint(new THREE.Vector3(...r.eye)), `${id}: eye on the vehicle`);
     for (const p of [...r.see, ...(r.hide || [])]) assert.ok(m.parts.some((x) => x.id === p), `${id}: ${p}`);
   }
+});
+
+test('repair challenge: a fault stops part of the drive and shows the damage until it is repaired', async () => {
+  const rig = new Rig(await load(), manifest), f = manifest.faults.find((x) => x.id === 'chain_off');
+  const crank = rig.parts.get('crank'), wheel = rig.parts.get('rear_wheel'), chain = rig.parts.get('chain');
+  rig.setFault(f);
+  assert.ok(chain.offset.y < 0, 'the chain hangs off');
+  rig.drive('pedal', 0.5); run(rig, 1);
+  assert.ok(Math.abs(crank.angle) > 0.1, 'the crank still turns');
+  assert.equal(wheel.angle, 0, 'the rear wheel does not');
+  rig.reset();
+  assert.ok(chain.offset.y < 0, 'reset keeps the fault');
+  // turning the crank by hand leaves the wheel still too
+  const h = rig.grab('crank'), o = crank.obj.getWorldPosition(new THREE.Vector3());
+  rig.drag(h, o.clone().add(new THREE.Vector3(0, 0.2, 0)), o.clone().add(new THREE.Vector3(0.2, 0, 0)));
+  assert.equal(wheel.angle, 0);
+  rig.release(h);
+  rig.setFault(null);
+  assert.equal(chain.offset.length(), 0, 'repaired: the chain is back');
+  rig.drive('pedal', 0.5); run(rig, 1);
+  assert.ok(Math.abs(wheel.angle) > 0.1, 'and the wheel turns');
 });

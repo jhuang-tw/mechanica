@@ -1012,5 +1012,55 @@
    "wheel_front"
   ],
   "hint": "你坐在駕駛位置。拖動畫面可以四處看；拉油門、換檔，看引擎轉速和時速怎麼變；按「透視」看腳下的引擎和變速箱。"
- }
+ },
+ "faults": [
+  {
+   "id": "clutch_slip",
+   "title": "離合器打滑",
+   "short": "引擎在轉，打了檔卻不走",
+   "symptom": "打 1 檔、催油門，引擎曲軸轉得很快，可是後輪不太會動。你覺得哪裡壞了？",
+   "drive": "gear1",
+   "speed": 0.5,
+   "broken": [
+    "clutch"
+   ],
+   "stops": [
+    "mainshaft",
+    "countershaft",
+    "wheel_rear",
+    "wheel_front"
+   ],
+   "look": {
+    "hide": [
+     "clutch_cover"
+    ]
+   },
+   "see": [
+    "crankshaft",
+    "piston_r",
+    "piston_l",
+    "conrod_r",
+    "conrod_l",
+    "primary_gear",
+    "clutch",
+    "mainshaft",
+    "countershaft",
+    "sprocket_front",
+    "chain",
+    "sprocket_rear",
+    "wheel_rear",
+    "crankcase"
+   ],
+   "hint": "引擎的力量先到哪裡，再進變速箱？找找看是哪一段之後就停了。",
+   "suspects": [
+    "鏈條斷了",
+    "離合器打滑",
+    "引擎沒力"
+   ],
+   "cause": "離合器片磨損打滑了。外面的離合器殼跟著引擎轉，裡面的變速箱主軸卻沒被帶動。",
+   "why": "為什麼離合器打滑，引擎轉得再快，後輪也不會動？",
+   "answer": "離合器靠摩擦片把引擎的轉動傳給變速箱主軸；打滑時摩擦片互相滑開，力量傳不進變速箱，後面的副軸、鏈條和後輪就收不到力。",
+   "lesson": "drive"
+  }
+ ]
 }

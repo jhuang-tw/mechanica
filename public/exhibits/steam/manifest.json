@@ -772,5 +772,56 @@
     }
    ]
   }
+ ],
+ "faults": [
+  {
+   "id": "rods_off",
+   "title": "聯結桿掉了",
+   "short": "只有中間的輪子在轉",
+   "symptom": "蒸汽推著活塞，中間那對動輪在轉，前後兩對動輪卻停著不動。你覺得哪裡壞了？",
+   "drive": "run",
+   "speed": 0.5,
+   "broken": [
+    "coupling_rod_l",
+    "coupling_rod_r"
+   ],
+   "stops": [
+    "wheelset_1",
+    "wheelset_3"
+   ],
+   "look": {
+    "detach": {
+     "dir": "down",
+     "amount": 0.04
+    }
+   },
+   "see": [
+    "wheelset_1",
+    "wheelset_2",
+    "wheelset_3",
+    "cylinder_l",
+    "piston_l",
+    "crosshead_l",
+    "connecting_rod_l",
+    "coupling_rod_l",
+    "cylinder_r",
+    "piston_r",
+    "crosshead_r",
+    "connecting_rod_r",
+    "coupling_rod_r",
+    "frames",
+    "track"
+   ],
+   "hint": "主連桿只接到中間那對輪子。前後兩對輪子平常是靠什麼一起轉的？",
+   "suspects": [
+    "汽缸漏氣",
+    "聯結桿掉了",
+    "輪子卡在軌道上"
+   ],
+   "cause": "兩邊的聯結桿都脫落了。主連桿只推中間那對動輪，前後兩對就沒有東西帶著轉。",
+   "why": "為什麼聯結桿掉了，只剩中間那對輪子會轉？",
+   "answer": "汽缸的力量經主連桿只推到中間那對動輪；聯結桿把三對動輪的曲柄銷連在一起，讓前後兩對跟著轉。少了聯結桿，前後兩對就收不到力。",
+   "lesson": "steam"
+  }
  ]
 }

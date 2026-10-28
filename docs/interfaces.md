@@ -23,6 +23,8 @@
 | `linkages[]` | 曲柄滑塊（引擎）`{type:"slider_crank", crank, r, L, up, cylinders:[{piston, rod, phase, slides?, follow?, valve?, valveAmp?, valveLead?}]}`：活塞（和 `slides`，如十字頭）沿 `up` 滑動、連桿從曲柄銷擺到活塞銷、`follow`（聯結桿）跟著曲柄銷平移不轉、`valve` 領先 `valveLead` 弧度滑動 `valveAmp` 公尺，跟著 `crank` 的角度。<br>斜盤（直升機）`{type:"swashplate", mast, plates[], hub, blades[], collective:{part,max}, cyclic:{part,max}, rise, tilt, pitch, cyclicPitch, flap}`：總距桿角度（÷max）讓斜盤上升 `rise` 公尺、槳葉一起變距 `pitch` 度；週期桿讓斜盤前傾 `tilt` 度、每片槳葉變距 `cyclicPitch`·sin(方位角)、蹺蹺板旋翼頭傾 `flap` 度 |
 | `lessons[]` | 因果連動 `{id, title, steps:[{say, parts[], drive?, speed?, quiz?}]}`（`drive` 可以是 id 或 id 陣列，一起跑）；`quiz` = `{q, options:[[文字, 是否正確, 為什麼]]}`，只有一個正確 |
 
+| `faults[]` | 修理挑戰 `{id, title, short, symptom, drive, speed?, broken[], stops[], look?, see?, hint, suspects[], cause, why, answer, lesson}`：`drive` 照常運轉，但 `stops` 裡的零件（都要在這個 drive 的 moves 裡）不動；`broken` 是壞掉的零件（答案）；`look.detach {parts?, dir?, amount}` 讓壞的零件歪掉、`look.hide[]` 拿掉擋住的外殼；`see[]` 一開始只看這些（其他變透明）；`short` 首頁的一句症狀；`symptom` 開場題目；`hint` 提示；`suspects` 卡住時給的 3 個猜測（含對的）；`cause` 找到後的說明；`why` 修好後追問；`answer` 正確解釋（評分用）；`lesson` 對應的原理課 |
+
 用手拖零件（`Rig.grab/drag`）：在 drive 裡的零件（或曲柄上的活塞、連桿，主軸上的槳葉，掛在曲柄上的踏板）帶動整個機構；`oneWay` 的門、蓋各自沿鉸鏈開關；swing 的桿在範圍內；只有 axis 的零件自己轉；其他零件沿爆炸方向拉出來。
 
 `test/rig.test.mjs` 會檢查 manifest 裡提到的每個零件都在模型裡。
@@ -45,6 +47,7 @@
 | `POST /api/ask` | `{exhibit, text, pointed?, history?}` | `{say, steps[]}` |
 | `POST /api/explain` | `{exhibit, lesson, text}` | `{covered[] (one per lesson step), wrong, say}` |
 | `POST /api/tutor` | `{exhibit, answer?, history?, known?[{concept, verdict}], focus?}` | `{say, grade?{verdict, concept, gap}, question?{q, choices[]}, steps[]}` |
+| `POST /api/fix` | `{exhibit, fault, stage: diagnose\|explain, text, pointed?, history?, solved?[fault keys]}` | diagnose：`{say, result: found\|close\|not_it, suspect[], steps[]}`；explain：`{say, grade?{verdict, gap}, next? ("<exhibit>/<fault>"), steps[]}` |
 | `POST /api/identify` | 圖片（不儲存） | `{match, exhibit, confidence, machine, parts[≤4], say}` |
 | `POST /api/segment?exhibit=&part=` | 圖片 | `{exhibit, results:[{part, masks:[{bounds, width, height, path}]}]}` |
 | `POST /api/stt?exhibit=` | 16 kHz 單聲道 WAV | `{text}` |

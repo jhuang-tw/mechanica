@@ -173,3 +173,54 @@ ${course}`;
   const r = await chat({ system, tools: tutorTools(e), maxTokens: 900, messages: [...history.slice(-6), { role: 'user', content: user }] });
   return { say: r.text.slice(0, 200), ...cleanTurn(r.calls, e), model: r.model };
 }
+
+// ---------- 修理挑戰: the model is broken (manifest fault); the learner guesses, Muse checks the guess on the model ----------
+// stage 'diagnose': grade the guess (found / close / not_it) and show the suspected parts moving (or not) under the fault.
+// stage 'explain': the fault is repaired; grade the learner's "why", replay the chain, and pick the next challenge.
+const RESULTS = ['found', 'close', 'not_it'];
+const faultKeys = () => Object.values(exhibits()).flatMap((e) => (e.faults || []).map((f) => `${e.id}/${f.id}`));
+export function fixTools(e, stage) {
+  const parts = { type: 'array', items: { type: 'string', enum: e.parts.map((p) => p.id) } };
+  return [...toolsFor(e), stage === 'diagnose'
+    ? { name: 'check', description: '每一輪都要呼叫：判斷學生的猜測', parameters: { type: 'object', required: ['result'], properties: {
+        result: { type: 'string', enum: RESULTS, description: 'found=指出了壞的零件或真正原因；close=懷疑的地方在同一條傳動路線上、方向對；not_it=不是' },
+        suspect: { ...parts, description: '學生懷疑的零件 id' } } } }
+    : { name: 'grade', description: '每一輪都要呼叫：評學生的解釋', parameters: { type: 'object', required: ['verdict'], properties: {
+        verdict: { type: 'string', enum: VERDICTS, description: 'right=講出力量怎麼傳、哪裡斷掉；partial=方向對但漏了關鍵；wrong=錯或有迷思' },
+        gap: { type: 'string', description: '漏掉的關鍵，≤ 30 字；答對留空' },
+        next: { type: 'string', enum: faultKeys(), description: '答對時挑下一題：先挑沒修過的，學生弱的概念優先' } } } }];
+}
+export function cleanFix(calls, e, stage) {
+  const c = calls.find((x) => x.name === (stage === 'diagnose' ? 'check' : 'grade'))?.args || {}, ids = new Set(e.parts.map((p) => p.id));
+  const out = { steps: cleanSteps(calls, e) };
+  if (stage === 'diagnose') Object.assign(out, { result: RESULTS.includes(c.result) ? c.result : 'not_it', suspect: (Array.isArray(c.suspect) ? c.suspect : []).filter((p) => ids.has(p)).slice(0, 4) });
+  else Object.assign(out, { grade: VERDICTS.includes(c.verdict) ? { verdict: c.verdict, gap: clip(c.gap, 60) } : null, next: faultKeys().includes(c.next) ? c.next : null });
+  return out;
+}
+export async function fix({ exhibit: id, fault, stage, text, pointed, history = [], solved = [] }) {
+  const e = exhibit(id), f = (e.faults || []).find((x) => x.id === fault);
+  if (!f) throw fail('unknown fault');
+  if (!['diagnose', 'explain'].includes(stage)) throw fail('unknown stage');
+  const name = (p) => e.parts.find((x) => x.id === p)?.name || p, drive = e.drives.find((d) => d.id === f.drive);
+  const common = `零件（id=名稱：說明）：
+${e.parts.map((p) => `${p.id}=${p.name}${p.info ? '：' + p.info : ''}`).join('\n')}
+這題的機構「${drive?.name || f.drive}」依序帶動：${(drive?.moves || []).map((m) => name(m.part)).join(' → ')}`;
+  const system = stage === 'diagnose'
+    ? `你是「${e.title || e.name}」3D 模型旁的修理教練。模型現在故障了，學生看到的症狀：${f.symptom}
+真正的故障（不能直接說出來）：${f.title}。${f.cause} 壞的零件：${f.broken.join('、')}。故障時不會動的零件：${f.stops.map(name).join('、')}。
+學生會說出他的猜測，口語、錯字照意思理解。每一輪在同一個回覆裡：
+1. 呼叫 check 判斷他的猜測，suspect 填他懷疑的零件。
+2. 用工具在模型上檢查他懷疑的地方給他看：isolate 那些零件；用 drive 讓他看它們有沒有在動（模型照故障的狀態運轉，不會動的零件會停著）；要看清楚就 detach。整段 3–8 秒。
+3. 文字回覆會被唸出來，直接對學生說（用「你」），台灣繁體中文口語 ≤ 50 字：說你檢查了什麼、看到什麼。not_it 或 close 就用一個問題給線索（沿著力量傳過去的路線往下找），絕對不要說出答案。found 就稱讚他，說出他找到的是什麼。
+${common}`
+    : `你是「${e.title || e.name}」3D 模型旁的修理教練。學生剛找出故障「${f.title}」，模型已經修好了。你問他：${f.why}
+正確的解釋：${f.answer}
+每一輪在同一個回覆裡：
+1. 呼叫 grade 評他的解釋，口語、錯字照意思評。答對時 next 挑下一題（他修過的：${solved.join('、') || '還沒有'}）。
+2. 用工具動模型把這條傳動路線演一次：isolate 相關零件，再 drive，3–8 秒。
+3. 文字回覆會被唸出來，直接對學生說（用「你」），台灣繁體中文口語 ≤ 60 字：先說他講對的，再補漏掉的那一環。
+${common}`;
+  const user = stage === 'diagnose' ? `我的猜測：${text}${pointed ? `（我點了：${name(pointed)}）` : ''}` : `我的解釋：${text}`;
+  const r = await chat({ system, tools: fixTools(e, stage), maxTokens: 900, messages: [...history.slice(-4), { role: 'user', content: user }] });
+  return { say: r.text.slice(0, 200), ...cleanFix(r.calls, e, stage), model: r.model };
+}
