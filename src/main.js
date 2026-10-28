@@ -193,6 +193,8 @@ $('l-stop').onclick = () => { stopAll(); say(ex.name, ex.intro); };
 // ---------- AI 家教: Muse asks, grades the free-form answer, shows it on the model and adapts the next question ----------
 // The learner's record (concept → last verdict) stays in this browser and goes with every turn, so a return visit starts from the weak spots.
 const VERDICT = { right: '答對了', partial: '對一半', wrong: '再想想' };
+// one compact card while the tutor runs (the caption is hidden): a coloured verdict word, then what the AI said
+const feedback = (cls, label, text) => { $('t-v').className = cls; $('t-v').replaceChildren(...(label ? [Object.assign(document.createElement('b'), { textContent: label }), ' '] : []), text); };
 const record = (id) => { try { return JSON.parse(localStorage.getItem(`mechanica.tutor.${id}`)) || []; } catch { return []; } };
 function remember(g) {
   const k = [...record(ex.id).filter((x) => x.concept !== g.concept), { concept: g.concept, verdict: g.verdict }].slice(-12);
@@ -210,7 +212,7 @@ async function tutorTurn(answer, focus) {
   const t = tutor;
   if (!t || t.busy) return;
   t.busy = true; viewer.choreo.cancel(); speak('');
-  $('t-v').textContent = ''; $('t-q').textContent = answer ? `你答：${answer}` : ''; $('t-choices').replaceChildren(); $('t-hint').hidden = true;
+  feedback('', '', ''); $('t-q').textContent = answer ? `你答：${answer}` : '準備第一題'; $('t-choices').replaceChildren(); $('t-hint').hidden = true; $('tutor').classList.add('thinking');
   say('AI 家教', answer ? '看看你答得怎麼樣' : '準備第一題', true);
   const user = answer ? `我的回答：${answer}` : '開始上課，先問我第一題。';
   try {
@@ -222,20 +224,19 @@ async function tutorTurn(answer, focus) {
     const q = r.question?.q || '還有哪個零件你想弄懂？';
     t.history = [...t.history, { role: 'user', content: user }, { role: 'assistant', content: `${r.say} 問：${q}` }].slice(-6);
     $('t-bar').textContent = t.n ? `AI 家教 · 答對 ${t.right}/${t.n}` : 'AI 家教';
-    $('t-v').textContent = r.grade ? `${VERDICT[r.grade.verdict]}${r.grade.gap ? `：${r.grade.gap}` : ''}` : '';
-    $('t-v').className = r.grade?.verdict || '';
+    feedback(r.grade?.verdict || '', r.grade ? VERDICT[r.grade.verdict] : '', r.say);
     $('t-q').textContent = q;
     $('t-choices').replaceChildren(...(r.question?.choices || []).map((c) => Object.assign(document.createElement('button'), { type: 'button', textContent: c, onclick: () => tutorTurn(c) })));
-    $('t-hint').hidden = !!r.question?.choices?.length;
+    $('t-hint').hidden = t.n > 0 || !!r.question?.choices?.length;
     say(r.grade ? VERDICT[r.grade.verdict] : 'AI 家教', r.say);
     speak(`${r.say} ${q}`);
     vr?.say(q);
     const steps = cleanSteps(r.steps, ex);
     if (steps.length) viewer.choreo.play(steps);
   } catch (e) {
-    if (tutor === t) { say('AI 家教暫時連不上', '再回答一次試試，或先上一堂課。'); $('t-hint').hidden = false; }
+    if (tutor === t) feedback('wrong', '連不上', '再回答一次試試，或先上一堂課。');
     console.warn('tutor failed:', e.message);
-  } finally { t.busy = false; }
+  } finally { t.busy = false; $('tutor').classList.remove('thinking'); }
 }
 $('t-show').onclick = () => (explain ? done() : tutorTurn('我不知道，請動模型示範給我看，再問簡單一點的'));
 const done = () => { stopAll(); say('完成', '這一套上完了。可以找 AI 家教再練，或換一套。', false, true); };
@@ -246,7 +247,7 @@ function startExplain(l) {
   explain = { l };
   document.body.classList.add('tutor'); $('tutor').hidden = false; $('q').placeholder = '用你自己的話講一遍…';
   $('t-bar').textContent = '講一遍給我聽'; $('t-show').textContent = '跳過';
-  $('t-v').textContent = ''; $('t-choices').replaceChildren(); $('t-hint').hidden = false;
+  feedback('', '', ''); $('t-choices').replaceChildren(); $('t-hint').hidden = false;
   $('t-q').textContent = `用你自己的話，從頭講一次「${l.title}」是怎麼動的。`;
   say('最後一關', $('t-q').textContent, false, true);
   vr?.refresh();
@@ -255,7 +256,7 @@ async function explainBack(text) {
   const x = explain;
   if (!x || x.busy) return;
   x.busy = true; viewer.choreo.cancel(); speak('');
-  say('你說', text, true);
+  say('你說', text, true); feedback('', '', ''); $('t-q').textContent = `你說：${text}`; $('t-hint').hidden = true; $('tutor').classList.add('thinking');
   try {
     const res = await fetch('/api/explain', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ exhibit: ex.id, lesson: x.l.id, text }), signal: AbortSignal.timeout(30000) });
     const r = await res.json().catch(() => ({}));
@@ -263,19 +264,18 @@ async function explainBack(text) {
     if (explain !== x) return;
     const steps = x.l.steps, got = r.covered.filter(Boolean).length, missed = steps.filter((_, i) => !r.covered[i]);
     remember({ concept: x.l.title, verdict: !missed.length ? 'right' : got * 2 >= steps.length ? 'partial' : 'wrong' });   // the tutor starts from what was missed
-    $('t-v').textContent = `講到 ${got}/${steps.length} 個環節${r.wrong ? `，講錯：${r.wrong}` : ''}`;
-    $('t-v').className = !missed.length ? 'right' : got * 2 >= steps.length ? 'partial' : 'wrong';
-    $('t-choices').replaceChildren(...steps.map((s, i) => Object.assign(document.createElement('div'), { className: r.covered[i] ? 'ok' : 'miss', textContent: s.say })));
-    $('t-q').textContent = missed.length ? '看模型補上漏掉的環節，想再講一次就直接說。' : '整條因果鏈都講對了！';
+    feedback(!missed.length ? 'right' : got * 2 >= steps.length ? 'partial' : 'wrong', `講到 ${got}/${steps.length}`, r.say);
+    $('t-choices').replaceChildren(...missed.map((s) => Object.assign(document.createElement('div'), { className: 'miss', textContent: s.say })));   // only the missed links, one line each
+    $('t-q').textContent = missed.length ? '看模型補上，想再講一次就直接說' : '整條因果鏈都講對了！';
     $('t-show').textContent = '結束';
     say(missed.length ? '還差一點' : '全對', r.say);
     speak(r.say);
     // the model replays only the missed links, one every 4 s
     viewer.choreo.play(cleanSteps(missed.flatMap((s, k) => [{ do: 'isolate', at: k * 4, parts: s.parts }, ...[].concat(s.drive || []).map((d) => ({ do: 'drive', at: k * 4, drive: d, speed: s.speed ?? 0.5, duration: 3.5 }))]), ex));
   } catch (e) {
-    if (explain === x) say('AI 暫時連不上', '再講一次試試，或按跳過。');
+    if (explain === x) feedback('wrong', '連不上', '再講一次試試，或按跳過。');
     console.warn('explain failed:', e.message);
-  } finally { x.busy = false; }
+  } finally { x.busy = false; $('tutor').classList.remove('thinking'); }
 }
 $('t-stop').onclick = () => { stopAll(); speak(''); say(ex.name, ex.intro); };
 
