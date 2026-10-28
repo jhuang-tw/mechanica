@@ -178,6 +178,8 @@ def wheels():
 
 def build():
     engine(); gearbox(); chain(); tripo_body(); wheels()
+    if 'handlebar' in PARTS:   # Tripo lost the right mirror's stalk in decimation: a stalk like the left one's, bar clamp to mirror head
+        PARTS['handlebar']['m'].tube(V((0.333, -0.245, 1.215)), V((0.330, -0.285, 1.375)), 0.0065, 'black', 10)
 
 # ---------------------------------------------------------------- Tripo bodywork
 TRIPO = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'tripo', 'body.glb')
