@@ -11,3 +11,4 @@ def dist(a, b=(0, 0)): return ((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2) ** 0.5
 M_B, M_3, M_4, M_E = module(dist(BARREL), 84, 12), module(dist(THIRD), 75, 10), module(dist(THIRD), 80, 10), module(dist(ESCAPE), 84, 7)
 M_MW, M_HW = module(dist(MINUTE_WHEEL), 12, 36), module(dist(MINUTE_WHEEL), 10, 40)
 
+CROWN_WHEEL = (5.7, 3.7)    # crown wheel on the barrel bridge, meshing the ratchet
