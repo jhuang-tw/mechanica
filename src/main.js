@@ -279,6 +279,7 @@ async function tutorTurn(answer, focus) {
     feedback(r.grade?.verdict || '', r.grade ? VERDICT[r.grade.verdict] : '', r.say);
     $('t-q').textContent = q;
     $('t-choices').replaceChildren(...(r.question?.choices || []).map((c) => Object.assign(document.createElement('button'), { type: 'button', textContent: c, onclick: () => tutorTurn(c) })));
+    vr?.refresh();
     $('t-hint').hidden = tu.n > 0 || !!r.question?.choices?.length;
     say(r.grade ? VERDICT[r.grade.verdict] : t('tutorName'), r.say);
     speak(`${r.say} ${q}`);
@@ -302,7 +303,18 @@ function startExplain(l) {
   feedback('', '', ''); $('t-choices').replaceChildren(); $('t-hint').hidden = false;
   $('t-q').textContent = t('explainQ', l.title);
   say(t('lastStep'), $('t-q').textContent, false, true);
+  links(explain);
   vr?.refresh();
+}
+// or tap the links in order instead of saying them: this lesson's steps plus two from another lesson, shuffled
+function links(x) {
+  const pool = [...x.l.steps, ...ex.lessons.filter((l) => l !== x.l).flatMap((l) => l.steps).slice(0, 2)].map((s) => s.say).sort(() => Math.random() - 0.5);
+  let picked = [];
+  const send = Object.assign(document.createElement('button'), { type: 'button', className: 'go', textContent: t('send'), disabled: true, onclick: () => explainBack(picked.join(' ')) });
+  $('t-choices').replaceChildren(...pool.map((text) => Object.assign(document.createElement('button'), { type: 'button', textContent: text, onclick() {
+    picked = picked.includes(text) ? picked.filter((y) => y !== text) : [...picked, text];
+    this.setAttribute('aria-pressed', String(picked.includes(text))); send.disabled = !picked.length;
+  } })), send);
 }
 async function explainBack(text) {
   const x = explain;
@@ -359,7 +371,7 @@ async function learn(id = ex?.id) { await open(id); stopAll(); setMode('learn');
 $('m-learn').onclick = () => { if (fix) learn(); };
 $('m-fix').onclick = () => { if (!fix && ex.faults?.length) startFix(`${ex.id}/${ex.faults[0].id}`); };
 const card = (cls, label, text, clue) => { $('f-v').className = cls; $('f-v').replaceChildren(...(label ? [Object.assign(document.createElement('b'), { textContent: label }), ' '] : []), text, ...(clue ? [Object.assign(document.createElement('span'), { className: 'clue', textContent: t('clueLine', clue) })] : [])); };
-const choices = (items) => $('f-choices').replaceChildren(...items.map(([text, run, go]) => Object.assign(document.createElement('button'), { type: 'button', textContent: text, className: go ? 'go' : '', onclick: run })));
+const choices = (items) => { $('f-choices').replaceChildren(...items.map(([text, run, go]) => Object.assign(document.createElement('button'), { type: 'button', textContent: text, className: go ? 'go' : '', onclick: run }))); vr?.refresh(); };
 const driveParts = (f) => [...new Set([...(ex.drives.find((d) => d.id === f.drive)?.moves || []).map((m) => m.part), ...f.broken])];
 async function startFix(key) {
   const c = faults.find((x) => x.key === key);
@@ -455,9 +467,24 @@ function repair(x) {
   x.stage = 'explain'; x.tries = 0;
   viewer.choreo.cancel(); rig.setFault(null);
   symptom();
-  card('right', t('repaired'), x.f.cause); choices([]);
+  card('right', t('repaired'), x.f.cause); reasons(x);
   $('f-q').textContent = x.f.why; $('f-hint').textContent = t('explainHint'); $('f-hint').hidden = false; $('f-help').hidden = false; $('f-help').textContent = t('dunno');
   speak(`${x.f.cause} ${x.f.why}`); vr?.say(x.f.why);
+}
+// the why question: tap one of three explanations, or say it in your own words (mic or keyboard) for Muse to grade
+function reasons(x) {
+  x.why ||= [x.f.answer, ...(x.f.reasons || [])].map((text, i) => ({ text, right: !i })).sort(() => Math.random() - 0.5);
+  choices(x.why.map((c) => [c.text, () => pickReason(x, c)]));
+  [...$('f-choices').children].forEach((b, i) => { if (x.why[i].out) { b.disabled = true; b.className = 'out'; } });
+}
+function pickReason(x, c) {
+  if (fix !== x || x.busy || x.stage !== 'explain' || c.out) return;
+  clearTimeout(symptomT); viewer.choreo.cancel();
+  if (c.right) { card('right', t('gRight'), x.f.answer); speak(x.f.answer); vr?.say(x.f.answer); return finish(x, null, ''); }
+  c.out = true;
+  if (++x.tries >= 2) return finish(x, null, x.f.answer);
+  card('wrong', t('vWrong'), t('tryAgain')); reasons(x);
+  speak(t('tryAgain'));
 }
 function finish(x, next, answer) {
   x.stage = 'done';
@@ -484,6 +511,7 @@ const app = {
   list: list.map((id) => ({ id, thumb: `${BASE}${id}/${exhibits[id].thumb}`, title: exhibits[id].name })),
   get ex() { return ex; }, get rig() { return rig; }, get lesson() { return lesson; }, get quiz() { return quiz; }, get recording() { return holding; },
   get tutoring() { return !!(tutor || explain); },
+  get choices() { return [...document.querySelectorAll('#f-choices button, #t-choices button')].filter((b) => !b.disabled && b.offsetParent); },   // tutor / repair / explain options, tapped in VR
   open, pick, go, answer, startLesson, startTutor: () => startTutor(),
   quizLesson: () => startLesson(ex.lessons.find((l) => l.steps.some((s) => s.quiz)) || ex.lessons[0], true),
   stopLesson: () => { stopAll(); say(ex.name, ex.intro); },

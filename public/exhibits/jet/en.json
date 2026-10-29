@@ -78,7 +78,8 @@
    "whys": ["If the combustor flamed out there would be no hot gas, and the turbines would stop too. But they are still spinning.", "", "The fan is spinning, and it is driven by the low-pressure shaft, a different path from the high-pressure compressor."],
    "cause": "The high-pressure shaft linking the high-pressure turbine and compressor has broken. The turbine still turns, but its force can't reach the compressor in front.",
    "why": "Why does thrust drop when the high-pressure shaft breaks and the compressor stops?",
-   "answer": "The burnt gas spins the high-pressure turbine, and the high-pressure shaft carries that to the high-pressure compressor, which squeezes the air. With the shaft broken the compressor stops, too little air reaches the combustor, less gas is produced, and the thrust drops."
+   "answer": "The burnt gas spins the high-pressure turbine, and the high-pressure shaft carries that to the high-pressure compressor, which squeezes the air. With the shaft broken the compressor stops, too little air reaches the combustor, less gas is produced, and the thrust drops.",
+   "reasons": ["With the shaft broken, fuel can't reach the combustor, so there's no thrust.","The high-pressure shaft carries thrust to the wings, so with it broken the thrust can't get out."]
   }
  }
 }

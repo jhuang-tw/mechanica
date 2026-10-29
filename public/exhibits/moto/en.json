@@ -110,7 +110,8 @@
    "whys": ["The chain is still on both sprockets. The problem is further forward: the mainshaft itself barely turns.", "", "The engine spins fast, so it has power. The power is lost before it gets into the gearbox."],
    "cause": "The clutch plates are worn and slipping. The clutch basket turns with the engine, but the gearbox mainshaft inside isn't driven.",
    "why": "Why doesn't the rear wheel move with a slipping clutch, however fast the engine spins?",
-   "answer": "The clutch passes the engine's turning to the gearbox mainshaft through friction plates. When they slip past each other, the force never enters the gearbox, so the countershaft, chain and rear wheel get nothing."
+   "answer": "The clutch passes the engine's turning to the gearbox mainshaft through friction plates. When they slip past each other, the force never enters the gearbox, so the countershaft, chain and rear wheel get nothing.",
+   "reasons": ["A slipping clutch stalls the engine, so the rear wheel stops.","The clutch is the brake, and when it slips it holds the rear wheel."]
   }
  }
 }

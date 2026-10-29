@@ -81,7 +81,8 @@
    "whys": ["A faulty battery would make the headset die or shut down, not get hotter and slower as you play.", "", "A broken screen shows glitches or goes black; it wouldn't make the whole headset heat up."],
    "cause": "The cooling fan's blades have stopped. The chip's heat reaches the heatsink, but there's no airflow to blow it out.",
    "why": "Why does a stopped fan make the headset hot and the picture stutter?",
-   "answer": "The chip heats up while drawing; the heat goes into the heatsink, and the fan blows it out of the housing. With the fan stopped the heat can't escape, the chip gets too hot and slows itself down to stay safe, so the picture stutters."
+   "answer": "The chip heats up while drawing; the heat goes into the heatsink, and the fan blows it out of the housing. With the fan stopped the heat can't escape, the chip gets too hot and slows itself down to stay safe, so the picture stutters.",
+   "reasons": ["The fan powers the screens, so when it stops they get too little power.","The spinning fan makes heat, and when it stops the battery overheats instead."]
   }
  }
 }
