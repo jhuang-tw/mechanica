@@ -10,6 +10,10 @@ const meta = createServer(async (req, res) => {
   const raw = Buffer.concat(chunks), b = /json/.test(req.headers['content-type'] || '') ? JSON.parse(raw) : null;
   seen.push({ url: req.url, auth: req.headers.authorization, b, raw });
   const msg = (message) => res.end(JSON.stringify({ choices: [{ index: 0, message }], model: 'muse-spark-1.3' }));
+  if (req.url === '/tts/v1/voice:stream') {   // NDJSON, audio split over two lines, the last line without a newline
+    const b64 = Buffer.from(`ID3 ${req.headers.authorization} ${raw}`).toString('base64'), half = Math.ceil(b64.length / 8) * 4;
+    return res.end(`{"result":{"audioContent":"${b64.slice(0, half)}"}}\n{"result":{"audioContent":"${b64.slice(half)}"}}`);
+  }
   if (req.url === '/cognitiveservices/v1') return res.end(Buffer.from(`ID3 ${req.headers['ocp-apim-subscription-key']} ${raw}`));
   if (req.url === '/v1/asr/transcribe') return res.end(JSON.stringify({ transcript: '链条怎么带动后轮' }));
   if (req.url === '/v1/responses') return res.end(JSON.stringify({ status: 'completed', output: [{ content: [{ type: 'output_text', text: b.input[0].content[0].text === 'bicycle chain' ? '' : samText }] }] }));
@@ -34,7 +38,7 @@ const meta = createServer(async (req, res) => {
   return msg({ content: '```json\n{"match":true,"exhibit":"bike","confidence":0.9,"machine":"公路車","parts":["chain","rear_derailleur","made_up","chain"],"say":"這是公路車，看看鏈條。"}\n```' });
 });
 await new Promise((ok) => meta.listen(0, ok));
-Object.assign(process.env, { AZURE_SPEECH_KEY: 'speech-key', AZURE_SPEECH_ENDPOINT: `http://127.0.0.1:${meta.address().port}`, META_API_KEY: 'test-key', META_BASE_URL: `http://127.0.0.1:${meta.address().port}/v1`, DAILY_LIMIT: '17' });
+Object.assign(process.env, { INWORLD_API_KEY: 'aW53b3JsZA==', INWORLD_BASE_URL: `http://127.0.0.1:${meta.address().port}`, AZURE_SPEECH_KEY: 'speech-key', AZURE_SPEECH_ENDPOINT: `http://127.0.0.1:${meta.address().port}`, META_API_KEY: 'test-key', META_BASE_URL: `http://127.0.0.1:${meta.address().port}/v1`, DAILY_LIMIT: '17' });
 const { server, overBudget } = await import('../server/serve.mjs');
 await new Promise((ok) => server.listen(0, ok));
 const app = `http://127.0.0.1:${server.address().port}`;
@@ -103,14 +107,18 @@ try {
   assert.ok(seen.at(-1).b.tools.find((t) => t.function.name === 'grade').function.parameters.properties.next.enum.includes('heli/tail_shaft'));
   assert.equal((await post('/api/fix', { exhibit: 'bike', fault: 'nope', stage: 'diagnose', text: 'x' })).status, 400);
 
-  // speech: Taiwan voice for Chinese, English voice otherwise, text escaped into SSML; repeats come from the cache
-  let a = await fetch(app + '/api/tts?text=' + encodeURIComponent('這是曲柄 <b>'));
+  // speech: Inworld first (Taiwan Mandarin for Chinese, English otherwise), its NDJSON chunks decoded back into one MP3; repeats come from the cache
+  let a = await fetch(app + '/api/tts?text=' + encodeURIComponent('這是曲柄'));
   assert.equal(a.headers.get('content-type'), 'audio/mpeg');
-  assert.match(await a.text(), /^ID3 speech-key .*zh-TW-HsiaoChenNeural.*這是曲柄 &#60;b&#62;/);
+  assert.match(await a.text(), /^ID3 Basic aW53b3JsZA== .*"modelId":"inworld-tts-2-flash","language":"zh-TW"/);
   const calls = seen.length;
-  a = await (await fetch(app + '/api/tts?text=' + encodeURIComponent('這是曲柄 <b>'))).text();
+  a = await (await fetch(app + '/api/tts?text=' + encodeURIComponent('這是曲柄'))).text();
   assert.equal(seen.length, calls, 'cached line makes no new request');
-  assert.match(await (await fetch(app + '/api/tts?text=This%20is%20the%20crank')).text(), /en-US-AvaMultilingualNeural/);
+  assert.match(await (await fetch(app + '/api/tts?text=This%20is%20the%20crank')).text(), /"language":"en-US","voiceId":"Ashley"/);
+  // without an Inworld key: Azure, text escaped into SSML
+  delete process.env.INWORLD_API_KEY;
+  assert.match(await (await fetch(app + '/api/tts?text=' + encodeURIComponent('鏈條 <b>'))).text(), /^ID3 speech-key .*zh-TW-HsiaoChenNeural.*鏈條 &#60;b&#62;/);
+  assert.match(await (await fetch(app + '/api/tts?text=The%20chain')).text(), /en-US-AvaMultilingualNeural/);
   assert.equal((await fetch(app + '/api/tts?text=')).status, 400);
   assert.equal((await (await fetch(app + '/api/status')).json()).tts, true);
 
