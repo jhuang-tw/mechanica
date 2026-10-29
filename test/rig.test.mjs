@@ -200,6 +200,15 @@ test('heli: all four cabin doors swing outward', async () => {
   assert.ok(edge('rear_door_l', 1).z < -0.9 && edge('rear_door_r', 1).z > 0.9, 'rear doors: front edge out');
 });
 
+test('pedals stay level while the crank turns: driving and exploded', async () => {
+  const bike = new Rig(await load(), manifest); bike.update(0);
+  const flat = (id) => bike.parts.get(id).obj.getWorldQuaternion(new THREE.Quaternion());
+  const q0 = flat('pedal_r');
+  bike.drive('pedal', 1); bike.setExplode(1); run(bike, 1.3);
+  assert.ok(Math.abs(bike.parts.get('crank').angle) > 1, 'crank turned');
+  assert.ok(flat('pedal_r').angleTo(q0) < 1e-6 && flat('pedal_l').angleTo(q0) < 1e-6, 'pedals keep their pose');
+});
+
 test('hands-on: dragging a pedal turns the whole drive, a door stays within its swing, a piston turns the crank, a loose part pulls out, a fixed base does not move', async () => {
   const world = (rig, id) => rig.parts.get(id).obj.getWorldPosition(new THREE.Vector3());
   const bike = new Rig(await load(), manifest); bike.update(0);

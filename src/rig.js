@@ -186,6 +186,9 @@ export class Rig {
     const q = new THREE.Quaternion();
     for (const p of this.parts.values()) {
       p.obj.quaternion.copy(p.base.quat).multiply(q.setFromAxisAngle(p.axis, p.angle));
+      // `level`: undo the parent part's turn, so a pedal stays flat while its crank goes round
+      const par = p.def.level && this.parts.get(p.obj.parent.name);
+      if (par) p.obj.quaternion.premultiply(q.setFromAxisAngle(par.axis, -par.angle));
       p.obj.position.copy(p.base.pos).add(p.offset).addScaledVector(p.explodeVec, this.explode);
     }
     for (const l of this.linkages) if (l.type === 'swashplate') this.swashplate(l); else this.sliderCrank(l);
