@@ -34,7 +34,7 @@ async function* fromInworld(text, zh, ms) {
     headers: { Authorization: `Basic ${env('INWORLD_API_KEY')}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({
       text, modelId: env('INWORLD_MODEL', 'inworld-tts-2-flash'), language: zh ? 'zh-TW' : 'en-US',
-      voiceId: zh ? env('INWORLD_VOICE_ZH', 'Yichen') : env('INWORLD_VOICE_EN', 'Ashley'),
+      voiceId: zh ? env('INWORLD_VOICE_ZH', 'Xinyi') : env('INWORLD_VOICE_EN', 'Ashley'),
       audioConfig: { audioEncoding: 'MP3', sampleRateHertz: 24000, bitRate: 48000 },
     }),
   });
