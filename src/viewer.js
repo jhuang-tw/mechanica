@@ -23,9 +23,9 @@ export class Viewer {
     this.studio = new Studio(r, scene, this.stage, matchMedia('(pointer: coarse)').matches);
     this.camera = new THREE.PerspectiveCamera(45, 1, 0.02, 100);
     this.controls = new OrbitControls(this.camera, canvas);
-    Object.assign(this.controls, { enableDamping: true, enablePan: false, minDistance: 0.4, maxDistance: 6, maxPolarAngle: Math.PI * 0.55 });
+    Object.assign(this.controls, { enableDamping: true, minDistance: 0.4, maxDistance: 6, maxPolarAngle: Math.PI * 0.55 });
     this.onPick = onPick;
-    // a drag that turns or zooms the camera hands it to the user: no glide fights it, and in a lesson the steps stop re-aiming it
+    // a drag that turns, zooms or pans the camera hands it to the user: no glide fights it, and in a lesson the steps stop re-aiming it
     let dragging = false;
     this.controls.addEventListener('start', () => (dragging = true));
     this.controls.addEventListener('end', () => (dragging = false));
@@ -101,16 +101,20 @@ export class Viewer {
     this.goal = { target, pos: target.clone().addScaledVector(dir, (s / 2) / Math.sin(fov / 2) * 0.95) };
   }
 
-  // a tap (not a drag) on a part picks it; one finger dragging a movable part moves it (rig.grab), anywhere else orbits
+  // a tap (not a drag) on a part picks it; one finger dragging a movable part moves it (rig.grab), anywhere else orbits; two fingers pinch and pan
   pickTaps(canvas) {
     const ray = new THREE.Raycaster(), ndc = new THREE.Vector2(), plane = new THREE.Plane(), at = new THREE.Vector3();
     const cast = (e) => { const b = canvas.getBoundingClientRect(); ndc.set(((e.clientX - b.left) / b.width) * 2 - 1, -((e.clientY - b.top) / b.height) * 2 + 1); ray.setFromCamera(ndc, this.camera); return ray; };
     let down = null;
     // capture phase, so a grab is decided before OrbitControls sees the finger
     canvas.addEventListener('pointerdown', (e) => {
-      if (down?.g) return e.stopImmediatePropagation();   // a second finger during a drag does nothing
-      if (down || !this.rig) return;
-      down = { x: e.clientX, y: e.clientY, id: e.pointerId, g: this.grabAt(cast(e)) };
+      if (down) {   // a second finger ends any part drag; OrbitControls never saw the first finger then, so it is replayed for the pinch
+        down.two = true;
+        if (down.g) { this.rig.release(down.g); down.g = null; canvas.dispatchEvent(new PointerEvent('pointerdown', down.e)); }
+        return;
+      }
+      if (!this.rig) return;
+      down = { x: e.clientX, y: e.clientY, id: e.pointerId, e, g: this.grabAt(cast(e)) };
       if (!down.g) return;
       e.stopImmediatePropagation();
       plane.setFromNormalAndCoplanarPoint(this.camera.getWorldDirection(at), down.g.at);   // the finger moves the part across the screen
@@ -118,11 +122,12 @@ export class Viewer {
     }, true);
     canvas.addEventListener('pointermove', (e) => {
       if (e.pointerId !== down?.id || !down.g) return;
+      down.e = e;
       if (cast(e).ray.intersectPlane(plane, at)) { this.rig.drag(down.g, down.g.at, at); down.g.at.copy(at); }
     });
     const up = (e) => {
       if (e.pointerId !== down?.id) return;
-      const tap = Math.hypot(e.clientX - down.x, e.clientY - down.y) <= 8, id = down.g?.id;
+      const tap = !down.two && Math.hypot(e.clientX - down.x, e.clientY - down.y) <= 8, id = down.g?.id;
       this.rig?.release(down.g); down = null;
       if (tap && e.type === 'pointerup' && this.rig) this.onPick?.(id ?? this.hit(cast(e)));
     };
