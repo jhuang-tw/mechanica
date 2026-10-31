@@ -278,6 +278,21 @@ export function cleanFix(calls, e, stage) {
 }
 // Muse writes its line before it runs the tools, so a miss often ends with no clue: fall back on the exhibit's own question (an empty line gets it too)
 export const withClue = (say, f, result) => (!result || result === 'found' || /[？?]/.test(say) ? say : [say, f.observe].filter(Boolean).join(' '));
+// a miss must not name the fault; the lookarounds keep "chain" from matching "chainring"
+export const leaks = (say, e, f) => f.broken.flatMap((id) => { const p = e.parts.find((x) => x.id === id); return p ? [p.name, ...(p.aliases || [])] : []; }).some((n) => new RegExp(`(?<![a-z])${n.replace(/[^\p{L}\p{N} -]/gu, '.')}(?![a-z])`, 'i').test(say));
+// That first line comes before the tools run, so it can only be a plan. With the check made, a second call says what the model showed.
+// The answer was already earned by the first call: any failure here keeps it (and its clue) rather than failing the turn.
+async function afterTools({ system, messages, out, stage, f, e, name, first, max }) {
+  const en = EN(e), shown = out.steps.map((s) => (s.parts ? `${s.do} ${s.parts.map(name).join(en ? ', ' : '、')}` : `${s.do} ${s.drive || ''}`.trim())).join(en ? '; ' : '；') || (en ? 'nothing' : '沒有');
+  const result = stage === 'diagnose'
+    ? (en ? `Check result: ${out.result}. Shown on the model: ${shown}. While it ran, these parts stayed still: ${f.stops.map(name).join(', ')}. Everything else moved normally.` : `檢查結果：${out.result}。模型上演的：${shown}。運轉時這些零件停著：${f.stops.map(name).join('、')}。其他零件都正常。`)
+    : (en ? `Grade: ${out.grade?.verdict || 'partial'}. Missing: ${out.grade?.gap || 'nothing'}. Shown on the model: ${shown}.` : `評分：${out.grade?.verdict || 'partial'}。漏掉的：${out.grade?.gap || '沒有'}。模型上演的：${shown}。`);
+  const say = en ? 'The tools have run. Do not call tools. Write only your spoken line under rule 3, in the past tense, about what the model showed.' : '工具已經跑完。不要再呼叫工具。只寫第 3 條的那句話，用已經做完的語氣，講模型呈現了什麼。';
+  const text = await retried((content) => chat({ system: `${system}\n${say}`, maxTokens: 150, ms: 8000, messages: [...messages, { role: 'user', content }] }), result, en ? 'Say your line now.' : '請說出你的那句話。').then((r) => r.text, (err) => (console.warn(`fix: second call failed: ${String(err.message).slice(0, 80)}`), ''));
+  const missed = stage === 'diagnose' && out.result !== 'found';
+  if (text && !(missed && (leaks(text, e, f) || !/[？?]/.test(text)))) return text.slice(0, max);
+  return withClue(missed && leaks(first, e, f) ? '' : first.slice(0, max), f, out.result);
+}
 export async function fix({ exhibit: id, fault, stage, text, pointed, history = [], solved = [], lang }) {
   const e = exhibit(id, lang), f = (e.faults || []).find((x) => x.id === fault);
   if (!f) throw fail('unknown fault');
@@ -290,14 +305,14 @@ ${e.parts.map((p) => `${p.id}=${p.name}${p.info ? '：' + p.info : ''}`).join('\
   const system = stage === 'diagnose'
     ? `你是「${e.title || e.name}」3D 模型旁的修理教練。模型現在故障了，學生看到的症狀：${f.symptom}
 真正的故障（不能直接說出來）：${f.title}。${f.cause} 壞的零件：${f.broken.map(name).join('、')}。故障時不會動的零件：${f.stops.map(name).join('、')}。
-學生會說出他的猜測，口語、錯字照意思理解。每一輪在同一個回覆裡：
+學生會說出他的猜測，口語、錯字照意思理解。所有工具都要在這一個回覆裡一次呼叫完：模型運轉前不會有工具結果回來。每一輪在同一個回覆裡，以下全部都要做：
 1. 呼叫 check 判斷他的猜測，suspect 填他懷疑的零件。
 2. 用工具在模型上檢查他懷疑的地方給他看：isolate 那些零件；用 drive 讓他看它們有沒有在動（模型照故障的狀態運轉，不會動的零件會停著）；要看清楚就 detach。整段 3–8 秒。not_it 或 close 時不可以 detach 壞的零件，也不可以只亮它，那等於直接給答案。
 3. 文字回覆會被唸出來，直接對學生說（用「你」），台灣繁體中文口語 ≤ 50 字：說你檢查了什麼、看到什麼（哪個零件有轉、哪個停著），不要只說「我來看看」。not_it 或 close 最後一定要用一個問題給線索（沿著力量傳過去的路線往下找），絕對不要說出答案。found 就稱讚他，說出他找到的是什麼。
 ${common}`
     : `你是「${e.title || e.name}」3D 模型旁的修理教練。學生剛找出故障「${f.title}」，模型已經修好了。你問他：${f.why}
 正確的解釋：${f.answer}
-每一輪在同一個回覆裡：
+所有工具都要在這一個回覆裡一次呼叫完：模型運轉前不會有工具結果回來。每一輪在同一個回覆裡，以下全部都要做：
 1. 呼叫 grade 評他的解釋，口語、錯字照意思評。答對時 next 挑下一題（他修過的：${solved.join('、') || '還沒有'}）。
 2. 用工具動模型把這條傳動路線演一次：isolate 相關零件，再 drive，3–8 秒。
 3. 文字回覆會被唸出來，直接對學生說（用「你」），台灣繁體中文口語 ≤ 60 字：先說他講對的，再補漏掉的那一環。
@@ -305,9 +320,10 @@ ${common}`;
   const user = stage === 'diagnose' ? `我的猜測：${text}${pointed ? `（我點了：${name(pointed)}）` : ''}` : `我的解釋：${text}`;
   const suspect = mentioned(e, text)?.name || (pointed && name(pointed));
   const plain = stage === 'diagnose' ? (suspect ? `我的猜測：${suspect}` : '我不確定，給我一個線索。') : `學生的原話：「${text}」`;
+  const messages = [...history.slice(-4), { role: 'user', content: user }];
   const r = await retried((content) => chat({ system, tools: fixTools(e, stage), maxTokens: 900, messages: [...history.slice(-4), { role: 'user', content }] }), user, plain);
   const out = cleanFix(r.calls, e, stage);
-  return { say: withClue(r.text.slice(0, 200), f, out.result), ...out, model: r.model };
+  return { say: await afterTools({ system, messages: [...messages, ...(r.text ? [{ role: 'assistant', content: r.text }] : [])], out, stage, f, e, name, first: r.text, max: 200 }), ...out, model: r.model };
 }
 async function fixEn(e, f, stage, text, pointed, history, solved, name, drive) {
   const common = `Parts (id=name: description):
@@ -316,14 +332,14 @@ The mechanism in this challenge, "${drive?.name || f.drive}", drives in order: $
   const system = stage === 'diagnose'
     ? `You are a repair coach beside a 3D model of the ${e.title || e.name}. The model is broken right now. The symptom the student sees: ${f.symptom}
 The real fault (never say it outright): ${f.title}. ${f.cause} Broken parts: ${f.broken.map(name).join(', ')}. Parts that stop moving because of the fault: ${f.stops.map(name).join(', ')}.
-The student will say a guess; understand casual speech and typos by meaning. Every turn, in the same reply:
+The student will say a guess; understand casual speech and typos by meaning. Make every tool call in this one reply: no tool results come back before the model runs. Every turn, in the same reply, all of these:
 1. Call check to judge the guess; put the parts they suspect in suspect.
 2. Check the suspected spot on the model with the tools: isolate those parts; use drive so they can see whether the parts move (the model runs in its broken state, so the stopped parts stay still); detach to see clearly. 3–8 seconds in all. For not_it or close, never detach the broken part or light it up alone: that gives the answer away.
 3. Your text reply is read aloud. Talk straight to the student (use "you") in plain spoken English, at most 30 words: say what you checked and what you saw (which part turned, which stayed still), not just "let me look". For not_it or close, always end on a clue as a question (follow the path the force travels), and never give the answer away. For found, praise them and name what they found.
 ${common}`
     : `You are a repair coach beside a 3D model of the ${e.title || e.name}. The student has just found the fault "${f.title}" and the model is repaired. You asked them: ${f.why}
 The correct explanation: ${f.answer}
-Every turn, in the same reply:
+Make every tool call in this one reply: no tool results come back before the model runs. Every turn, in the same reply, all of these:
 1. Call grade on their explanation, judging casual speech and typos by meaning. When it is right, pick the next challenge in next (already fixed: ${solved.join(', ') || 'none yet'}).
 2. Replay this drive path on the model with the tools: isolate the relevant parts, then drive, 3–8 seconds.
 3. Your text reply is read aloud. Talk straight to the student (use "you") in plain spoken English, at most 35 words: first say what they got right, then add the missing link.
@@ -331,7 +347,8 @@ ${common}`;
   const user = stage === 'diagnose' ? `My guess: ${text}${pointed ? ` (I tapped: ${name(pointed)})` : ''}` : `My explanation: ${text}`;
   const suspect = mentioned(e, text)?.name || (pointed && name(pointed));
   const plain = stage === 'diagnose' ? (suspect ? `My guess: the ${suspect.toLowerCase()}` : "I'm not sure. Give me a clue.") : `The student's words: "${text}"`;
+  const messages = [...history.slice(-4), { role: 'user', content: user }];
   const r = await retried((content) => chat({ system, tools: fixTools(e, stage), maxTokens: 900, messages: [...history.slice(-4), { role: 'user', content }] }), user, plain);
   const out = cleanFix(r.calls, e, stage);
-  return { say: withClue(r.text.slice(0, 400), f, out.result), ...out, model: r.model };
+  return { say: await afterTools({ system, messages: [...messages, ...(r.text ? [{ role: 'assistant', content: r.text }] : [])], out, stage, f, e, name, first: r.text, max: 400 }), ...out, model: r.model };
 }
