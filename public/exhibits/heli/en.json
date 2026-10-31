@@ -94,7 +94,8 @@
    "whys": ["Broken blades would still spin, just badly. But the whole tail rotor has stopped, shaft and all.", "", "With no engine power the main rotor would slow down too, but it is turning normally."],
    "cause": "The driveshaft from the main gearbox to the tail has broken. The main rotor keeps turning, but the tail rotor gets no power.",
    "why": "Why does the helicopter keep spinning when the tail driveshaft breaks?",
-   "answer": "As the main rotor turns, the reaction pushes the body the opposite way. The tail rotor, driven from the main gearbox by the tail driveshaft, pushes sideways to cancel that torque. With the shaft broken the tail rotor stops, nothing cancels the torque, and the body spins."
+   "answer": "As the main rotor turns, the reaction pushes the body the opposite way. The tail rotor, driven from the main gearbox by the tail driveshaft, pushes sideways to cancel that torque. With the shaft broken the tail rotor stops, nothing cancels the torque, and the body spins.",
+   "reasons": ["A broken tail shaft slows the main rotor, and the lost lift makes it spin.","The tail rotor pushes the helicopter forward, so without it the body can only circle."]
   }
  }
 }

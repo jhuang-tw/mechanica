@@ -160,7 +160,8 @@
    "whys": ["With a flat battery the starter couldn't turn the crankshaft at all, but the crankshaft is turning.", "", "A stuck piston would lock the crankshaft too, but the pistons are moving up and down smoothly."],
    "cause": "The timing belt has snapped. The crankshaft still turns, but the camshafts up top aren't driven, so the valves don't open and close.",
    "why": "Why won't the engine start with a broken timing belt, even though the crankshaft turns?",
-   "answer": "The timing belt makes the camshafts follow the crankshaft (two crank turns, one cam turn). With the camshafts stopped, the valves don't open and close at the right time, so the cylinders can't take in fuel and air or push out exhaust, and the engine can't fire."
+   "answer": "The timing belt makes the camshafts follow the crankshaft (two crank turns, one cam turn). With the camshafts stopped, the valves don't open and close at the right time, so the cylinders can't take in fuel and air or push out exhaust, and the engine can't fire.",
+   "reasons": ["The timing belt drives the wheels, so with it broken the car can't move.","The timing belt powers the spark plugs, so with it broken there's no spark."]
   }
  }
 }

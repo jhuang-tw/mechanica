@@ -67,7 +67,8 @@
    "whys": ["The brake pads aren't gripping the rim, and a stuck brake wouldn't leave the chain hanging there. Look between the chainring and the cassette.", "", "The rear wheel itself is fine; no force reaches it at all. Look further forward: where does the motion stop?"],
    "cause": "The chain has fallen off the chainring. The chainring turns, but nothing pulls the force back to the cassette.",
    "why": "Why does the chainring still turn but the rear wheel doesn't, once the chain is off?",
-   "answer": "The chain carries the force from the chainring to the cassette, and the cassette turns the rear wheel. When the chain comes off, that drive path is broken, so the parts after it get no force."
+   "answer": "The chain carries the force from the chainring to the cassette, and the cassette turns the rear wheel. When the chain comes off, that drive path is broken, so the parts after it get no force.",
+   "reasons": ["A loose chain jams the chainring, so the rear wheel stops with it.","The front wheel drives the rear one, and without the chain it can't push it."]
   }
  }
 }

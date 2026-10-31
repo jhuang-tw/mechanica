@@ -83,7 +83,8 @@
    "whys": ["A weak mainspring would stop the whole watch, seconds and minute hands included.", "", "If the balance stopped, the whole gear train would stop. But the seconds hand is still moving."],
    "cause": "The minute wheel between the minute hand and the hour hand is broken. The minute hand keeps going, but its turning never reaches the hour hand.",
    "why": "Why does the minute hand still move but the hour hand doesn't when the minute wheel breaks?",
-   "answer": "The minute hand sits on the centre wheel. The minute wheel slows its turning by 12 times and hands it to the hour hand, so 12 turns of the minute hand make 1 turn of the hour hand. With the minute wheel broken, the hour hand gets none of that turning."
+   "answer": "The minute hand sits on the centre wheel. The minute wheel slows its turning by 12 times and hands it to the hour hand, so 12 turns of the minute hand make 1 turn of the hour hand. With the minute wheel broken, the hour hand gets none of that turning.",
+   "reasons": ["The minute wheel powers the hour hand, so without it the hour hand stops.","The hour and minute hands share one shaft, and a broken minute wheel jams it."]
   }
  }
 }

@@ -157,6 +157,7 @@
   #tutor.thinking #t-q::after { content:" …"; animation:blink 1s infinite; }
   #t-choices { display:flex; flex-wrap:wrap; gap:6px; } #t-choices:empty { display:none; }
   #t-choices button { padding:7px 12px; font-size:14px; border-radius:999px; background:rgba(255,255,255,.08); border:1px solid var(--line2); }
+  #t-choices button[aria-pressed=true], #t-choices button.go { background:var(--accent); color:var(--ink); border-color:transparent; } #t-choices button:disabled { opacity:.4; }
   #t-choices div { flex:1 1 100%; min-width:0; font-size:13px; color:var(--dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   #t-choices div::before { content:"✗ "; color:var(--bad); font-weight:700; }
   #t-hint { color:var(--dim); font-size:12px; }
@@ -240,7 +241,7 @@
     </div>
     <div id="tutor" class="glass" hidden>
       <div class="row"><b id="t-bar" data-t="tutorName">AI tutor</b><button id="t-show" type="button" data-t="tShow">I don't know, show me</button><button id="t-stop" type="button" aria-label="End tutor" data-t-aria="tStop"><svg class="i"><use href="#i-x"/></svg></button></div>
-      <p id="t-v"></p><p id="t-q"></p><div id="t-choices"></div><small id="t-hint" hidden data-t="tHint">Answer with the mic, or tap the keyboard to type</small>
+      <p id="t-v"></p><p id="t-q"></p><div id="t-choices"></div><small id="t-hint" hidden data-t="tHint">Tap an option, or answer with the mic or the keyboard</small>
     </div>
     <div id="lesson" class="row glass" hidden>
       <button id="l-prev" type="button" aria-label="Previous step" data-t-aria="prev"><svg class="i"><use href="#i-back"/></svg></button><span id="l-step"></span>

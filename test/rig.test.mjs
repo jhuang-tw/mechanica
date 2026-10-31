@@ -40,6 +40,7 @@ for (const id of JSON.parse(read('index.json')).exhibits) {
       for (const k of ['title', 'short', 'symptom', 'observe', 'hint', 'cause', 'why', 'answer']) assert.ok(f[k], `${f.id}: ${k}`);
       // three guesses from the start: one right, and a reason plus parts to show for each wrong one
       assert.equal(f.suspects.length, 3, `${f.id}: 3 suspects`);
+      assert.equal(f.reasons?.length, 2, `${f.id}: 2 wrong reasons for the why question`);
       assert.ok(f.suspects[f.right], `${f.id}: right suspect`);
       f.suspects.forEach((_, i) => { assert.equal(!!f.whys[i], i !== f.right, `${f.id}: whys[${i}]`); assert.ok(f.show[i]?.length, `${f.id}: show[${i}]`); });
       for (const p of f.show.flat()) assert.ok(ids.has(p), `${f.id}: show ${p}`);
