@@ -122,6 +122,9 @@ try {
   second = '煞車有放開，飛輪卻停著。力量到哪裡斷了？';
   assert.equal(await guess(), second);
   checkResult = 'found'; second = '我看到鏈條掉了。';
+  const { cleanFix } = await import('../server/ai.mjs'), right = (next, solved) => cleanFix([{ name: 'grade', args: { verdict: 'right', next } }], { id: 'bike', parts: [] }, 'explain', solved).next;
+  assert.equal(right('bike/chain_off', ['bike/chain_off']), null, 'the fault just repaired is not next');
+  assert.equal(right('heli/tail_shaft', ['bike/chain_off']), 'heli/tail_shaft');
   const { leaks } = await import('../server/ai.mjs'), bare = { parts: [{ id: 'chain', name: 'Chain', aliases: ['bike chain'] }] };
   assert.deepEqual(['The chain slipped', 'Look at the chainring', 'bike chain?'].map((t) => leaks(t, bare, { broken: ['chain'] })), [true, false, true]);
   r = await (await post('/api/fix', { exhibit: 'bike', fault: 'chain_off', stage: 'explain', text: '鏈條把力量傳到後輪', solved: ['bike/chain_off'] })).json();
