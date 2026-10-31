@@ -7,7 +7,7 @@
 import { readFileSync } from 'node:fs';
 import * as SAM from '@meta-sam/parser';
 import { chat, sam, asr } from './meta.mjs';
-import { localize } from '../src/localize.js';
+import { localize, mentioned } from '../src/localize.js';
 
 const DIR = new URL('../public/exhibits/', import.meta.url);
 const fail = (message, status = 400) => Object.assign(new Error(message), { status });
@@ -132,7 +132,18 @@ ${partList(e)}` : `你是「${e.title || e.name}」3D 教學模型的解說員�
 同時在文字回覆裡用台灣繁體中文口語講 1–2 句（≤ 50 字）。數字規格只能用零件說明裡有的。
 零件（id=名稱：說明）：
 ${e.parts.map((p) => `${p.id}=${p.name}${p.info ? '：' + p.info : ''}`).join('\n')}`;
-  const r = await chat({ system, tools: toolsFor(e), maxTokens: 900, messages: [...history.slice(-4), { role: 'user', content: pointed ? `${text}\n${EN(e) ? `(pointing at: ${pointed})` : `（正指著：${pointed}）`}` : text }] });
+  const ask = (q) => chat({ system, tools: toolsFor(e), maxTokens: 900, messages: [...history.slice(-4), { role: 'user', content: pointed ? `${q}\n${EN(e) ? `(pointing at: ${pointed})` : `（正指著：${pointed}）`}` : q }] });
+  const part = mentioned(e, text) || e.parts.find((p) => p.id === pointed);
+  let r;
+  try { r = await ask(text); } catch (err) {
+    if (!err.policy) throw err;
+    // Meta's safety filter refuses some harmless wordings ("Why does a helicopter need a tail rotor?"): ask about the part plainly, else answer from the exhibit
+    const plain = part ? (EN(e) ? `What is the ${part.name.toLowerCase()} for?` : `${part.name}是做什麼用的？`) : EN(e) ? `How does the ${e.name.toLowerCase()} work?` : `${e.name}是怎麼運作的？`;
+    try { r = await ask(plain); } catch (again) {
+      if (!again.policy) throw again;
+      return { say: part?.info || e.intro, steps: part ? [{ do: 'isolate', at: 0, parts: [part.id] }] : [], model: 'exhibit' };
+    }
+  }
   return { say: r.text.slice(0, EN(e) ? 400 : 200), steps: cleanSteps(r.calls, e), model: r.model };
 }
 
