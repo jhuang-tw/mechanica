@@ -789,12 +789,7 @@
     "wheelset_1",
     "wheelset_3"
    ],
-   "look": {
-    "detach": {
-     "dir": "down",
-     "amount": 0.04
-    }
-   },
+   "look": { "hide": ["coupling_rod_l", "coupling_rod_r"] },
    "see": [
     "wheelset_1",
     "wheelset_2",
