@@ -33,9 +33,9 @@ export class Viewer {
     this.pickTaps(canvas);
     addEventListener('resize', () => this.resize());
     this.resize();
-    const clock = new THREE.Clock();
+    const timer = new THREE.Timer(); timer.connect(document);
     r.setAnimationLoop(() => {
-      const dt = Math.min(clock.getDelta(), 0.1);
+      const dt = Math.min(timer.update().getDelta(), 0.1);
       this.choreo?.update(dt); this.rig?.update(dt); this.ride?.update(dt);
       if (r.xr.isPresenting) this.vr?.update(dt);
       else if (this.goal) {   // glide to a framing, then hand the camera back to the user

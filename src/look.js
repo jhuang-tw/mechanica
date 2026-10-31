@@ -68,7 +68,7 @@ export class Studio {
     this.renderer = renderer;
     renderer.toneMapping = THREE.NeutralToneMapping;   // keeps paint colours true, unlike ACES' hue shifts
     renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.shadowMap.type = THREE.PCFShadowMap;
     const pm = new THREE.PMREMGenerator(renderer);
     scene.environment = pm.fromScene(envScene(), 0.02).texture; pm.dispose();
     scene.background = HORIZON;
