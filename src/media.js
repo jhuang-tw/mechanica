@@ -43,7 +43,7 @@ export async function shrink(file, max = 768) {
   return new Promise((ok) => c.toBlob(ok, 'image/jpeg', 0.8));
 }
 
-// Spoken answers: the server's neural voice (streamed MP3) when it has one, else the most natural voice this browser has.
+// Spoken answers: the server's neural voice (Inworld MP3) when it has one, else the most natural voice this browser has.
 const zh = (text) => /[㐀-鿿]/.test(text);
 let neural = fetch('/api/status').then((r) => r.json()).then((s) => !!s.tts).catch(() => false);
 const audio = typeof Audio === 'undefined' ? null : new Audio();
@@ -53,27 +53,48 @@ export function unlockSpeech() {   // call from the first tap: phones only let a
 }
 
 let said = 0;
+// Whole MP3 per line, played from a blob: streaming into <audio> stutters on phones (Safari wants byte ranges a stream can't give).
+const clips = new Map();
+function clip(text) {
+  const key = text.slice(0, 400);
+  if (!clips.has(key)) {
+    if (clips.size > 60) { const [k, v] = clips.entries().next().value; clips.delete(k); v.then((u) => u && URL.revokeObjectURL(u)); }
+    clips.set(key, fetch(`/api/tts?text=${encodeURIComponent(key)}`).then(async (r) => (r.ok && /audio/.test(r.headers.get('content-type')) ? URL.createObjectURL(await r.blob()) : null)).catch(() => null));
+  }
+  return clips.get(key).then((u) => { if (!u) clips.delete(key); return u; });
+}
+// resolves when the line has been spoken, or when a newer speak() cut it off
 export async function speak(text) {
   const n = ++said;
   audio?.pause();
   if ('speechSynthesis' in window) speechSynthesis.cancel();
   if (!text) return;
   if (audio && await neural) {
+    const url = await clip(text);
     if (n !== said) return;
-    audio.src = `/api/tts?text=${encodeURIComponent(text.slice(0, 400))}`;
-    try { return await audio.play(); } catch (e) { if (n !== said || e.name === 'AbortError') return; }   // fall through to the browser voice
+    if (url) {
+      audio.src = url;
+      try {
+        await audio.play();
+        return await new Promise((ok) => { audio.onended = audio.onerror = audio.onpause = ok; });
+      } catch (e) { if (n !== said || e.name === 'AbortError') return; }
+    }
   }
-  browserSpeak(text);
+  return browserSpeak(text);   // no neural voice, or it failed
+}
+// Fetch lines that are about to be spoken (lesson steps), so they start without the synthesis wait.
+export async function prefetch(texts) {
+  if (audio && await neural) for (const text of texts) await clip(text);
 }
 
 // Prefer the cloud "Natural"/"Online"/Google voices browsers ship (Edge: HsiaoChen Online) over the old desktop ones.
 const natural = (v) => /natural|online|neural|google/i.test(v.name) * 2 + !v.localService;
 function browserSpeak(text) {
-  if (!('speechSynthesis' in window)) return;
+  if (!('speechSynthesis' in window)) return Promise.resolve();
   const lang = zh(text) ? 'zh-TW' : 'en-US', all = speechSynthesis.getVoices();
   const pool = zh(text) ? [/zh[-_]TW/i, /^zh/i] : [/^en[-_]US/i, /^en/i];
   const voice = pool.map((re) => all.filter((v) => re.test(v.lang)).sort((a, b) => natural(b) - natural(a))[0]).find(Boolean);
   const u = Object.assign(new SpeechSynthesisUtterance(text), { lang, rate: 1.05 });
   if (voice) u.voice = voice;
-  speechSynthesis.speak(u);
+  return new Promise((ok) => { u.onend = u.onerror = ok; speechSynthesis.speak(u); });
 }
