@@ -157,18 +157,18 @@ export function tutorTools(e) {
       verdict: { type: 'string', enum: VERDICTS, description: 'right=states the cause and effect; partial=right direction but misses the key point; wrong=wrong or a misconception' },
       concept: { type: 'string', description: 'the concept this question tests, at most 5 words' },
       gap: { type: 'string', description: 'the missing key point or misconception, at most 15 words; empty when right' } } } },
-    { name: 'ask', description: 'Ask the student the next question (call it once every turn)', parameters: { type: 'object', required: ['question'], properties: {
+    { name: 'ask', description: 'Ask the student the next question (call it once every turn)', parameters: { type: 'object', required: ['question', 'choices'], properties: {
       question: { type: 'string', description: 'one thing at a time, at most 20 words, answerable by looking at the model' },
-      choices: { type: 'array', items: { type: 'string' }, description: 'only when the student is stuck: 2–3 options (one right), otherwise none' } } } },
+      choices: { type: 'array', items: { type: 'string' }, description: '2–3 short options, one right, the wrong ones common misconceptions (the student can tap one or answer in their own words)' } } } },
   ];
   return [...toolsFor(e),
     { name: 'grade', description: '學生剛回答時呼叫：評他的答案', parameters: { type: 'object', required: ['verdict', 'concept'], properties: {
       verdict: { type: 'string', enum: VERDICTS, description: 'right=講出因果；partial=方向對但漏了關鍵；wrong=錯或有迷思' },
       concept: { type: 'string', description: '這題考的概念，≤ 12 字' },
       gap: { type: 'string', description: '漏掉的關鍵或迷思，≤ 30 字；答對留空' } } } },
-    { name: 'ask', description: '問學生下一題（每一輪都要呼叫一次）', parameters: { type: 'object', required: ['question'], properties: {
+    { name: 'ask', description: '問學生下一題（每一輪都要呼叫一次）', parameters: { type: 'object', required: ['question', 'choices'], properties: {
       question: { type: 'string', description: '一次只問一件事，≤ 40 字，答案看模型就能推出來' },
-      choices: { type: 'array', items: { type: 'string' }, description: '學生卡住時才給 2–3 個選項（含 1 個對的），否則不給' } } } },
+      choices: { type: 'array', items: { type: 'string' }, description: '2–3 個短選項，含 1 個對的，錯的用常見迷思（學生可以點選，也可以用自己的話回答）' } } } },
   ];
 }
 const clip = (v, n) => (typeof v === 'string' ? v.trim().slice(0, n) : '');
@@ -206,7 +206,7 @@ export async function tutor({ exhibit: id, answer, history = [], known = [], foc
 每一輪都在同一個回覆裡一起呼叫多個工具：grade（學生有回答時）＋動模型的工具＋ask，三樣都要有。
 1. 學生剛回答就呼叫 grade。口語、錯字、講得不完整都看意思評。
 2. 用工具動模型給他看：isolate 相關零件，有連動就 drive，要看清楚就 detach，整段 3–10 秒。
-3. 呼叫 ask 問下一題。答對就往下一層因果走、加深；半對或答錯就把同一個概念拆小再問；連錯兩題就給 choices。
+3. 呼叫 ask 問下一題。答對就往下一層因果走、加深；半對或答錯就把同一個概念拆小再問。每題都附 choices。
 4. 文字回覆會被唸出來，直接對學生說（用「你」）：台灣繁體中文口語 ≤ 60 字，先回應他的答案（對在哪、漏了什麼），不要重複題目。數字只能用下面資料裡有的。
 學生的紀錄：${record}。從沒學過或答錯過的概念先教。${part ? `\n他剛拍了真的${part.name}，從${part.name}開始。` : ''}
 零件（id=名稱：說明）：
@@ -224,7 +224,7 @@ async function tutorEn(e, part, answer, history, known) {
 Every turn, call several tools in the same reply: grade (when the student has answered) + the model tools + ask. All three every time.
 1. When the student has just answered, call grade. Judge casual speech, typos and incomplete answers by meaning.
 2. Show it on the model with the tools: isolate the relevant parts, drive for linked motion, detach to see clearly; 3–10 seconds in all.
-3. Call ask with the next question. Right: go one level deeper along the chain of cause and effect. Half right or wrong: break the same concept into a smaller question. Two wrong in a row: give choices.
+3. Call ask with the next question. Right: go one level deeper along the chain of cause and effect. Half right or wrong: break the same concept into a smaller question. Every question comes with choices.
 4. Your text reply is read aloud. Talk straight to the student (use "you") in plain spoken English, at most 35 words: first respond to their answer (what was right, what was missing); don't repeat the question. Only use numbers that appear in the data below.
 The student's record: ${record}. Teach concepts they have never learned or got wrong first.${part ? `\nThey just photographed a real ${part.name}; start from the ${part.name}.` : ''}
 Parts (id=name: description):

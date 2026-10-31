@@ -1,50 +1,50 @@
 {
  "name": "Motorcycle",
  "title": "Twin-cylinder motorcycle (700 cc)",
- "intro": "This is a 700 cc parallel-twin motorcycle. Like a real one, the engine is sealed (the inside is bathed in oil). In a lesson the cases turn see-through so you can watch the pistons and crankshaft; explode it (🧩) to see the gearbox and chain. Ask me \"Why do you need to change gear?\"",
+ "intro": "This is a 700 cc parallel-twin motorcycle. In lessons the engine case turns see-through; explode it (🧩) to see the gearbox and chain. Ask me \"Why do you need to change gear?\"",
  "suggest": ["How does the engine turn the wheel?", "Why do you need to change gear?", "Why is the front brake bigger?"],
  "looksLike": "motorcycle, motorbike, bike, sport bike, scooter",
  "ride": { "hint": "You're in the rider's seat. Drag to look around; open the throttle and change gear to see how engine rpm and speed change; tap X-ray to see the engine and gearbox under your feet." },
  "parts": {
-  "crankcase": { "name": "Crankcase", "info": "The aluminium case at the bottom of the engine. It holds the crankshaft, clutch and gearbox, all in oil, so nothing rusts and everything stays lubricated.", "aliases": ["engine", "crankcase", "engine case"] },
-  "cylinder_block": { "name": "Cylinder block", "info": "Two cylinders side by side, tilted forward 15°. The pistons run up and down inside; a water jacket around them carries the heat away.", "aliases": ["cylinders", "block"] },
-  "cylinder_head": { "name": "Cylinder head", "info": "Sits on top of the cylinders and holds the intake valves, exhaust valves and spark plugs. Combustion happens just below it.", "aliases": ["head", "valves"] },
-  "cam_cover": { "name": "Cam cover", "info": "The cover on the very top, over the two camshafts.", "aliases": ["valve cover", "rocker cover"] },
-  "piston_r": { "name": "Right piston", "info": "Burning gas pushes it down, and through the connecting rod it turns the crankshaft. Right now it sits at the very top (top dead centre).", "aliases": ["piston"] },
-  "piston_l": { "name": "Left piston", "info": "The left cylinder's piston. It fires 270° after the right one, so the two pistons never move up and down together.", "aliases": ["piston"] },
-  "conrod_r": { "name": "Right connecting rod", "info": "Links the piston to the crankshaft and turns the piston's up-and-down motion into the crankshaft's rotation.", "aliases": ["connecting rod", "conrod", "rod"] },
-  "conrod_l": { "name": "Left connecting rod", "info": "The left cylinder's connecting rod.", "aliases": ["connecting rod", "conrod", "rod"] },
-  "crankshaft": { "name": "Crankshaft", "info": "Its two crank throws are 270° apart. This \"270° crank\" makes a parallel twin sound and pull like a V-twin, with more rhythm.", "aliases": ["crank", "crankshaft"] },
-  "primary_gear": { "name": "Primary gear", "info": "A small gear (32 teeth) on the right end of the crankshaft. It drives the big gear (58 teeth) on the clutch basket, the first step down in speed.", "aliases": ["primary drive", "drive gear"] },
-  "camshaft_intake": { "name": "Intake camshaft", "info": "Each cam lobe pushes an intake valve open as it comes round. It turns at half the crankshaft's speed.", "aliases": ["camshaft", "cam"] },
-  "camshaft_exhaust": { "name": "Exhaust camshaft", "info": "Pushes the exhaust valves open, also at half the crankshaft's speed.", "aliases": ["camshaft", "cam"] },
-  "cam_chain": { "name": "Cam chain", "info": "Drives the two camshafts up top from the crankshaft, so the valves always open in step with the pistons.", "aliases": ["timing chain"] },
-  "radiator": { "name": "Radiator", "info": "The cooler in front of the engine. Coolant picks up heat from the cylinders, and the oncoming air cools it here.", "aliases": ["radiator", "cooler"] },
-  "exhaust_headers": { "name": "Exhaust headers", "info": "Two pipes curving down from the front of the cylinder head, carrying the burnt gas back.", "aliases": ["exhaust", "exhaust pipes", "headers"] },
-  "clutch": { "name": "Clutch", "info": "A stack of friction plates. Squeeze the left lever and they part, disconnecting the engine from the gearbox so you can pull away and change gear.", "aliases": ["clutch"] },
-  "clutch_cover": { "name": "Clutch cover", "info": "The round cover on the right side of the engine, over the clutch.", "aliases": ["cover"] },
-  "mainshaft": { "name": "Mainshaft", "info": "The gearbox input shaft. It turns with the clutch and carries six gears.", "aliases": ["input shaft", "main shaft"] },
-  "countershaft": { "name": "Countershaft", "info": "The gearbox output shaft. Changing gear means a different pair of gears meshes: in 1st a small gear drives a big one for the most force; 6th is nearly one to one, the fastest.", "aliases": ["output shaft", "gearbox", "transmission"] },
-  "sprocket_front": { "name": "Front sprocket", "info": "The small sprocket (15 teeth) on the end of the countershaft. It drives the chain.", "aliases": ["front sprocket", "countershaft sprocket"] },
-  "chain": { "name": "Drive chain", "info": "Carries the force from the front sprocket to the big sprocket on the rear wheel.", "aliases": ["chain"] },
-  "sprocket_rear": { "name": "Rear sprocket", "info": "The big sprocket (43 teeth) on the rear wheel. Small at the front, big at the back: another step down in speed and up in force.", "aliases": ["rear sprocket", "big sprocket"] },
-  "frame": { "name": "Frame", "info": "The bike's skeleton. The engine, steering head and swingarm all hang from it.", "aliases": ["frame", "chassis"] },
-  "fork": { "name": "Front fork", "info": "Two suspension tubes holding the front wheel. The whole fork turns about the steering axis, tilted 21°: that is how the bike steers.", "aliases": ["fork", "forks", "front suspension"] },
-  "handlebar": { "name": "Handlebar", "info": "Right hand: throttle and front brake. Left hand: clutch.", "aliases": ["handlebars", "bars"] },
-  "headlight_cowl": { "name": "Headlight cowl", "info": "The front cover around the headlight and the instruments.", "aliases": ["headlight", "headlamp"] },
-  "wheel_front": { "name": "Front wheel", "info": "The front wheel is steered by the fork.", "aliases": ["wheel", "front wheel", "front tyre", "front tire"] },
-  "disc_front_l": { "name": "Left front disc", "info": "A steel disc that turns with the front wheel. When you brake, the caliper squeezes it and friction turns speed into heat.", "aliases": ["disc", "brake disc", "rotor"] },
-  "disc_front_r": { "name": "Right front disc", "info": "The front wheel has two discs, because your weight shifts forward when braking and the front wheel does most of the braking.", "aliases": ["disc", "brake disc", "rotor"] },
-  "calipers_front": { "name": "Front calipers", "info": "Hydraulic pistons inside press the pads onto the discs when you pull the brake lever.", "aliases": ["caliper", "brakes", "front brake"] },
-  "swingarm": { "name": "Swingarm", "info": "The rear wheel is mounted on it. Its front end pivots up and down, and the rear shock soaks up the bumps.", "aliases": ["swing arm", "rear suspension"] },
-  "wheel_rear": { "name": "Rear wheel", "info": "The driven wheel, turned by the chain.", "aliases": ["wheel", "rear wheel", "back wheel", "rear tyre", "rear tire"] },
-  "disc_rear": { "name": "Rear disc", "info": "The rear brake disc, smaller than the front ones.", "aliases": ["disc", "brake disc", "rotor"] },
-  "caliper_rear": { "name": "Rear caliper", "info": "Squeezes the rear disc when your right foot presses the brake pedal.", "aliases": ["caliper", "rear brake"] },
-  "tank": { "name": "Fuel tank", "info": "Holds the petrol. The rider grips it with their knees.", "aliases": ["tank", "gas tank", "petrol tank"] },
-  "seat": { "name": "Seat", "info": "Where the rider and passenger sit.", "aliases": ["saddle"] },
-  "side_cover_l": { "name": "Left side cover", "info": "The side panel under the seat; the battery and the engine computer sit behind it.", "aliases": ["side cover", "side panel"] },
-  "side_cover_r": { "name": "Right side cover", "info": "The right-hand side panel.", "aliases": ["side cover", "side panel"] },
-  "tail": { "name": "Tail", "info": "The tail bodywork and the tail light.", "aliases": ["tail light", "rear cowl"] }
+  "crankcase": { "name": "Crankcase", "info": "The bottom aluminium engine case housing the crankshaft, clutch and gearbox in an oil bath for lubrication.", "aliases": ["engine", "crankcase", "engine case"] },
+  "cylinder_block": { "name": "Cylinder block", "info": "Two side-by-side cylinders tilted forward 15°. Pistons reciprocate inside while coolant flows through the outer water jacket.", "aliases": ["cylinders", "block"] },
+  "cylinder_head": { "name": "Cylinder head", "info": "Bolted atop the cylinders, holding intake and exhaust valves plus spark plugs right above the combustion chambers.", "aliases": ["head", "valves"] },
+  "cam_cover": { "name": "Cam cover", "info": "The top engine cover sealing the two camshafts and oil inside.", "aliases": ["valve cover", "rocker cover"] },
+  "piston_r": { "name": "Right piston", "info": "Pushed down by expanding combustion gas to turn the crankshaft via the connecting rod. Shown here at top dead centre.", "aliases": ["piston"] },
+  "piston_l": { "name": "Left piston", "info": "Fires 270° after the right piston, so the two pistons never move up and down in unison.", "aliases": ["piston"] },
+  "conrod_r": { "name": "Right connecting rod", "info": "Connects piston to crankshaft, converting up-and-down reciprocating motion into rotation.", "aliases": ["connecting rod", "conrod", "rod"] },
+  "conrod_l": { "name": "Left connecting rod", "info": "Links the left piston to the crankshaft to convert linear push into rotation.", "aliases": ["connecting rod", "conrod", "rod"] },
+  "crankshaft": { "name": "Crankshaft", "info": "Crank throws offset by 270° give this parallel twin an uneven firing rhythm and torque feel similar to a V-twin.", "aliases": ["crank", "crankshaft"] },
+  "primary_gear": { "name": "Primary gear", "info": "A 32-tooth gear on the crankshaft driving the 58-tooth clutch gear for the first speed reduction and torque boost.", "aliases": ["primary drive", "drive gear"] },
+  "camshaft_intake": { "name": "Intake camshaft", "info": "Its cam lobes push the intake valves open. It spins at half the crankshaft speed to match the four-stroke cycle.", "aliases": ["camshaft", "cam"] },
+  "camshaft_exhaust": { "name": "Exhaust camshaft", "info": "Pushes the exhaust valves open on time, also spinning at half the crankshaft speed.", "aliases": ["camshaft", "cam"] },
+  "cam_chain": { "name": "Cam chain", "info": "Links the crankshaft to both camshafts so valve timing stays strictly in sync with the pistons.", "aliases": ["timing chain"] },
+  "radiator": { "name": "Radiator", "info": "Front-mounted heat exchanger where oncoming air cools the hot coolant from the engine.", "aliases": ["radiator", "cooler"] },
+  "exhaust_headers": { "name": "Exhaust headers", "info": "Two pipes routing hot exhaust gases away from the cylinder head.", "aliases": ["exhaust", "exhaust pipes", "headers"] },
+  "clutch": { "name": "Clutch", "info": "A pack of friction plates. Pulling the left lever separates them, disconnecting engine power so you can shift or stop.", "aliases": ["clutch"] },
+  "clutch_cover": { "name": "Clutch cover", "info": "The round right-side cover sealing the clutch assembly.", "aliases": ["cover"] },
+  "mainshaft": { "name": "Mainshaft", "info": "The gearbox input shaft driven by the clutch, carrying six drive gears.", "aliases": ["input shaft", "main shaft"] },
+  "countershaft": { "name": "Countershaft", "info": "Gearbox output shaft. Shifting selects which gear pair meshes: in 1st a small gear drives a big one for peak force; 6th is nearly one to one for top speed.", "aliases": ["output shaft", "gearbox", "transmission"] },
+  "sprocket_front": { "name": "Front sprocket", "info": "The 15-tooth sprocket on the output shaft that pulls the drive chain.", "aliases": ["front sprocket", "countershaft sprocket"] },
+  "chain": { "name": "Drive chain", "info": "Transfers power from the front sprocket back to the rear wheel sprocket.", "aliases": ["chain"] },
+  "sprocket_rear": { "name": "Rear sprocket", "info": "The big sprocket (43 teeth) on the rear wheel. Small at the front, big at the back: another speed reduction and torque boost.", "aliases": ["rear sprocket", "big sprocket"] },
+  "frame": { "name": "Frame", "info": "The main structural frame supporting the engine, front fork and swingarm.", "aliases": ["frame", "chassis"] },
+  "fork": { "name": "Front fork", "info": "Twin suspension tubes that absorb road bumps and pivot around a 21° steering axis to steer the front wheel.", "aliases": ["fork", "forks", "front suspension"] },
+  "handlebar": { "name": "Handlebar", "info": "Steers the bike. Right hand controls throttle and front brake; left hand operates the clutch lever.", "aliases": ["handlebars", "bars"] },
+  "headlight_cowl": { "name": "Headlight cowl", "info": "Front fairing around the headlight and instrument cluster.", "aliases": ["headlight", "headlamp"] },
+  "wheel_front": { "name": "Front wheel", "info": "The front wheel that steers the motorcycle.", "aliases": ["wheel", "front wheel", "front tyre", "front tire"] },
+  "disc_front_l": { "name": "Left front disc", "info": "Steel rotor spinning with the front wheel. Clamped by the caliper to convert speed into heat via friction.", "aliases": ["disc", "brake disc", "rotor"] },
+  "disc_front_r": { "name": "Right front disc", "info": "The front wheel has two discs because weight shifts forward under braking, so the front wheel handles most of the stopping force.", "aliases": ["disc", "brake disc", "rotor"] },
+  "calipers_front": { "name": "Front calipers", "info": "Hydraulic pistons inside press brake pads against the front discs when you pull the brake lever.", "aliases": ["caliper", "brakes", "front brake"] },
+  "swingarm": { "name": "Swingarm", "info": "Pivoting arm holding the rear wheel; moves up and down with the shock absorber to smooth out bumps.", "aliases": ["swing arm", "rear suspension"] },
+  "wheel_rear": { "name": "Rear wheel", "info": "The driven wheel turned by the chain to propel the bike.", "aliases": ["wheel", "rear wheel", "back wheel", "rear tyre", "rear tire"] },
+  "disc_rear": { "name": "Rear disc", "info": "Rear brake rotor, smaller than the front discs because the rear wheel carries less load when braking.", "aliases": ["disc", "brake disc", "rotor"] },
+  "caliper_rear": { "name": "Rear caliper", "info": "Squeezes the rear disc hydraulically when your right foot presses the brake pedal.", "aliases": ["caliper", "rear brake"] },
+  "tank": { "name": "Fuel tank", "info": "Stores fuel and gives the rider a surface to grip with their knees.", "aliases": ["tank", "gas tank", "petrol tank"] },
+  "seat": { "name": "Seat", "info": "Saddle for the rider and passenger.", "aliases": ["saddle"] },
+  "side_cover_l": { "name": "Left side cover", "info": "Side cover under the seat housing the battery and engine control unit (ECU).", "aliases": ["side cover", "side panel"] },
+  "side_cover_r": { "name": "Right side cover", "info": "Right-hand side panel under the seat.", "aliases": ["side cover", "side panel"] },
+  "tail": { "name": "Tail", "info": "Rear tail fairing and brake light.", "aliases": ["tail light", "rear cowl"] }
  },
  "drives": {
   "engine": "Engine idling in neutral",
@@ -59,58 +59,59 @@
  },
  "lessons": {
   "engine": { "title": "How a twin-cylinder engine works", "steps": [
-   { "say": "Burning gas pushes the piston down, and the connecting rod turns that up-and-down motion into the crankshaft's rotation." },
-   { "say": "The two crank throws are 270° apart, so the cylinders fire in turn and never move up and down together.",
-     "quiz": { "q": "Why aren't the two pistons designed to move up and down together?", "options": [
-      ["So the cylinders take turns, giving a smoother rhythm of power and sound", "A 270° crank fires at uneven intervals, so it pulls and sounds like a V-twin; with the pistons out of step, some of the vibration cancels too."],
-      ["To save material", "It has nothing to do with material; it's about firing order and vibration."],
-      ["Moving together would be better, it just can't be built", "It can be built (a 360° crank); it simply vibrates and feels different."]] } },
-   { "say": "The cam chain drives the two camshafts up top, which open the intake and exhaust valves.",
-     "quiz": { "q": "Why does the camshaft turn at only half the crankshaft's speed?", "options": [
-      ["In a four-stroke engine each valve opens once every two crank turns", "Intake, compression, power and exhaust take two turns of the crank, and each valve opens once, so one camshaft turn is exactly right."],
-      ["To save fuel", "The ratio comes from the four-stroke cycle."],
-      ["It would break if it spun faster", "The reason is the valve timing, not strength."]] } }
+   { "say": "Expanding gas pushes the piston down, and the connecting rod converts that up-and-down motion into crankshaft rotation." },
+   { "say": "The two crank throws sit 270° apart, so the cylinders fire in turn rather than moving together.",
+     "quiz": { "q": "Why are the two pistons offset instead of moving up and down together?", "options": [
+      ["So cylinders take turns firing and cancel some vibration", "A 270° crank spaces out the power pulses and offsets piston inertia to reduce shaking."],
+      ["To save metal", "Crank offset is about firing intervals and balance, not saving material."],
+      ["It's impossible to build them moving together", "360° cranks do move pistons together, but they vibrate more at high speed."]] } },
+   { "say": "The cam chain is driven by the crankshaft to spin both camshafts, opening the intake and exhaust valves on time.",
+     "quiz": { "q": "Why does the camshaft spin at only half the crankshaft's speed?", "options": [
+      ["In a four-stroke cycle, each valve opens once every two crank turns", "Intake, compression, power and exhaust take two crank rotations, requiring only one cam rotation."],
+      ["To save fuel", "The speed ratio comes from the four-stroke cycle."],
+      ["It would snap if spun faster", "It runs at half speed to match valve timing, not due to weak material."]] } }
   ] },
   "drive": { "title": "From the engine to the rear wheel", "steps": [
-   { "say": "The small gear on the crankshaft drives the big gear on the clutch: the first step down in speed." },
-   { "say": "The clutch turns the gearbox mainshaft, whose gears mesh with the countershaft. Right now it's in 1st." },
-   { "say": "The small sprocket on the end of the countershaft pulls the chain, and the chain turns the big sprocket on the rear wheel.",
-     "quiz": { "q": "Why is the rear sprocket so much bigger than the front one?", "options": [
-      ["To reduce speed again, so the rear wheel turns slower but with more force", "15 teeth driving 43 leaves the wheel turning at less than a third of the speed, so the push is nearly three times bigger: enough to get rider and bike moving."],
-      ["It looks better", "The size sets the gear ratio; it isn't styling."],
-      ["To stop the chain falling off", "Chain tension and tooth shape keep the chain on; the size is for reduction."]] } }
+   { "say": "The small gear on the crankshaft drives the big gear on the clutch, reducing speed and boosting torque first." },
+   { "say": "The clutch turns the gearbox mainshaft, which meshes with the countershaft in 1st gear." },
+   { "say": "The small front sprocket on the countershaft pulls the chain to turn the big rear sprocket for final speed reduction.",
+     "quiz": { "q": "Why is the rear sprocket so much larger than the front sprocket?", "options": [
+      ["To reduce speed and multiply torque so the wheel can push the bike", "15 teeth driving 43 cuts speed to about a third while nearly tripling the pushing force."],
+      ["Just for looks", "Sprocket sizes set the final drive ratio, directly affecting acceleration and top speed."],
+      ["To keep the chain from falling off", "Chain tension keeps the chain on; the size difference is for torque multiplication."]] } }
   ] },
   "gears": { "title": "Why you change gear", "steps": [
-   { "say": "1st gear: a small gear on the mainshaft drives a big gear on the countershaft. The engine turns many times for each little turn of the rear wheel." },
-   { "say": "6th gear: the two gears are nearly the same size. At the same engine speed, the rear wheel turns almost three times faster.",
-     "quiz": { "q": "Why do you pull away in 1st gear?", "options": [
-      ["1st gives the most force, enough to get moving from a stop", "Getting going from standstill needs the biggest push, and 1st multiplies the engine's force the most. Once you're moving you shift up so the engine doesn't have to spin too fast."],
-      ["1st gear saves fuel", "High gears at low rpm save fuel."],
-      ["6th stalls because its gears are too small", "6th stalls because there isn't enough push and the engine is dragged down to too low an rpm."]] } },
-   { "say": "Before changing gear you pull the clutch, disconnecting the engine from the gearbox so the gears can slide across." }
+   { "say": "In 1st gear, a small mainshaft gear drives a large countershaft gear for maximum torque at low wheel speed." },
+   { "say": "In 6th gear, the meshing gears are nearly equal in size, spinning the rear wheel almost three times faster at the same engine rpm.",
+     "quiz": { "q": "Why must you start from a standstill in 1st gear?", "options": [
+      ["1st gear multiplies torque the most to overcome standstill inertia", "Starting requires peak force; once moving, you shift up to keep engine rpm reasonable."],
+      ["1st gear saves the most fuel", "High gears at lower engine rpm save fuel when cruising."],
+      ["6th gear is too small and jams", "Starting in 6th stalls the engine because there isn't enough torque multiplication."]] } },
+   { "say": "Pull the clutch lever before shifting to briefly disconnect engine load so the gears can engage smoothly." }
   ] },
   "chassis": { "title": "Steering, suspension and brakes", "steps": [
-   { "say": "The whole fork turns about the tilted steering axis, and the front wheel steers with it." },
-   { "say": "The rear wheel is mounted on the swingarm. Over bumps the swingarm swings up and down, so the bike doesn't bounce." },
-   { "say": "The front wheel has two discs and two calipers; the rear has just one.",
-     "quiz": { "q": "Why is the front brake bigger than the rear?", "options": [
-      ["Weight shifts forward when braking, so the front tyre grips the most", "When you slow down, the weight of bike and rider presses forward. The harder the front tyre is pressed, the better it grips, so it gets most of the braking force."],
-      ["The front wheel is bigger", "The wheels are about the same size; the reason is weight transfer when braking."],
-      ["The rear wheel doesn't need a brake", "The rear needs a brake too; it just gets a smaller share."]] } }
+   { "say": "Turning the handlebar pivots the front fork around the angled steering axis to steer the front wheel." },
+   { "say": "Over bumps, the rear swingarm pivots up and down against the shock absorber to keep the chassis stable." },
+   { "say": "The front wheel uses two large discs and calipers, while the rear wheel has only one small disc.",
+     "quiz": { "q": "Why is the front brake system much larger than the rear?", "options": [
+      ["Weight shifts forward under braking, pressing the front tyre down for maximum grip", "Forward weight transfer gives the front tyre far more traction, so it handles most of the stopping force."],
+      ["Because the front wheel is larger", "Both wheels are similar in diameter; brake size depends on weight transfer."],
+      ["The rear wheel doesn't need braking", "The rear brake still helps slow and stabilise the bike, just with less force."]] } }
   ] }
  },
  "faults": {
   "clutch_slip": {
    "title": "Slipping clutch",
    "short": "The engine revs in gear, but the bike won't go",
-   "symptom": "In 1st gear with the throttle open, the crankshaft spins fast, but the rear wheel barely moves. What do you think is broken?",
-   "hint": "Where does the engine's force go first, before it reaches the gearbox? Find the point after which everything stops.",
+   "symptom": "In 1st gear with throttle open, the crankshaft spins fast, yet the rear wheel barely moves. What's broken?",
+   "hint": "What round assembly connects the crankshaft to the gearbox mainshaft? Check whether its inner and outer parts turn together.",
    "suspects": ["The chain broke", "The clutch is slipping", "The engine has no power"],
-   "observe": "The crankshaft spins fast. Find the first part that can't keep up.",
-   "whys": ["The chain is still on both sprockets. The problem is further forward: the mainshaft itself barely turns.", "", "The engine spins fast, so it has power. The power is lost before it gets into the gearbox."],
-   "cause": "The clutch plates are worn and slipping. The clutch basket turns with the engine, but the gearbox mainshaft inside isn't driven.",
-   "why": "Why doesn't the rear wheel move with a slipping clutch, however fast the engine spins?",
-   "answer": "The clutch passes the engine's turning to the gearbox mainshaft through friction plates. When they slip past each other, the force never enters the gearbox, so the countershaft, chain and rear wheel get nothing."
+   "observe": "Watch the fast-spinning crankshaft and follow the drive path: which part fails to keep up first?",
+   "whys": ["Look at the chain—it's still intact on both sprockets. Look inside the engine: the gearbox mainshaft itself is barely turning.", "", "Watch the pistons and crankshaft spinning rapidly—the engine has plenty of power, but it's being lost right at the gearbox entrance."],
+   "cause": "Worn clutch plates are slipping: the outer basket spins with the crank, but can't grip the gearbox mainshaft inside.",
+   "why": "Why won't the rear wheel move when the clutch slips, no matter how fast the engine spins?",
+   "answer": "The clutch relies on clamped friction plates to pass crankshaft power to the gearbox mainshaft. When they slip, no force enters the gearbox to reach the rear wheel.",
+   "reasons": ["A slipping clutch stalls the engine, stopping the rear wheel.","The clutch acts as a brake and locks the rear wheel when slipping."]
   }
  }
 }

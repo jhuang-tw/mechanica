@@ -4,7 +4,7 @@
 //   en.json: { name, title, intro, suggest[], looksLike, ride: { hint },
 //              parts: { id: { name, info, aliases[] } }, drives: { id: name },
 //              lessons: { id: { title, steps: [{ say, quiz: { q, options: [[text, why]] } }] } },
-//              faults: { id: { title, short, symptom, observe, hint, suspects[], whys[], cause, why, answer } } }
+//              faults: { id: { title, short, symptom, observe, hint, suspects[], whys[], cause, why, answer, reasons[] } } }
 // A part with no translation yet falls back to its `en` search name, so no Chinese shows on the English site.
 const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 export function localize(m, o) {
@@ -29,7 +29,7 @@ export function localize(m, o) {
         return { ...s, say: y.say ?? s.say, ...(quiz && { quiz }) };
       }) };
     }),
-    ...(m.faults && { faults: m.faults.map((f) => pick(f, o.faults?.[f.id], ['title', 'short', 'symptom', 'observe', 'hint', 'suspects', 'whys', 'cause', 'why', 'answer'])) }),
+    ...(m.faults && { faults: m.faults.map((f) => pick(f, o.faults?.[f.id], ['title', 'short', 'symptom', 'observe', 'hint', 'suspects', 'whys', 'cause', 'why', 'answer', 'reasons'])) }),
     ...(m.ride && { ride: { ...m.ride, hint: o.ride?.hint ?? m.ride.hint } }),
   };
 }

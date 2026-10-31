@@ -230,15 +230,17 @@ export class VR {
     if (canvas.height !== H) { canvas.height = H; this.menu.h = (this.menu.w * H) / W; this.menu.mesh.geometry.dispose(); this.menu.mesh.geometry = new THREE.PlaneGeometry(this.menu.w, this.menu.h); }
     this.menu.draw(B);
   }
-  // lesson bar (◀ step ▶ ✕) and quiz answers, near your hands while a lesson runs
+  // lesson bar (◀ step ▶ ✕) and quiz answers, or the current options, near your hands
   refresh() {
-    const a = this.app, p = this.lessonPanel, L = a.lesson;
-    if (!L) { p.mesh.visible = false; return; }
-    const W = 1024, pad = 20, opts = a.quiz || [], H = 120 + opts.length * 100, B = [];
-    B.push({ x: pad, y: pad, w: 140, h: 80, label: '◀', on: () => a.go(-1) }, { x: W - 2 * (140 + pad), y: pad, w: 140, h: 80, label: '▶', on: () => a.go(1) },
+    const a = this.app, p = this.lessonPanel, L = a.lesson, more = L ? [] : a.choices;
+    if (!L && !more.length) { p.mesh.visible = false; return; }
+    // a lesson's quiz answers, or the tutor / repair / explain options (the page's own buttons, clicked from here)
+    const opts = L ? (a.quiz || []).map(([text], i) => [text, () => a.answer(i)]) : more.map((b) => [b.textContent, () => { b.click(); setTimeout(() => this.refresh(), 50); }, b.getAttribute('aria-pressed') === 'true']);
+    const W = 1024, pad = 20, top = L ? 120 : pad, H = top + opts.length * 100, B = [];
+    if (L) B.push({ x: pad, y: pad, w: 140, h: 80, label: '◀', on: () => a.go(-1) }, { x: W - 2 * (140 + pad), y: pad, w: 140, h: 80, label: '▶', on: () => a.go(1) },
       { x: W - 140 - pad, y: pad, w: 140, h: 80, label: '✕', on: () => a.stopLesson() },
       { x: 180, y: pad, w: W - 180 - 2 * (140 + pad) - pad, h: 80, label: `${L.i + 1} / ${L.l.steps.length}`, color: C.bg, on: null });
-    opts.forEach(([text], i) => B.push({ x: pad, y: 120 + i * 100, w: W - 2 * pad, h: 84, label: text, size: 32, on: () => a.answer(i) }));
+    opts.forEach(([text, on, active], i) => B.push({ x: pad, y: top + i * 100, w: W - 2 * pad, h: 84, label: text, size: L ? 32 : 26, active, on }));
     if (p.canvas.height !== H) { p.canvas.height = H; p.h = (p.w * H) / W; p.mesh.geometry.dispose(); p.mesh.geometry = new THREE.PlaneGeometry(p.w, p.h); }
     p.draw(B);
     if (!p.mesh.visible) { p.mesh.visible = true; this.facing(p.mesh, 0.45, 0.2); }

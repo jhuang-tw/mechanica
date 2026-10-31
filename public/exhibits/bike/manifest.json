@@ -4,28 +4,28 @@
   "title": "公路自行車（2×11 速）",
   "model": "model.glb",
   "thumb": "thumb.jpg",
-  "intro": "這是一台公路自行車。點任何零件看它是什麼，或問我「踩踏板怎麼讓後輪轉」。",
+  "intro": "這是一台公路車。點零件看功能，或問我「踩踏板怎麼讓後輪轉」。",
   "suggest": ["踩踏板怎麼讓後輪轉？", "為什麼不踩踏板輪子還會轉？", "讓我看齒盤和飛輪的齒數差多少"],
   "looksLike": "腳踏車、單車、公路車、登山車、鏈條、齒盤、變速器",
   "parts": [
-    { "id": "frame", "fixed": true, "name": "車架", "en": "bicycle frame", "info": "前三角加後三角組成的菱形車架。三角形受力不容易變形，所以又輕又硬。", "aliases": ["車身", "骨架"] },
-    { "id": "fork", "name": "前叉", "en": "bicycle front fork", "info": "夾住前輪，上端穿過頭管。轉動把手時，前叉帶著前輪一起轉向。", "aliases": ["叉子"] },
-    { "id": "stem", "name": "龍頭", "en": "bicycle stem", "info": "把把手固定在前叉上。長短與角度決定把手位置。", "aliases": ["把立"] },
-    { "id": "handlebar", "name": "把手", "en": "bicycle drop handlebar", "info": "公路車的彎把，握上把輕鬆、握下把風阻小。煞車和變速撥桿都在這裡。", "aliases": ["彎把", "手把", "龍頭把"] },
-    { "id": "seatpost", "name": "座管", "en": "bicycle seatpost", "info": "插在車架立管裡，拉高拉低就是調整座墊高度。", "aliases": ["座桿", "坐管"] },
-    { "id": "saddle", "name": "座墊", "en": "bicycle saddle", "info": "撐住坐骨。公路車座墊窄，大腿才能自由上下踩。", "aliases": ["坐墊", "椅子", "座椅"] },
-    { "id": "front_wheel", "name": "前輪", "en": "bicycle front wheel", "info": "700C 輪組：花鼓、輻條、輪圈和外胎。輻條是預先拉緊的鋼絲，靠拉力撐住車重。", "aliases": ["前輪胎", "前面的輪子"], "axis": [0, 0, -1] },
-    { "id": "rear_wheel", "name": "後輪", "en": "bicycle rear wheel", "info": "後輪花鼓裡有棘輪：往前踩時卡住帶動後輪，停止踩時滑開，讓輪子繼續轉。", "aliases": ["後輪胎", "後面的輪子"], "axis": [0, 0, -1] },
-    { "id": "crank", "name": "曲柄", "en": "bicycle crank arm", "info": "長約 17 公分的槓桿。腳的力量乘上曲柄長度，就是轉動齒盤的扭力。左右曲柄差 180 度。", "aliases": ["曲柄臂", "大腿"], "axis": [0, 0, -1] },
-    { "id": "pedal_l", "level": true, "name": "左踏板", "en": "bicycle left pedal", "info": "腳踩的地方，裝在曲柄末端，跟著曲柄繞圈。", "aliases": ["踏板", "腳踏"] },
-    { "id": "pedal_r", "level": true, "name": "右踏板", "en": "bicycle right pedal", "info": "腳踩的地方，裝在曲柄末端，跟著曲柄繞圈。", "aliases": ["踏板", "腳踏"] },
-    { "id": "chainring", "name": "齒盤", "en": "bicycle chainring", "info": "前面的大齒輪，這台是 50 齒。齒盤轉一圈，拉動 50 節鏈條。", "aliases": ["大盤", "前齒輪"], "axis": [0, 0, -1] },
-    { "id": "chain", "name": "鏈條", "en": "bicycle chain", "info": "把齒盤的轉動傳到後面的飛輪。上段被齒盤往前拉，是出力的那一段。", "aliases": ["鍊條", "鏈子"] },
-    { "id": "cassette", "name": "飛輪", "en": "bicycle rear cassette", "info": "後輪上的一疊齒輪，11 到 28 齒。齒數越少越重、越快；越多越輕，適合爬坡。", "aliases": ["後齒輪", "齒片"], "axis": [0, 0, -1] },
-    { "id": "rear_derailleur", "name": "後變速器", "en": "bicycle rear derailleur", "info": "撥桿一拉，它把鏈條推到另一片飛輪齒片，就換了檔。", "aliases": ["後變", "變速器"] },
-    { "id": "front_derailleur", "name": "前變速器", "en": "bicycle front derailleur", "info": "把鏈條在大小兩片齒盤之間推上推下。", "aliases": ["前變"] },
-    { "id": "brake_front", "name": "前煞車", "en": "bicycle front rim brake caliper", "info": "拉煞車把手，鋼線拉動夾器，煞車皮夾住輪圈，用摩擦把速度變成熱。", "aliases": ["煞車", "剎車", "夾器"] },
-    { "id": "brake_rear", "name": "後煞車", "en": "bicycle rear rim brake caliper", "info": "跟前煞車一樣夾住輪圈。煞車時重量往前移，所以前煞車的力量比較大。", "aliases": ["後剎車"] }
+    { "id": "frame", "fixed": true, "name": "車架", "en": "bicycle frame", "info": "前後兩個三角形組成的菱形車架。三角形結構受力不易變形，又輕又穩固。", "aliases": ["車身", "骨架"] },
+    { "id": "fork", "name": "前叉", "en": "bicycle front fork", "info": "夾住前輪並穿過車架頭管。轉動把手時，前叉會帶著前輪轉向。", "aliases": ["叉子"] },
+    { "id": "stem", "name": "龍頭", "en": "bicycle stem", "info": "把把手鎖在前叉上，它的長度和角度決定騎乘時的握把位置。", "aliases": ["把立"] },
+    { "id": "handlebar", "name": "把手", "en": "bicycle drop handlebar", "info": "公路車彎把：握上把姿勢輕鬆，握下把能壓低身體減少風阻。煞車與變速撥桿都在這裡。", "aliases": ["彎把", "手把", "龍頭把"] },
+    { "id": "seatpost", "name": "座管", "en": "bicycle seatpost", "info": "插在車架立管內，上下伸縮可調整座墊高度。", "aliases": ["座桿", "坐管"] },
+    { "id": "saddle", "name": "座墊", "en": "bicycle saddle", "info": "支撐坐骨。設計得較窄，雙腿上下踩踏時才不會磨到。", "aliases": ["坐墊", "椅子", "座椅"] },
+    { "id": "front_wheel", "name": "前輪", "en": "bicycle front wheel", "info": "700C 輪組，由花鼓、輻條、輪圈和外胎組成。預先拉緊的鋼絲輻條靠張力撐起車重。", "aliases": ["前輪胎", "前面的輪子"], "axis": [0, 0, -1] },
+    { "id": "rear_wheel", "name": "後輪", "en": "bicycle rear wheel", "info": "後花鼓內有單向棘輪：往前踩時卡住帶動後輪，停腳時滑開讓車子繼續滑行。", "aliases": ["後輪胎", "後面的輪子"], "axis": [0, 0, -1] },
+    { "id": "crank", "name": "曲柄", "en": "bicycle crank arm", "info": "長約 17 公分的槓桿，把踩踏力放大成轉動齒盤的扭力。左右曲柄錯開 180 度。", "aliases": ["曲柄臂", "大腿"], "axis": [0, 0, -1] },
+    { "id": "pedal_l", "level": true, "name": "左踏板", "en": "bicycle left pedal", "info": "裝在曲柄末端，承受腳踩的力量並跟著曲柄繞圈。", "aliases": ["踏板", "腳踏"] },
+    { "id": "pedal_r", "level": true, "name": "右踏板", "en": "bicycle right pedal", "info": "裝在曲柄末端，承受腳踩的力量並跟著曲柄繞圈。", "aliases": ["踏板", "腳踏"] },
+    { "id": "chainring", "name": "齒盤", "en": "bicycle chainring", "info": "前面的 50 齒大齒輪。每踩一圈，就會往前拉動 50 節鏈條。", "aliases": ["大盤", "前齒輪"], "axis": [0, 0, -1] },
+    { "id": "chain", "name": "鏈條", "en": "bicycle chain", "info": "負責把動力從前齒盤傳到後飛輪。上方拉緊的那一段正在出力。", "aliases": ["鍊條", "鏈子"] },
+    { "id": "cassette", "name": "飛輪", "en": "bicycle rear cassette", "info": "後輪上的多片齒輪組（11 到 28 齒）。換小齒片踩起來重但快；換大齒片省力好爬坡。", "aliases": ["後齒輪", "齒片"], "axis": [0, 0, -1] },
+    { "id": "rear_derailleur", "name": "後變速器", "en": "bicycle rear derailleur", "info": "按變速撥桿時，它會左右移動，把鏈條推到不同大小的飛輪齒片上完成換檔。", "aliases": ["後變", "變速器"] },
+    { "id": "front_derailleur", "name": "前變速器", "en": "bicycle front derailleur", "info": "把鏈條在前方的大小兩片齒盤之間切換，大幅改變齒數比。", "aliases": ["前變"] },
+    { "id": "brake_front", "name": "前煞車", "en": "bicycle front rim brake caliper", "info": "拉煞車桿時，鋼線拉動夾器讓煞車皮夾緊輪圈，利用摩擦力把動能轉成熱能來減速。", "aliases": ["煞車", "剎車", "夾器"] },
+    { "id": "brake_rear", "name": "後煞車", "en": "bicycle rear rim brake caliper", "info": "同樣夾住輪圈減速。因為煞車時重心往前移，前煞車承受的制動力比後煞車大。", "aliases": ["後剎車"] }
   ],
   "drives": [
     { "id": "pedal", "name": "踩踏板（曲柄→齒盤→鏈條→飛輪→後輪）", "rpm": 40,
@@ -36,20 +36,20 @@
   "lessons": [
     { "id": "drive", "title": "踩踏板到後輪轉",
       "steps": [
-        { "say": "腳踩踏板，曲柄像槓桿一樣帶著齒盤轉。", "parts": ["pedal_l", "pedal_r", "crank", "chainring"], "drive": "pedal", "speed": 0.5,
-          "quiz": { "q": "踩下踏板，最先跟著轉的是？", "options": [["曲柄和齒盤", true, "踏板裝在曲柄上，曲柄和齒盤鎖在一起，所以一起轉。"], ["後輪", false, "後輪要等鏈條傳過去才會轉。"], ["前輪", false, "前輪沒有接到鏈條，它是被車子帶著滾的。"]] } },
-        { "say": "齒盤咬住鏈條，把鏈條上段往前拉。", "parts": ["chainring", "chain"], "drive": "pedal", "speed": 0.5 },
-        { "say": "鏈條拉動後面的飛輪，飛輪帶著後輪轉。齒盤 50 齒、飛輪 17 齒，踩一圈後輪轉將近三圈。", "parts": ["chain", "cassette", "rear_wheel"], "drive": "pedal", "speed": 0.5,
-          "quiz": { "q": "齒盤 50 齒、飛輪 17 齒，踩一圈後輪大約轉幾圈？", "options": [["大約 3 圈", true, "50 ÷ 17 ≈ 2.9，大齒輪帶小齒輪，小的轉得比較多圈。"], ["1 圈", false, "齒數一樣才會一比一，這裡飛輪小很多。"], ["半圈", false, "小齒輪被大齒輪帶動會轉得更多圈，不是更少。"]] } },
-        { "say": "停止踩踏，後輪裡的棘輪滑開，輪子繼續轉，踏板停住不動。", "parts": ["rear_wheel", "cassette", "pedal_l", "pedal_r"], "drive": "coast", "speed": 0.5,
-          "quiz": { "q": "騎到一半停止踩踏，踏板會怎樣？", "options": [["停住不動", true, "後花鼓的棘輪讓後輪可以比飛輪轉得快，踏板就不會被帶著轉。"], ["跟著輪子一直轉", false, "那是沒有棘輪的固定齒輪車；一般自行車停止踩踏時踏板會停。"]] } }
+        { "say": "腳踩踏板，曲柄發揮槓桿作用，產生扭力帶動齒盤旋轉。", "parts": ["pedal_l", "pedal_r", "crank", "chainring"], "drive": "pedal", "speed": 0.5,
+          "quiz": { "q": "踩下踏板時，最先跟著轉動的是？", "options": [["曲柄和齒盤", true, "踏板鎖在曲柄上，曲柄又和齒盤固定在一起，三者會同步旋轉。"], ["後輪", false, "力量還要經過鏈條和飛輪，最後才會傳到後輪。"], ["前輪", false, "前輪沒有連接傳動系統，是後輪推著整台車前進時才跟著滾動。"]] } },
+        { "say": "齒盤的齒咬住鏈條，把上段鏈條往前拉。", "parts": ["chainring", "chain"], "drive": "pedal", "speed": 0.5 },
+        { "say": "鏈條拉動後方的飛輪與後輪。齒盤 50 齒、飛輪 17 齒，踏板踩一圈，後輪會轉將近三圈。", "parts": ["chain", "cassette", "rear_wheel"], "drive": "pedal", "speed": 0.5,
+          "quiz": { "q": "齒盤 50 齒、飛輪 17 齒，踏板踩一圈，後輪大約轉幾圈？", "options": [["大約 3 圈", true, "齒數比 50 ÷ 17 ≈ 2.9。大齒輪帶動小齒輪時，小齒輪的轉速會變快。"], ["1 圈", false, "前後齒數相同才會轉一樣多圈，但這裡飛輪小很多。"], ["半圈", false, "大齒輪帶小齒輪是增速，圈數會變多而不是變少。"]] } },
+        { "say": "停止踩踏時，後花鼓裡的單向棘輪會滑開，讓後輪繼續轉、踏板保持靜止。", "parts": ["rear_wheel", "cassette", "pedal_l", "pedal_r"], "drive": "coast", "speed": 0.5,
+          "quiz": { "q": "騎車滑行不踩踏板時，踏板會怎樣？", "options": [["停住不動", true, "單向棘輪讓後輪可以單獨轉動，不會反過來帶動飛輪和踏板。"], ["跟著輪子一直轉", false, "那是不裝棘輪的「單速死飛車」；一般單車靠棘輪就能停腳滑行。"]] } }
       ] },
     { "id": "brake", "title": "拉煞車到車子停下",
       "steps": [
-        { "say": "手拉把手上的煞車桿，拉動裡面的鋼線。", "parts": ["handlebar"] },
-        { "say": "鋼線拉動夾器，兩片煞車皮夾住輪圈。", "parts": ["brake_front", "front_wheel"],
-          "quiz": { "q": "煞車皮夾住的是輪子的哪裡？", "options": [["輪圈的側面", true, "這是輪圈煞車：煞車皮夾住輪圈兩側。"], ["輪胎表面", false, "夾輪胎會把胎磨壞，煞車面在輪圈上。"], ["花鼓", false, "碟煞才在花鼓旁邊夾碟盤，這台是輪圈煞車。"]] } },
-        { "say": "摩擦把速度變成熱，輪子慢下來。前煞車的力量最大，因為煞車時重量往前移。", "parts": ["brake_front", "brake_rear", "front_wheel", "rear_wheel"], "drive": "coast", "speed": 0.2 }
+        { "say": "按下煞車拉桿，會拉緊管線裡的煞車鋼線。", "parts": ["handlebar"] },
+        { "say": "鋼線拉動夾器，讓左右兩塊煞車皮夾緊輪圈。", "parts": ["brake_front", "front_wheel"],
+          "quiz": { "q": "這台車的煞車皮是夾住輪子的哪個部位？", "options": [["輪圈兩側", true, "這是C夾輪圈煞車，靠煞車皮摩擦金屬輪圈側面來減速。"], ["外胎表面", false, "直接摩擦橡膠外胎會很快磨破爆胎，煞車必須夾在金屬輪圈上。"], ["中心花鼓", false, "碟煞才會在花鼓旁裝碟盤，這台車用的是輪圈煞車。"]] } },
+        { "say": "摩擦力把車子的動能轉成熱能，讓車慢下來。煞車時重心前移，因此前煞車效果最強。", "parts": ["brake_front", "brake_rear", "front_wheel", "rear_wheel"], "drive": "coast", "speed": 0.2 }
       ] }
   ],
   "faults": [
@@ -57,7 +57,7 @@
       "id": "chain_off",
       "title": "鏈條脫落",
       "short": "踩踏板，後輪卻不動",
-      "symptom": "踩踏板時曲柄和齒盤都在轉，後輪卻一動也不動。你覺得哪裡壞了？",
+      "symptom": "踩下踏板，曲柄和齒盤都在轉，但後輪完全不動。哪裡出問題了？",
       "drive": "pedal",
       "speed": 0.5,
       "broken": [
@@ -74,19 +74,20 @@
           "amount": 0.12
         }
       },
-      "hint": "沿著力量走：腳 → 曲柄 → 齒盤 → ？ → 飛輪 → 後輪。哪一段之後就不動了？",
+      "hint": "力量順序是：踏板 → 曲柄 → 齒盤 → ？ → 飛輪 → 後輪。看看齒盤後面少了什麼連動？",
       "suspects": [
         "後煞車卡住",
         "鏈條掉了",
         "後輪壞了"
       ],
       "right": 1,
-      "observe": "踩踏板的時候，跟著力量走，看它傳到哪裡就斷了。",
-      "whys": ["煞車皮沒有夾住輪框，而且煞車卡住也不會讓鏈條停在那裡。看看齒盤和飛輪之間。", "", "後輪本身沒問題，是根本沒有力量傳到它。往前看，力量在哪裡就停了？"],
+      "observe": "邊踩邊順著傳動路線看，動作在哪個零件之後斷掉了？",
+      "whys": ["如果後煞車卡死後輪，連飛輪、鏈條和齒盤都會被拉住踩不動。去看看齒盤和飛輪之間的鏈條。", "", "看後輪上的飛輪，它也完全沒轉，代表力量根本沒傳到後輪。往齒盤方向找找看。"],
       "show": [["brake_rear", "rear_wheel"], ["chain"], ["rear_wheel", "cassette"]],
-      "cause": "鏈條從齒盤上掉下來了。齒盤在轉，但沒有東西把力量拉到後面的飛輪。",
-      "why": "為什麼鏈條掉了，齒盤還在轉，後輪卻不動？",
-      "answer": "力量要靠鏈條從齒盤拉到飛輪，飛輪再帶後輪；鏈條一脫落，這條傳動路線就斷了，後面的零件收不到力。",
+      "cause": "鏈條從齒盤上脫落了，齒盤空轉，無法把拉力傳給後輪飛輪。",
+      "why": "為什麼鏈條脫落後，齒盤還在轉，後輪卻不動？",
+      "answer": "齒盤必須靠鏈條拉動飛輪，才能帶動後輪。鏈條脫落後傳動路徑中斷，後輪就收不到動力。",
+      "reasons": ["鏈條掉了會卡死齒盤，讓後輪跟著停住。","後輪是靠前輪推著轉的，掉鏈條會讓前輪失去動力。"],
       "lesson": "drive"
     }
   ]
