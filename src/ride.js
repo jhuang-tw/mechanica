@@ -26,7 +26,7 @@ export class Ride {
     m.updateMatrixWorld(true);
     const eye = m.localToWorld(new THREE.Vector3(...cfg.eye)), ahead = m.localToWorld(new THREE.Vector3(...cfg.eye).add(new THREE.Vector3(...cfg.look).normalize().multiplyScalar(0.1)));
     // orbit a point 10 cm ahead with the drag reversed: looking around from the seat
-    Object.assign(c, { minDistance: 0.1, maxDistance: 0.1, enableZoom: false, rotateSpeed: -0.35, minPolarAngle: Math.PI * 0.15, maxPolarAngle: Math.PI * 0.85 });
+    Object.assign(c, { minDistance: 0.1, maxDistance: 0.1, enableZoom: false, enablePan: false, rotateSpeed: -0.35, minPolarAngle: Math.PI * 0.15, maxPolarAngle: Math.PI * 0.85 });
     c.target.copy(ahead); v.camera.position.copy(eye); c.update();
     v.camera.fov = 70; v.camera.updateProjectionMatrix();   // a seat needs a wider view than the showcase
     // the road: along +x (the way the vehicle faces), centre line on the driver's left
@@ -72,4 +72,4 @@ export class Ride {
     Object.assign(c, this.saved.opts); c.target.copy(this.saved.target); v.camera.position.copy(this.saved.pos); c.update();
   }
 }
-const pick = (c) => ({ opts: { minDistance: c.minDistance, maxDistance: c.maxDistance, enableZoom: c.enableZoom, rotateSpeed: c.rotateSpeed, minPolarAngle: c.minPolarAngle, maxPolarAngle: c.maxPolarAngle } });
+const pick = (c) => ({ opts: { minDistance: c.minDistance, maxDistance: c.maxDistance, enableZoom: c.enableZoom, enablePan: c.enablePan, rotateSpeed: c.rotateSpeed, minPolarAngle: c.minPolarAngle, maxPolarAngle: c.maxPolarAngle } });
