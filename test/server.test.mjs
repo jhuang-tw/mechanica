@@ -100,7 +100,11 @@ try {
   // repair challenge: the guess is checked on the model (the answer stays in the system prompt), then the explanation is graded
   r = await (await post('/api/fix', { exhibit: 'bike', fault: 'chain_off', stage: 'diagnose', text: '鏈條掉了吧', pointed: 'chain' })).json();
   assert.deepEqual([r.result, r.suspect, r.steps.map((x) => x.do)], ['found', ['chain'], ['isolate', 'drive']]);
-  assert.match(seen.at(-1).b.messages[0].content, /鏈條脫落[\s\S]*故障時不會動的零件：飛輪、後輪、前輪/);
+  assert.match(seen.at(-1).b.messages[0].content, /鏈條脫落[\s\S]*壞的零件：鏈條。故障時不會動的零件：飛輪、後輪、前輪/);
+  // a miss with no question ends on the exhibit's own clue; a found turn and the explain stage are left alone
+  const { withClue } = await import('../server/ai.mjs'), f = { observe: '哪裡斷掉了？' };
+  assert.deepEqual([withClue('我看了飛輪。', f, 'close'), withClue('', f, 'not_it'), withClue('飛輪有轉嗎？', f, 'close'), withClue('找到了。', f, 'found'), withClue('好。', f, undefined)],
+    ['我看了飛輪。 哪裡斷掉了？', '哪裡斷掉了？', '飛輪有轉嗎？', '找到了。', '好。']);
   assert.equal(seen.at(-1).b.messages.at(-1).content, '我的猜測：鏈條掉了吧（我點了：鏈條）');
   r = await (await post('/api/fix', { exhibit: 'bike', fault: 'chain_off', stage: 'explain', text: '鏈條把力量傳到後輪', solved: ['bike/chain_off'] })).json();
   assert.deepEqual([r.grade, r.next], [{ verdict: 'partial', gap: '漏了齒盤' }, null]);
