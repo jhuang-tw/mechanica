@@ -9,7 +9,7 @@ const JOINTS = ['wrist', 'thumb-metacarpal', 'thumb-phalanx-proximal', 'thumb-ph
   ...['index', 'middle', 'ring', 'pinky'].flatMap((f) => ['metacarpal', 'phalanx-proximal', 'phalanx-intermediate', 'phalanx-distal', 'tip'].map((b) => `${f}-finger-${b}`))];
 const C = { bg: '#141b24', btn: '#222c38', on: '#ffb13b', text: '#e8edf3', dim: '#8a97a6', rec: '#ff5a4f' };
 const WHITE = new THREE.Color(0xdfe6ee), ORANGE = new THREE.Color(0xff9a2e), BLUE = new THREE.Color(0x4fb3ff);
-const FONT = '"Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif';
+const FONT = '"Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif', LINE = 1.25;
 
 // a flat panel of buttons drawn on a canvas; `buttons` = [{x, y, w, h, label?, img?, active?, on?}] in canvas pixels
 class Panel {
@@ -27,8 +27,28 @@ class Panel {
       g.fillStyle = b.active ? C.on : b.color || C.btn; g.beginPath(); g.roundRect(b.x, b.y, b.w, b.h, 18); g.fill();
       if (b.img?.complete && b.img.naturalWidth) { g.save(); g.beginPath(); g.roundRect(b.x + 6, b.y + 6, b.w - 12, b.h - 52, 14); g.clip(); g.drawImage(b.img, b.x + 6, b.y + 6, b.w - 12, b.h - 52); g.restore(); }
       g.fillStyle = b.active ? '#1a1206' : C.text; g.font = `${b.size || 34}px ${FONT}`; g.textAlign = 'center'; g.textBaseline = 'middle';
-      g.fillText(fit(g, b.label || '', b.w - 20), b.x + b.w / 2, b.img ? b.y + b.h - 24 : b.y + b.h / 2);
+      const lines = b.lines || [fit(g, b.label || '', b.w - 20)], mid = b.img ? b.y + b.h - 24 : b.y + b.h / 2, lh = (b.size || 34) * LINE;
+      lines.forEach((l, i) => g.fillText(l, b.x + b.w / 2, mid + (i - (lines.length - 1) / 2) * lh));
     }
+    this.tex.needsUpdate = true;
+  }
+  // a new canvas height needs a new GPU texture: three allocates its size once
+  resize(H) {
+    H = Math.ceil(H);
+    if (this.canvas.height === H) return;
+    this.canvas.height = H; this.h = (this.w * H) / this.canvas.width;
+    this.mesh.geometry.dispose(); this.mesh.geometry = new THREE.PlaneGeometry(this.w, this.h); this.tex.dispose();
+  }
+  // one centred pill of text, as many lines tall as it needs
+  pill(text, bg, color, size = 56, max = 3) {
+    const g = this.canvas.getContext('2d'), W = this.canvas.width;
+    g.font = `${size}px ${FONT}`;
+    const lines = wrap(g, text, W - 80, max), lh = size * LINE;
+    this.resize(Math.max(112, lines.length * lh + 40));
+    const H = this.canvas.height;
+    g.clearRect(0, 0, W, H); g.fillStyle = bg; g.beginPath(); g.roundRect(0, 0, W, H, 56); g.fill();
+    g.fillStyle = color; g.font = `${size}px ${FONT}`; g.textAlign = 'center'; g.textBaseline = 'middle';
+    lines.forEach((l, i) => g.fillText(l, W / 2, H / 2 + (i - (lines.length - 1) / 2) * lh));
     this.tex.needsUpdate = true;
   }
   // canvas-pixel button under a point in the panel's local space
@@ -38,20 +58,33 @@ class Panel {
   }
 }
 const fit = (g, t, w) => { if (g.measureText(t).width <= w) return t; while (t && g.measureText(t + '…').width > w) t = t.slice(0, -1); return t + '…'; };
+// text broken into at most `max` lines of width w, at a space where there is one; the last line is cut with … only if it still doesn't fit
+function wrap(g, t, w, max = 3) {
+  const lines = [];
+  for (t = t.trim(); t; t = t.trim()) {
+    if (lines.length === max - 1) { lines.push(fit(g, t, w)); break; }
+    let n = t.length;
+    while (n > 1 && g.measureText(t.slice(0, n)).width > w) n--;
+    if (n < t.length) { const sp = t.lastIndexOf(' ', n); if (sp > 0) n = sp; }
+    lines.push(t.slice(0, n)); t = t.slice(n);
+  }
+  return lines;
+}
 
 export class VR {
   constructor(viewer, app) {
     this.v = viewer; this.app = app; this.xr = viewer.renderer.xr; this.scene = viewer.scene;
     this.root = new THREE.Group(); this.scene.add(this.root);   // everything VR adds, removed on exit
     this.menu = new Panel(0.56, 0.5); this.lessonPanel = new Panel(0.5, 0.12); this.sub = new Panel(1, 0.08, 1400);
-    this.sub.mesh.material.depthTest = false; this.sub.mesh.renderOrder = 20;
-    this.root.add(this.menu.mesh, this.lessonPanel.mesh, this.sub.mesh);
+    this.cue = new Panel(0.6, 0.1, 1200);   // the green "fixed" banner
+    for (const p of [this.sub, this.cue]) { p.mesh.material.depthTest = false; p.mesh.renderOrder = 20; }
+    this.root.add(this.menu.mesh, this.lessonPanel.mesh, this.sub.mesh, this.cue.mesh);
     this.gear = new THREE.Mesh(new THREE.CircleGeometry(0.016, 24), new THREE.MeshBasicMaterial({ map: gearTexture(), transparent: true, toneMapped: false }));
     this.gear.visible = false; this.root.add(this.gear);
     this.thumbs = {};
     for (const e of app.list) this.thumbs[e.id] = Object.assign(new Image(), { src: e.thumb, onload: () => this.menu.mesh.visible && this.drawMenu() });
     this.inputs = [0, 1].map((i) => this.input(i));
-    this.ray = new THREE.Raycaster(); this.last = 0; this.subT = 99; this.place = { dist: 1, height: 0, yaw: 0 };
+    this.ray = new THREE.Raycaster(); this.last = 0; this.subT = this.cueT = 99; this.place = { dist: 1, height: 0, yaw: 0 };
   }
 
   async start() {
@@ -134,14 +167,27 @@ export class VR {
       if (o.mode === 'spread') this.v.rig.setExplode(o.explode);
       Object.assign(this.place, { yaw: o.yaw, dist: o.dist, height: o.height }); this.applyPlace();
     } else this.hold = null;
-    // subtitle: under your gaze, fades after a few seconds
-    this.subT += dt;
-    const op = Math.max(0, Math.min(1, 5 - this.subT));
+    // subtitle: under your gaze, or sitting on top of an open panel so it never covers the buttons; fades after a few seconds
+    this.subT += dt; this.cueT += dt;
+    const op = Math.max(0, Math.min(1, 5 - this.subT)), over = [this.lessonPanel, this.menu].find((p) => p.mesh.visible), ahead = new THREE.Vector3(0, 0, -1).applyQuaternion(head.quaternion);
     this.sub.mesh.visible = op > 0;
     if (op > 0) {
       this.sub.mesh.material.opacity = op;
-      this.sub.mesh.position.copy(hp).addScaledVector(new THREE.Vector3(0, 0, -1).applyQuaternion(head.quaternion), 1.2).y -= 0.32;
-      this.sub.mesh.quaternion.copy(head.quaternion);
+      const m = this.sub.mesh;
+      if (over) {
+        m.scale.setScalar(0.5); m.quaternion.copy(over.mesh.quaternion);
+        m.position.copy(over.mesh.position).addScaledVector(new THREE.Vector3(0, 1, 0).applyQuaternion(m.quaternion), over.h / 2 + this.sub.h * 0.25 + 0.012);
+      } else {
+        m.scale.setScalar(1); m.quaternion.copy(head.quaternion);
+        m.position.copy(hp).addScaledVector(ahead, 1.2).y -= 0.32;
+      }
+    }
+    const cue = Math.max(0, Math.min(1, 4 - this.cueT));
+    this.cue.mesh.visible = cue > 0;
+    if (cue > 0) {
+      this.cue.mesh.material.opacity = cue;
+      this.cue.mesh.position.copy(hp).addScaledVector(ahead, 1.2).y += 0.2;
+      this.cue.mesh.quaternion.copy(head.quaternion);
     }
   }
   joints(s) {
@@ -210,8 +256,9 @@ export class VR {
   drawMenu() {
     const a = this.app, B = [], W = 1024, pad = 24;
     const cols = 4, tw = (W - pad * (cols + 1)) / cols, th = 170;
-    a.list.forEach((e, i) => B.push({ x: pad + (i % cols) * (tw + pad), y: pad + Math.floor(i / cols) * (th + pad), w: tw, h: th, img: this.thumbs[e.id], label: e.title, size: 28, active: a.ex.id === e.id, on: () => { this.menu.mesh.visible = false; a.open(e.id); } }));
-    let y = pad + Math.ceil(a.list.length / cols) * (th + pad) + 6;
+    const tiles = a.list.filter((e) => e.id !== 'car');
+    tiles.forEach((e, i) => B.push({ x: pad + (i % cols) * (tw + pad), y: pad + Math.floor(i / cols) * (th + pad), w: tw, h: th, img: this.thumbs[e.id], label: e.title, size: 28, active: a.ex.id === e.id, on: () => { this.menu.mesh.visible = false; a.open(e.id); } }));
+    let y = pad + Math.ceil(tiles.length / cols) * (th + pad) + 6;
     const row = (items) => { const w = (W - pad * (items.length + 1)) / items.length; items.forEach((it, i) => B.push({ x: pad + i * (w + pad), y, w, h: 84, ...it })); y += 84 + pad; };
     const close = (fn) => () => { this.menu.mesh.visible = false; fn(); };
     row(a.ex.lessons.map((l) => ({ label: `⛓ ${l.title}`, size: 28, on: close(() => a.startLesson(l, false)) })));
@@ -226,8 +273,7 @@ export class VR {
       { label: t('vrMenuClose'), on: () => (this.menu.mesh.visible = false) },
       { label: t('vrExit'), on: () => this.xr.getSession()?.end() },
     ]);
-    const H = y + 2, canvas = this.menu.canvas;
-    if (canvas.height !== H) { canvas.height = H; this.menu.h = (this.menu.w * H) / W; this.menu.mesh.geometry.dispose(); this.menu.mesh.geometry = new THREE.PlaneGeometry(this.menu.w, this.menu.h); }
+    this.menu.resize(y + 2);
     this.menu.draw(B);
   }
   // lesson bar (◀ step ▶ ✕) and quiz answers, or the current options, near your hands
@@ -236,22 +282,25 @@ export class VR {
     if (!L && !more.length) { p.mesh.visible = false; return; }
     // a lesson's quiz answers, or the tutor / repair / explain options (the page's own buttons, clicked from here)
     const opts = L ? (a.quiz || []).map(([text], i) => [text, () => a.answer(i)]) : more.map((b) => [b.textContent, () => { b.click(); setTimeout(() => this.refresh(), 50); }, b.getAttribute('aria-pressed') === 'true']);
-    const W = 1024, pad = 20, top = L ? 120 : pad, H = top + opts.length * 100, B = [];
+    const W = 1024, pad = 20, g = p.canvas.getContext('2d'), size = 30, B = [];
+    let y = L ? 120 : pad;
     if (L) B.push({ x: pad, y: pad, w: 140, h: 80, label: '◀', on: () => a.go(-1) }, { x: W - 2 * (140 + pad), y: pad, w: 140, h: 80, label: '▶', on: () => a.go(1) },
       { x: W - 140 - pad, y: pad, w: 140, h: 80, label: '✕', on: () => a.stopLesson() },
       { x: 180, y: pad, w: W - 180 - 2 * (140 + pad) - pad, h: 80, label: `${L.i + 1} / ${L.l.steps.length}`, color: C.bg, on: null });
-    opts.forEach(([text, on, active], i) => B.push({ x: pad, y: top + i * 100, w: W - 2 * pad, h: 84, label: text, size: L ? 32 : 26, active, on }));
-    if (p.canvas.height !== H) { p.canvas.height = H; p.h = (p.w * H) / W; p.mesh.geometry.dispose(); p.mesh.geometry = new THREE.PlaneGeometry(p.w, p.h); }
+    g.font = `${size}px ${FONT}`;
+    for (const [text, on, active] of opts) {
+      const lines = wrap(g, text, W - 2 * pad - 40), h = Math.max(84, lines.length * size * LINE + 28);
+      B.push({ x: pad, y, w: W - 2 * pad, h, lines, size, active, on }); y += h + 16;
+    }
+    p.resize(y + 4);
     p.draw(B);
     if (!p.mesh.visible) { p.mesh.visible = true; this.facing(p.mesh, 0.45, 0.2); }
   }
   say(text) {
-    const g = this.sub.canvas.getContext('2d'), { width: W, height: H } = this.sub.canvas;
-    g.clearRect(0, 0, W, H); g.fillStyle = 'rgba(10,14,20,0.78)'; g.beginPath(); g.roundRect(0, 0, W, H, H / 2); g.fill();
-    g.fillStyle = C.text; g.font = `56px ${FONT}`; g.textAlign = 'center'; g.textBaseline = 'middle';
-    g.fillText(fit(g, (text || '').match(/^[^。！？\n]*?(?:[。！？]|[.!?](?=\s|$)|$)/m)[0], W - 80), W / 2, H / 2);   // the first sentence on one line; the voice says the rest
-    this.sub.tex.needsUpdate = true; this.subT = text ? 0 : 99;
+    this.sub.pill((text || '').match(/^[^。！？\n]*?(?:[。！？]|[.!?](?=\s|$)|$)/m)[0], 'rgba(10,14,20,0.78)', C.text);   // the first sentence; the voice says the rest
+    this.subT = text ? 0 : 99;
   }
+  cheer(text) { this.cue.pill(text, '#2fbf71', '#06210f', 60, 1); this.cueT = 0; }
 }
 
 function gearTexture() {
