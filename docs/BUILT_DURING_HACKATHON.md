@@ -1,27 +1,23 @@
 # Built during the hackathon (Oct 26 – Nov 4, 2026)
 
 Every line of code and every asset in this repository was created during the Meta Global AI Developer Hackathon (Indie track).
-The repository was created on `<date>`; its first commit is `<hash>`. The git history is the record.
+The GitHub repository was created on 2026-10-27 (19:03 UTC, 2026-10-28 03:03 Taiwan time). Its first commit is `9577cd8` (2026-10-27 20:34 +08:00). The git history is the record.
+
+The history has three root commits because the work started in three folders on 2026-10-27 and was joined by merges that night: `9577cd8` (server and Meta AI calls), `14c8ce8` (steam locomotive CAD) and `4da19c8` (the app, the other exhibits' CAD and Blender builds, and the VR mode, committed as one snapshot at 23:58 +08:00). Features below that list `4da19c8` or `9577cd8` were built on 2026-10-27 inside those snapshots; their earlier local commit ids are not in this repository.
 
 An earlier personal prototype (a private VR mechanics explorer, started 2026-10-20) was used only as a design reference.
 None of its code, models or media are in this repository; everything here was rewritten from scratch.
 
-<!-- Team notes (中文，提交前刪掉)：
-- 新 repo 是從零重寫，舊專案只當參考。現在 C:\AI\mechanica 的「舊快照」基底（舊 c87ab01）不能進新 repo。
-- 每做完一個功能就在下表加一列：功能 → commit 範圍 → 日期。
-- 舊專案 10-26 之後的 commit（CAD 傳動、Meta providers、SAM 遮罩、AI 編排）雖然在活動期間，但在舊 repo 裡，為了乾淨一律在新 repo 重寫，不搬。
--->
-
 ## Features → commits
 | Feature | Meta model / tool | Commits | Date |
 |---|---|---|---|
-| Mobile-first app: landing, exhibit view, tap a part, explode, reset, optional WebXR VR (three.js) | — | `7dcf6c0`, `44fe640` | 2026-10-27 |
-| Manifest-driven part rig: isolate, detach, rotate, real drives (gear ratios), explode | — | `7dcf6c0` | 2026-10-27 |
-| Car exhibit app side: manifest (62 parts, 4 lessons with quiz), slider-crank engine, steering, camera glides to the parts in a lesson | — | `1121b07` | 2026-10-27 |
-| Steam exhibit app side: manifest (33 parts, 3 lessons with quiz), slider-crank generalised to any crank axis and slide direction (crossheads, coupling rods, valves 90° ahead) | — | `3027350` | 2026-10-27 |
-| Helicopter exhibit app side: manifest (27 parts, 3 lessons with quiz), swashplate linkage (collective lifts plates and pitches both blades; cyclic tilts plates, per-blade sin(azimuth) pitch, teetering disc tilts toward the stick), lesson steps can run several drives | — | `9ac7238` | 2026-10-27 |
-| VR headset exhibit app side: manifest (28 parts, 3 lessons with quiz), sliding drives (IPD wheel turns while both eye modules slide), camera focus scaled to small models | — | `46d6965` | 2026-10-27 |
-| VR mode: wrist-gear menu (exhibits, lessons, quiz, explode, reset, ask by voice, exit), joint-node hands with grip/pinch colours, two-fist explode/turn/move, poke and ray panels, fading one-line subtitle, lesson and quiz panel; IWER emulator for dev (`?xr`) | — | `282a078` | 2026-10-27 |
+| Mobile-first app: landing, exhibit view, tap a part, explode, reset, optional WebXR VR (three.js) | — | `4da19c8` | 2026-10-27 |
+| Manifest-driven part rig: isolate, detach, rotate, real drives (gear ratios), explode | — | `4da19c8` | 2026-10-27 |
+| Car exhibit app side: manifest (62 parts, 4 lessons with quiz), slider-crank engine, steering, camera glides to the parts in a lesson | — | `4da19c8` | 2026-10-27 |
+| Steam exhibit app side: manifest (33 parts, 3 lessons with quiz), slider-crank generalised to any crank axis and slide direction (crossheads, coupling rods, valves 90° ahead) | — | `4da19c8` | 2026-10-27 |
+| Helicopter exhibit app side: manifest (27 parts, 3 lessons with quiz), swashplate linkage (collective lifts plates and pitches both blades; cyclic tilts plates, per-blade sin(azimuth) pitch, teetering disc tilts toward the stick), lesson steps can run several drives | — | `4da19c8` | 2026-10-27 |
+| VR headset exhibit app side: manifest (28 parts, 3 lessons with quiz), sliding drives (IPD wheel turns while both eye modules slide), camera focus scaled to small models | — | `4da19c8` | 2026-10-27 |
+| VR mode: wrist-gear menu (exhibits, lessons, quiz, explode, reset, ask by voice, exit), joint-node hands with grip/pinch colours, two-fist explode/turn/move, poke and ray panels, fading one-line subtitle, lesson and quiz panel; IWER emulator for dev (`?xr`) | — | `4da19c8` | 2026-10-27 |
 | Car body app side: 11 shell, door, seat and dashboard parts, one-way swing drives (doors, hood and trunk open and close), Node tests load textured models | — | `68901e8` | 2026-10-28 |
 | Jet exhibit app side: manifest (19 parts, 3 lessons with quiz), LP/HP spools at 1:3 with the radial drive, cowls and thrust reverser (one-way swings and slide), manifest `view` opens on the cutaway | — | `3a899f9` | 2026-10-28 |
 | Watch exhibit app side: manifest (24 parts, 3 lessons with quiz), going train at the real ratios (seconds 60×, hour 1/12), balance ±270° with the pallet fork flicking ±10° at twice its rate (new per-move swing `period`), rotor, crown and bezel drives | — | `deeb1fe` | 2026-10-28 |
@@ -34,19 +30,19 @@ None of its code, models or media are in this repository; everything here was re
 | Studio look and PBR pass on all 8 exhibits: softbox reflections, neutral tone mapping, key/fill/rim lights with soft shadow, faded floor and contact shadow, metal roughness grain, per-exhibit `look`; models get rounded edges, baked AO in vertex colours and clear-coat paint | — | `7db46ac` | 2026-10-28 |
 | Highlights keep the real material (rim glow, no colour override) on all exhibits; moto engine sealed like a real parallel twin with a right-side cover | — | `fd8d7af` | 2026-10-28 |
 | Moto right mirror stalk restored | — | `5a17edc` | 2026-10-28 |
-| ⛓ Cause-and-effect lessons and ❓ guess-first quiz (from the manifest) | — | `44fe640` | 2026-10-27 |
-| Voice and text questions in the app, spoken answers, AI demo playback | Muse Spark, Muse Voice Transcribe (via server) | `44fe640` | 2026-10-27 |
-| Bicycle exhibit: manifest (18 parts, 2 drives, 2 lessons with quiz), placeholder model script | — | `7dcf6c0` | 2026-10-27 |
-| Photo → machine recognition | Muse Spark vision | `468ce33` (server) | 2026-10-27 |
-| Photo → part masks linked to 3D parts | SAM 3.1 | `468ce33` (server); 3D link `<range>` | 2026-10-27 |
-| Q&A agent that drives the exhibit | Muse Spark tool calling | `468ce33` (server) | 2026-10-27 |
-| AI-choreographed part demos (server checks every step against the manifest) | Muse Spark tool calling | `468ce33` (server) | 2026-10-27 |
-| Voice questions (+ one Muse Spark pass: simplified → traditional, part-name fixes) | Muse Voice Transcribe, Muse Spark | `468ce33` (server) | 2026-10-27 |
+| ⛓ Cause-and-effect lessons and ❓ guess-first quiz (from the manifest) | — | `4da19c8` | 2026-10-27 |
+| Voice and text questions in the app, spoken answers, AI demo playback | Muse Spark, Muse Voice Transcribe (via server) | `4da19c8` | 2026-10-27 |
+| Bicycle exhibit: manifest (18 parts, 2 drives, 2 lessons with quiz), placeholder model script | — | `4da19c8` | 2026-10-27 |
+| Photo → machine recognition | Muse Spark vision | `9577cd8` (server) | 2026-10-27 |
+| Photo → part masks linked to 3D parts | SAM 3.1 | `9577cd8` (server); 3D link `4da19c8` | 2026-10-27 |
+| Q&A agent that drives the exhibit | Muse Spark tool calling | `9577cd8` (server) | 2026-10-27 |
+| AI-choreographed part demos (server checks every step against the manifest) | Muse Spark tool calling | `9577cd8` (server) | 2026-10-27 |
+| Voice questions (+ one Muse Spark pass: simplified → traditional, part-name fixes) | Muse Voice Transcribe, Muse Spark | `9577cd8` (server) | 2026-10-27 |
 | AI tutor (AI 家教): Socratic questions, grading of free-form spoken or typed answers (right / partial / misconception), a demo on the 3D model aimed at the gap, adaptive next question (choices after repeated misses), learner record per exhibit so a return visit starts from weak spots, photo of a real machine starts the tutor at that part, VR menu entry. One Muse call per turn | Muse Spark tool calling, Muse Voice Transcribe | `899702d` | 2026-10-28 |
 | Explain it back (講一遍給我聽): after the last lesson step the learner retells the mechanism by voice or text; Muse marks each cause → effect link covered or missed and names any misconception; the model replays only the missed links; the result feeds the AI tutor's learner record. Picked by a Jevnu score (0.73, highest of six options) | Muse Spark (JSON grading), Muse Voice Transcribe | `2597b92` | 2026-10-28 |
-| Daily spend caps for the public demo | — | `468ce33` (server) | 2026-10-27 |
-| Bicycle model from scratch: CAD drivetrain (build123d), Blender build with one node per manifest part, phone GLB optimizer | — | `1b8f2dd` | 2026-10-27 |
-| Car exhibit mechanisms from scratch: CAD inline-four engine, 5-speed gearbox, differential, wheels and brakes; Blender chassis, steering, suspension | — | `ba0aa36` | 2026-10-27 |
+| Daily spend caps for the public demo | — | `9577cd8` (server) | 2026-10-27 |
+| Bicycle model from scratch: CAD drivetrain (build123d), Blender build with one node per manifest part, phone GLB optimizer | — | `4da19c8` | 2026-10-27 |
+| Car exhibit mechanisms from scratch: CAD inline-four engine, 5-speed gearbox, differential, wheels and brakes; Blender chassis, steering, suspension | — | `4da19c8` | 2026-10-27 |
 | Steam locomotive mechanisms from scratch: CAD spoked wheelsets, cutaway cylinders, pistons, valves, crossheads; Walschaerts valve gear, boiler tubes, firebox, steam pipes | — | `14c8ce8` | 2026-10-27 |
 | Helicopter mechanisms from scratch: CAD main gearbox (bevel + planetary), swashplate, teetering hub, turboshaft casing, tail gears; lofted blades, servos, controls, skids | — | `09ad2dd` | 2026-10-27 |
 | Mixed-reality headset from scratch: lofted front cover with sensor windows, mainboard with SoC, heatsink and heat pipe, blower fan with spinning rotor, cameras and depth sensor, battery, pancake lenses and displays on sliding IPD carriages with a thumb wheel, face cushion, speakers, strap | — | `56efaf2` | 2026-10-27 |
@@ -59,6 +55,24 @@ None of its code, models or media are in this repository; everything here was re
 | UI redesign: landing hero that starts the first lesson in one tap, lesson-led exhibit cards, own line-icon set (no emoji), glass panels and lesson progress bar in the exhibit view; photo kept as a secondary entry | — | `d156fbc` | 2026-10-28 |
 | Continuous lessons and free camera: a 連貫 toggle shows every step's parts and drives together while the captions walk through the cause-and-effect chain on a loop; dragging the camera during a lesson stops the steps from re-aiming it | — | `83efd34` | 2026-10-28 |
 | First-person ride (坐上去) on the motorbike and car: eye-point camera with drag look-around, a road rolling at the driven wheel's speed, throttle and per-gear drives (moto 6, car 5) with real rpm and km/h from the gear ratios, x-ray to the drivetrain, car shell lifted like a convertible | — | `ee5a780` | 2026-10-28 |
+| Own hand-gesture formulation for VR (finger bend angles, metacarpal palm normal, spread/twist/shift hold) | — | `4da19c8` | 2026-10-27 |
+| Mobile pass: 44 px touch targets, landscape phones get the sheet on the side | — | `5248aa3` | 2026-10-28 |
+| Mic: tap to start, tap again to send; AI questions get their own row | — | `8832687` | 2026-10-28 |
+| Tutor and explain-back in one compact card, choices as pills | — | `41f5ead` | 2026-10-28 |
+| Desktop: chips wrap for mouse users, panel uses the full right column | — | `b9ea3a6` | 2026-10-28 |
+| Repair challenge (修理挑戰): the app opens on a broken machine; the learner guesses the fault, Muse checks the guess on the model, the learner repairs it and hears why; three guesses from the start, wrong picks explained | Muse Spark | `75e93c3`, `54086d4` | 2026-10-28 |
+| Close-up detail pass on all 8 models (bike, headset, car, jet, heli, steam, watch, moto) | — | `3aff675`, `dcea7c9`, `0b63c1a`, `f6817ae`, `8678b8c`, `7cbe41e`, `fb7d73a`, `5ed2417` | 2026-10-28 |
+| English site: the whole app in English or 繁體中文 (browser, switch or `?lang=`), English by default | — | `6da3806`, `8e7a311` | 2026-10-28 |
+| Car engine: cast shapes instead of boxes; GLB optimizer recomputes normals | — | `3a4db92` | 2026-10-28 |
+| Bike: pedals stay level while the crank turns | — | `d95934a` | 2026-10-29 |
+| Every question offers tappable options as well as voice and typing | — | `2aba12f` | 2026-10-29 |
+| Natural voice: `/api/tts` with Inworld TTS-2 Flash (Xinyi zh-TW, Ashley en), Azure neural TTS next, the browser's voice last | — | `99f0a2b`, `456ac4b`, `16ef004` | 2026-10-28 – 2026-10-29 |
+| Phone: two fingers pan as well as pinch, even when the first lands on a movable part | — | `5c095cf` | 2026-10-30 |
+| Voice plays each line as a whole clip, the lesson waits for it, the next line is fetched ahead | — | `3a0996c` | 2026-10-30 |
+| Guess-first quiz keeps the explanation playing instead of replaying the old step | — | `2985f6e` | 2026-10-31 |
+| Content tools: export all teaching text to Markdown and import it back by key | — | `2c8e43d`, `b59b25f` | 2026-10-31 |
+| Teaching text rewrite: shorter, plainer part info, lesson lines, quizzes and repair hints (edited with Gemini, imported with the content tools) | — | `31c7b23` | 2026-10-31 |
+| Steam repair challenge hides the coupling rods while they are off | — | `e1f985d` | 2026-10-31 |
 
 ## Third-party (unmodified dependencies, used under their licenses)
 | Package | License |
@@ -68,7 +82,7 @@ None of its code, models or media are in this repository; everything here was re
 | @meta-sam/parser (official SAM 3.1 mask parser) | SAM License (see its LICENSE) |
 | build123d (CAD for the drivetrain parts, build tool only) | Apache-2.0 |
 | glTF Transform, meshoptimizer (GLB optimization, dev only) | MIT |
-| `<others>` | |
+| iwer (Meta's WebXR emulator, dev only) | MIT |
 
 ## Assets
 | Asset | Made with | Rights |
@@ -78,5 +92,5 @@ None of its code, models or media are in this repository; everything here was re
 | Steam locomotive shell (in `public/exhibits/steam/model.glb`) | Tripo3D Multiview to 3D from Codex-generated reference views (`tools/exhibits/steam/tripo-ref`), generated 2026-10-27, then processed by `tools/exhibits/steam/build.py` | Generated on Jim's paid Tripo3D plan (confirmed 2026-10-28), which covers publishing |
 | Motorcycle bodywork (in `public/exhibits/moto/model.glb`) | Tripo3D Multiview to 3D from Codex-generated reference views (`tools/exhibits/moto/tripo-ref`), generated 2026-10-27, then processed by `tools/exhibits/moto/build.py` | Generated on Jim's paid Tripo3D plan (confirmed 2026-10-28), which covers publishing |
 | Helicopter shell (in `public/exhibits/heli/model.glb`) | Tripo3D mesh, generated 2026-10-27, then processed by `tools/exhibits/heli/build.py` | Generated on Jim's paid Tripo3D plan (confirmed 2026-10-28), which covers publishing |
-| Voice-over | `<Jim / TTS service>` | `<terms>` |
-| Music | `<source>` | Royalty-free |
+| Spoken lesson lines and answers | Generated at run time by Inworld TTS-2 Flash (voices Xinyi, Ashley) on Jim's Inworld account; Azure neural TTS or the browser's own voice as fallbacks. No audio files are stored in the repository | Under the Inworld and Azure terms of service |
+| Music | None in the app or the repository | — |
