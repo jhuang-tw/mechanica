@@ -1,7 +1,9 @@
-// VR mode: the exhibit at arm's length, hands drawn as joint nodes, a gear on the left inner wrist (or Y/B on a
+// VR mode: the exhibit at arm's length, hands drawn as real hand meshes, a gear on the left inner wrist (or Y/B on a
 // controller) opens the menu, two fists pull the model apart / turn / move it, a one-line subtitle fades out while
 // the full answer is spoken. Holding the trigger or a pinch on a part drags it (see Rig.grab). Panels are canvas textures; a controller trigger, a pinch ray or an index-finger poke presses them.
 import * as THREE from 'three';
+import { XRHandModelFactory } from 'three/addons/webxr/XRHandModelFactory.js';
+import { XRControllerModelFactory } from 'three/addons/webxr/XRControllerModelFactory.js';
 import { isFist, isOpen, isPinch, palmNormal, twoHand, twoHandStart } from './gestures.js';
 import { t } from './i18n.js';
 
@@ -9,6 +11,8 @@ const JOINTS = ['wrist', 'thumb-metacarpal', 'thumb-phalanx-proximal', 'thumb-ph
   ...['index', 'middle', 'ring', 'pinky'].flatMap((f) => ['metacarpal', 'phalanx-proximal', 'phalanx-intermediate', 'phalanx-distal', 'tip'].map((b) => `${f}-finger-${b}`))];
 const C = { bg: '#141b24', btn: '#222c38', on: '#ffb13b', text: '#e8edf3', dim: '#8a97a6', rec: '#ff5a4f' };
 const WHITE = new THREE.Color(0xdfe6ee), ORANGE = new THREE.Color(0xff9a2e), BLUE = new THREE.Color(0x4fb3ff);
+// real hand meshes (WebXR generic-hand, MIT, served from /hands/) and the headset's own controller models
+const handModels = new XRHandModelFactory().setPath('/hands/'), ctlModels = new XRControllerModelFactory();
 const FONT = '"Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif';
 
 // a flat panel of buttons drawn on a canvas; `buttons` = [{x, y, w, h, label?, img?, active?, on?}] in canvas pixels
@@ -63,7 +67,7 @@ export class VR {
   }
   end() {
     this.scene.remove(this.root);
-    for (const s of this.inputs) { s.off(); this.scene.remove(s.ctl, s.hand); }
+    for (const s of this.inputs) { s.off(); this.scene.remove(s.ctl, s.hand, s.grip); }
     const st = this.v.stage; st.position.set(0, 0, 0); st.rotation.set(0, 0, 0); st.scale.setScalar(1);
     this.v.vr = null; this.v.frame(); this.app.onExit?.();
   }
@@ -73,6 +77,10 @@ export class VR {
     const ctl = this.xr.getController(i), hand = this.xr.getHand(i), s = { ctl, hand, src: null, fist: false, poke: new Map() };
     const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3(0, 0, -1)]), new THREE.LineBasicMaterial({ color: 0x8fd3ff, transparent: true, opacity: 0.6 }));
     line.scale.z = 3; ctl.add(line);
+    // a skinned hand mesh and a controller model, made once per renderer slot (the renderer keeps these objects across sessions)
+    hand.userData.model ||= hand.add(handModels.createHandModel(hand, 'mesh')) && hand.children.at(-1);
+    s.grip = this.xr.getControllerGrip(i);
+    s.grip.userData.model ||= s.grip.add(ctlModels.createControllerModel(s.grip)) && s.grip.children.at(-1);
     s.nodes = new THREE.InstancedMesh(new THREE.SphereGeometry(0.0075, 10, 8), new THREE.MeshBasicMaterial({ toneMapped: false }), JOINTS.length);
     s.nodes.frustumCulled = false; s.nodes.visible = false;
     for (let k = 0; k < JOINTS.length; k++) s.nodes.setColorAt(k, WHITE);
@@ -81,7 +89,7 @@ export class VR {
     const on = { connected: (e) => (s.src = e.data), disconnected: (e) => { if (e.data === s.src) s.src = null; }, select: () => this.select(s) };
     for (const k in on) ctl.addEventListener(k, on[k]);
     s.off = () => { for (const k in on) ctl.removeEventListener(k, on[k]); ctl.remove(line); };
-    this.scene.add(ctl, hand); this.root.add(s.nodes);
+    this.scene.add(ctl, hand, s.grip); this.root.add(s.nodes);
     return s;
   }
 
@@ -155,11 +163,15 @@ export class VR {
     s.nodes.visible = !!j;
     s.ctl.children[0].visible = !j || !s.fist;
     if (!j) return;
-    const m = new THREE.Matrix4(), pinch = isPinch(j);
+    const m = new THREE.Matrix4(), pinch = isPinch(j), hide = new THREE.Matrix4().makeScale(0, 0, 0);
+    // the hand mesh carries the shape; dots stay only on thumb and index tips: blue while pinching, orange on a fist
     JOINTS.forEach((name, k) => {
-      s.nodes.setMatrixAt(k, m.makeTranslation(j[name]));
-      s.nodes.setColorAt(k, s.fist ? ORANGE : pinch && (name === 'thumb-tip' || name === 'index-finger-tip') ? BLUE : WHITE);
+      const tip = name === 'thumb-tip' || name === 'index-finger-tip';
+      s.nodes.setMatrixAt(k, tip && (pinch || s.fist) ? m.makeTranslation(j[name]) : hide);
+      s.nodes.setColorAt(k, s.fist ? ORANGE : pinch ? BLUE : WHITE);
     });
+    const mesh = s.hand.userData.model?.getObjectByProperty('type', 'SkinnedMesh');
+    if (mesh?.material?.emissive) { mesh.material.emissive.set(s.fist ? 0x7a3a00 : 0x000000); }
     s.nodes.instanceMatrix.needsUpdate = true; s.nodes.instanceColor.needsUpdate = true;
   }
   grabPoint(s, j) { return s && (j ? j['middle-finger-metacarpal'] : s.src && !s.src.hand ? s.ctl.getWorldPosition(new THREE.Vector3()) : null); }
