@@ -256,8 +256,9 @@ export class VR {
   drawMenu() {
     const a = this.app, B = [], W = 1024, pad = 24;
     const cols = 4, tw = (W - pad * (cols + 1)) / cols, th = 170;
-    a.list.forEach((e, i) => B.push({ x: pad + (i % cols) * (tw + pad), y: pad + Math.floor(i / cols) * (th + pad), w: tw, h: th, img: this.thumbs[e.id], label: e.title, size: 28, active: a.ex.id === e.id, on: () => { this.menu.mesh.visible = false; a.open(e.id); } }));
-    let y = pad + Math.ceil(a.list.length / cols) * (th + pad) + 6;
+    const tiles = a.list.filter((e) => e.id !== 'car');
+    tiles.forEach((e, i) => B.push({ x: pad + (i % cols) * (tw + pad), y: pad + Math.floor(i / cols) * (th + pad), w: tw, h: th, img: this.thumbs[e.id], label: e.title, size: 28, active: a.ex.id === e.id, on: () => { this.menu.mesh.visible = false; a.open(e.id); } }));
+    let y = pad + Math.ceil(tiles.length / cols) * (th + pad) + 6;
     const row = (items) => { const w = (W - pad * (items.length + 1)) / items.length; items.forEach((it, i) => B.push({ x: pad + i * (w + pad), y, w, h: 84, ...it })); y += 84 + pad; };
     const close = (fn) => () => { this.menu.mesh.visible = false; fn(); };
     row(a.ex.lessons.map((l) => ({ label: `⛓ ${l.title}`, size: 28, on: close(() => a.startLesson(l, false)) })));

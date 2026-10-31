@@ -121,6 +121,8 @@ export function cleanSteps(calls, e) {
   }).filter(Boolean).sort((x, y) => x.at - y.at).slice(0, MAX_STEPS);
 }
 const partList = (e) => e.parts.map((p) => `${p.id}=${p.name}${p.info ? (EN(e) ? ': ' : '：') + p.info : ''}`).join('\n');
+// Meta's safety filter refuses some harmless wordings ("Why does a helicopter need a tail rotor?"): ask once more in plain words
+const retried = async (ask, first, plain) => { try { return await ask(first); } catch (err) { if (!err.policy) throw err; return ask(plain); } };
 export async function choreograph({ exhibit: id, text, pointed, history = [], lang }) {
   const e = exhibit(id, lang);
   const system = EN(e) ? `You narrate a 3D teaching model of the ${e.title || e.name}. Your answer is read aloud.
@@ -134,15 +136,11 @@ ${partList(e)}` : `你是「${e.title || e.name}」3D 教學模型的解說員�
 ${e.parts.map((p) => `${p.id}=${p.name}${p.info ? '：' + p.info : ''}`).join('\n')}`;
   const ask = (q) => chat({ system, tools: toolsFor(e), maxTokens: 900, messages: [...history.slice(-4), { role: 'user', content: pointed ? `${q}\n${EN(e) ? `(pointing at: ${pointed})` : `（正指著：${pointed}）`}` : q }] });
   const part = mentioned(e, text) || e.parts.find((p) => p.id === pointed);
+  const plain = part ? (EN(e) ? `What is the ${part.name.toLowerCase()} for?` : `${part.name}是做什麼用的？`) : EN(e) ? `How does the ${e.name.toLowerCase()} work?` : `${e.name}是怎麼運作的？`;
   let r;
-  try { r = await ask(text); } catch (err) {
+  try { r = await retried(ask, text, plain); } catch (err) {
     if (!err.policy) throw err;
-    // Meta's safety filter refuses some harmless wordings ("Why does a helicopter need a tail rotor?"): ask about the part plainly, else answer from the exhibit
-    const plain = part ? (EN(e) ? `What is the ${part.name.toLowerCase()} for?` : `${part.name}是做什麼用的？`) : EN(e) ? `How does the ${e.name.toLowerCase()} work?` : `${e.name}是怎麼運作的？`;
-    try { r = await ask(plain); } catch (again) {
-      if (!again.policy) throw again;
-      return { say: part?.info || e.intro, steps: part ? [{ do: 'isolate', at: 0, parts: [part.id] }] : [], model: 'exhibit' };
-    }
+    return { say: part?.info || e.intro, steps: part ? [{ do: 'isolate', at: 0, parts: [part.id] }] : [], model: 'exhibit' };
   }
   return { say: r.text.slice(0, EN(e) ? 400 : 200), steps: cleanSteps(r.calls, e), model: r.model };
 }
@@ -201,7 +199,7 @@ ${l.steps.map((s, i) => `${i + 1}. ${s.say}`).join('\n')}` : `學生剛上完「
 只輸出 JSON：{"covered":[${n} 個 true/false],"wrong":"他講錯的地方 ≤ 30 字，沒有就空字串","say":"≤ 60 字台灣繁體中文口語，直接對他說（用「你」）：先肯定講對的，再點出漏掉的第一個環節"}
 環節：
 ${l.steps.map((s, i) => `${i + 1}. ${s.say}`).join('\n')}`;
-  const r = await chat({ system, json: true, temperature: 0, maxTokens: 300, messages: [{ role: 'user', content: text }] });
+  const r = await retried((content) => chat({ system, json: true, temperature: 0, maxTokens: 300, messages: [{ role: 'user', content }] }), text, EN(e) ? `The student's words: "${text}"` : `學生的原話：「${text}」`);
   const j = json(r.text);
   if (!j) throw fail('Muse returned no verdict', 502);
   const k = EN(e) ? 2.5 : 1;
@@ -225,7 +223,7 @@ ${e.parts.map((p) => `${p.id}=${p.name}${p.info ? '：' + p.info : ''}`).join('\
 課綱（正確的因果）：
 ${course}`;
   const user = answer ? `我的回答：${answer}` : '開始上課，先問我第一題。';
-  const r = await chat({ system, tools: tutorTools(e), maxTokens: 900, messages: [...history.slice(-6), { role: 'user', content: user }] });
+  const r = await retried((content) => chat({ system, tools: tutorTools(e), maxTokens: 900, messages: [...history.slice(-6), { role: 'user', content }] }), user, '請繼續上課，問我下一題。');
   return { say: r.text.slice(0, 200), ...cleanTurn(r.calls, e), model: r.model };
 }
 async function tutorEn(e, part, answer, history, known) {
@@ -243,7 +241,7 @@ ${partList(e)}
 Syllabus (the correct cause and effect):
 ${course}`;
   const user = answer ? `My answer: ${answer}` : 'Start the lesson. Ask me the first question.';
-  const r = await chat({ system, tools: tutorTools(e), maxTokens: 900, messages: [...history.slice(-6), { role: 'user', content: user }] });
+  const r = await retried((content) => chat({ system, tools: tutorTools(e), maxTokens: 900, messages: [...history.slice(-6), { role: 'user', content }] }), user, 'Carry on with the lesson. Ask me the next question.');
   return { say: r.text.slice(0, 400), ...cleanTurn(r.calls, e), model: r.model };
 }
 
@@ -303,7 +301,9 @@ ${common}`
 3. 文字回覆會被唸出來，直接對學生說（用「你」），台灣繁體中文口語 ≤ 60 字：先說他講對的，再補漏掉的那一環。
 ${common}`;
   const user = stage === 'diagnose' ? `我的猜測：${text}${pointed ? `（我點了：${name(pointed)}）` : ''}` : `我的解釋：${text}`;
-  const r = await chat({ system, tools: fixTools(e, stage), maxTokens: 900, messages: [...history.slice(-4), { role: 'user', content: user }] });
+  const suspect = mentioned(e, text)?.name || (pointed && name(pointed));
+  const plain = stage === 'diagnose' ? (suspect ? `我的猜測：${suspect}` : '我不確定，給我一個線索。') : `學生的原話：「${text}」`;
+  const r = await retried((content) => chat({ system, tools: fixTools(e, stage), maxTokens: 900, messages: [...history.slice(-4), { role: 'user', content }] }), user, plain);
   return { say: r.text.slice(0, 200), ...cleanFix(r.calls, e, stage), model: r.model };
 }
 async function fixEn(e, f, stage, text, pointed, history, solved, name, drive) {
@@ -326,6 +326,8 @@ Every turn, in the same reply:
 3. Your text reply is read aloud. Talk straight to the student (use "you") in plain spoken English, at most 35 words: first say what they got right, then add the missing link.
 ${common}`;
   const user = stage === 'diagnose' ? `My guess: ${text}${pointed ? ` (I tapped: ${name(pointed)})` : ''}` : `My explanation: ${text}`;
-  const r = await chat({ system, tools: fixTools(e, stage), maxTokens: 900, messages: [...history.slice(-4), { role: 'user', content: user }] });
+  const suspect = mentioned(e, text)?.name || (pointed && name(pointed));
+  const plain = stage === 'diagnose' ? (suspect ? `My guess: the ${suspect.toLowerCase()}` : "I'm not sure. Give me a clue.") : `The student's words: "${text}"`;
+  const r = await retried((content) => chat({ system, tools: fixTools(e, stage), maxTokens: 900, messages: [...history.slice(-4), { role: 'user', content }] }), user, plain);
   return { say: r.text.slice(0, 400), ...cleanFix(r.calls, e, stage), model: r.model };
 }

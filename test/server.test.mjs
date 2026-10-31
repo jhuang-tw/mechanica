@@ -40,7 +40,7 @@ const meta = createServer(async (req, res) => {
   return msg({ content: '```json\n{"match":true,"exhibit":"bike","confidence":0.9,"machine":"公路車","parts":["chain","rear_derailleur","made_up","chain"],"say":"這是公路車，看看鏈條。"}\n```' });
 });
 await new Promise((ok) => meta.listen(0, ok));
-Object.assign(process.env, { INWORLD_API_KEY: 'aW53b3JsZA==', INWORLD_BASE_URL: `http://127.0.0.1:${meta.address().port}`, AZURE_SPEECH_KEY: 'speech-key', AZURE_SPEECH_ENDPOINT: `http://127.0.0.1:${meta.address().port}`, META_API_KEY: 'test-key', META_BASE_URL: `http://127.0.0.1:${meta.address().port}/v1`, DAILY_LIMIT: '19' });
+Object.assign(process.env, { INWORLD_API_KEY: 'aW53b3JsZA==', INWORLD_BASE_URL: `http://127.0.0.1:${meta.address().port}`, AZURE_SPEECH_KEY: 'speech-key', AZURE_SPEECH_ENDPOINT: `http://127.0.0.1:${meta.address().port}`, META_API_KEY: 'test-key', META_BASE_URL: `http://127.0.0.1:${meta.address().port}/v1`, DAILY_LIMIT: '23' });
 const { server, overBudget } = await import('../server/serve.mjs');
 await new Promise((ok) => server.listen(0, ok));
 const app = `http://127.0.0.1:${server.address().port}`;
@@ -119,6 +119,21 @@ try {
   assert.deepEqual([r.grade, r.next], [{ verdict: 'partial', gap: '漏了齒盤' }, null]);
   assert.ok(seen.at(-1).b.tools.find((t) => t.function.name === 'grade').function.parameters.properties.next.enum.includes('heli/tail_shaft'));
   assert.equal((await post('/api/fix', { exhibit: 'bike', fault: 'nope', stage: 'diagnose', text: 'x' })).status, 400);
+
+  // the safety filter refuses the learner's first wording on the other AI calls too
+  const lastUser = () => seen.at(-1).b.messages.at(-1).content;
+  blocked = (u) => u.startsWith('我的回答');
+  assert.equal((await post('/api/tutor', { exhibit: 'bike', answer: '鏈條帶後輪' })).status, 200);
+  assert.equal(lastUser(), '請繼續上課，問我下一題。');
+  blocked = (u) => u.startsWith('踩踏板');
+  assert.equal((await post('/api/explain', { exhibit: 'bike', lesson: 'drive', text: '踩踏板曲柄帶齒盤' })).status, 200);
+  assert.equal(lastUser(), '學生的原話：「踩踏板曲柄帶齒盤」');
+  blocked = (u) => u.startsWith('我的猜測：鏈條掉了');
+  assert.equal((await post('/api/fix', { exhibit: 'bike', fault: 'chain_off', stage: 'diagnose', text: '鏈條掉了吧' })).status, 200);
+  assert.equal(lastUser(), '我的猜測：鏈條');
+  blocked = () => true;
+  assert.equal((await post('/api/fix', { exhibit: 'bike', fault: 'chain_off', stage: 'diagnose', text: '鏈條掉了吧' })).status, 502);
+  blocked = () => false;
 
   // speech: Inworld first (Taiwan Mandarin for Chinese, English otherwise), its NDJSON chunks decoded back into one MP3; repeats come from the cache
   let a = await fetch(app + '/api/tts?text=' + encodeURIComponent('這是曲柄'));
