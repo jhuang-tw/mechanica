@@ -6,7 +6,7 @@ sys.path.insert(0, __import__('os').path.dirname(__file__))
 from import_md import parse, KEY
 
 def locked(md):
-    return [l.strip() for l in md.splitlines() if '勿改' in l or '✅' in l or '❌' in l or re.match(r'\*\*猜測選項\*\*', l)]
+    return [re.sub(r'^[-\s]*|\*\*', '', l).strip() for l in md.splitlines() if '（勿改）' in l or ('`' in l and ('✅' in l or '❌' in l)) or '正解是第' in l]
 def nums(t): return set(re.findall(r'\d+(?:\.\d+)?', t))
 
 a, b = (open(p, encoding='utf-8').read() for p in sys.argv[1:3])

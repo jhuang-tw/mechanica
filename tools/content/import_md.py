@@ -47,7 +47,7 @@ def spans(text):
 
 # --- the Markdown --------------------------------------------------------------------------------
 KEY = re.compile(r'`([a-z0-9_]+\.[\w.]+|[a-z0-9_]+)`')
-LINE = re.compile(r'^\s*-\s*(?:\*\*)?(?P<label>[^：:`]*?)\s*(?P<lang>中|EN)\s*(?:`[^`]*`)?\s*[：:]\s?(?P<text>.*)$')
+LINE = re.compile(r'^\s*(?:-\s*)?(?:\*\*)?(?P<label>[^：:`]*?)\s*(?P<lang>中|EN)\s*(?:`[^`]*`)?\s*[：:]\s?(?P<text>.*)$')
 
 def parse(md):
     """{(key, field, lang): text}; field is '' for a plain value."""
@@ -57,11 +57,11 @@ def parse(md):
         h = re.match(r'^(#{1,4})\s+(.*)$', line)
         keys = KEY.findall(line)
         if keys: cur = keys[-1]
-        if h:
-            body = KEY.sub('', h.group(2)).strip()
-            if h.group(1) == '#':   # "# bike · 自行車 / Bicycle"
-                m = re.match(r'^([a-z0-9_]+)\s*·\s*(.*?)\s*/\s*(.*)$', h.group(2))
-                if m: vals[(m.group(1), 'name', '中')] = m.group(2); vals[(m.group(1), 'name', 'EN')] = m.group(3)
+        if h or (keys and not LINE.match(line) and ' / ' in line):   # "### `bike.parts.frame` 車架 / Frame" (heading or plain line)
+            body = KEY.sub('', h.group(2) if h else line).strip()
+            m = h and re.match(r'^([a-z0-9_]+)\s*·\s*(.*?)\s*/\s*(.*)$', h.group(2))   # "# bike · 自行車 / Bicycle", any level
+            if m:
+                vals[(m.group(1), 'name', '中')] = m.group(2); vals[(m.group(1), 'name', 'EN')] = m.group(3); cur = None
                 continue
             if cur and re.search(r'\.(parts|lessons|faults)\.[\w]+$', cur) and ' / ' in body:
                 zh, en = body.rsplit(' / ', 1)
