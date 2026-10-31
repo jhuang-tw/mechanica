@@ -188,8 +188,9 @@ function answer(i) {
   quiz = null; vr?.refresh();
   for (const b of $('quiz').children) b.disabled = true;
   $('quiz').children[i].classList.add(right ? 'right' : 'wrong');
-  say(right ? t('right') : t('thinkAgain'), why, false, true);
-  setTimeout(() => lesson && playStep(s), 2600);
+  const me = lesson, at = me.i, read = new Promise((ok) => setTimeout(ok, 2600));
+  // only if the learner is still on this step: pressing next must not bring the old line back over the new one
+  Promise.all([read, say(right ? t('right') : t('thinkAgain'), why, false, true)]).then(() => { if (lesson === me && me.i === at && !me.all && !quiz) playStep(s); });
 }
 // 連貫: every step's parts and drives at once, the captions walking through the chain and starting over
 
