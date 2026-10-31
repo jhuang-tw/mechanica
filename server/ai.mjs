@@ -279,7 +279,7 @@ async function afterTools({ system, messages, out, stage, f, e, name, first, max
   const en = EN(e), shown = out.steps.map((s) => (s.parts ? `${s.do} ${s.parts.map(name).join(en ? ', ' : '、')}` : `${s.do} ${s.drive || ''}`.trim())).join(en ? '; ' : '；') || (en ? 'nothing' : '沒有');
   const result = stage === 'diagnose'
     ? (en ? `Check result: ${out.result}. Shown on the model: ${shown}. While it ran, these parts stayed still: ${f.stops.map(name).join(', ')}. Everything else moved normally.` : `檢查結果：${out.result}。模型上演的：${shown}。運轉時這些零件停著：${f.stops.map(name).join('、')}。其他零件都正常。`)
-    : (en ? `Grade: ${out.grade?.verdict || 'partial'}. Missing: ${out.grade?.gap || 'nothing'}. Shown on the model: ${shown}.` : `評分：${out.grade?.verdict || 'partial'}。漏掉的：${out.grade?.gap || '沒有'}。模型上演的：${shown}。`);
+    : (en ? `Grade: ${out.grade?.verdict || 'partial'}. Missing: ${out.grade?.gap || 'nothing'}. Shown on the model: ${shown}. The model is repaired now: every part moved and the wheels turned.` : `評分：${out.grade?.verdict || 'partial'}。漏掉的：${out.grade?.gap || '沒有'}。模型上演的：${shown}。模型已經修好，所有零件都正常運轉。`);
   const say = en ? 'The tools have run. Do not call tools. Write only your spoken line under rule 3, in the past tense, about what the model showed.' : '工具已經跑完。不要再呼叫工具。只寫第 3 條的那句話，用已經做完的語氣，講模型呈現了什麼。';
   const text = await retried((content) => chat({ system: `${system}\n${say}`, maxTokens: 150, ms: 8000, messages: [...messages, { role: 'user', content }] }), result, en ? 'Say your line now.' : '請說出你的那句話。').then((r) => r.text, (err) => (console.warn(`fix: second call failed: ${String(err.message).slice(0, 80)}`), ''));
   const missed = stage === 'diagnose' && out.result !== 'found';
@@ -307,7 +307,7 @@ ${common}`
 正確的解釋：${f.answer}
 所有工具都要在這一個回覆裡一次呼叫完：模型運轉前不會有工具結果回來。每一輪在同一個回覆裡，以下全部都要做：
 1. 呼叫 grade 評他的解釋，口語、錯字照意思評。答對時 next 挑下一題（他修過的：${solved.join('、') || '還沒有'}）。
-2. 用工具動模型把這條傳動路線演一次：isolate 相關零件，再 drive，3–8 秒。
+2. 用工具動模型把這條傳動路線演一次：isolate 相關零件，再 drive，3–8 秒。他漏掉哪一環，就只 isolate 那一環的零件。
 3. 文字回覆會被唸出來，直接對學生說（用「你」），台灣繁體中文口語 ≤ 60 字：先說他講對的，再補漏掉的那一環。
 ${common}`;
   const user = stage === 'diagnose' ? `我的猜測：${text}${pointed ? `（我點了：${name(pointed)}）` : ''}` : `我的解釋：${text}`;
@@ -332,7 +332,7 @@ ${common}`
 The correct explanation: ${f.answer}
 Make every tool call in this one reply: no tool results come back before the model runs. Every turn, in the same reply, all of these:
 1. Call grade on their explanation, judging casual speech and typos by meaning. When it is right, pick the next challenge in next (already fixed: ${solved.join(', ') || 'none yet'}).
-2. Replay this drive path on the model with the tools: isolate the relevant parts, then drive, 3–8 seconds.
+2. Replay this drive path on the model with the tools: isolate the relevant parts, then drive, 3–8 seconds. If they missed a link, isolate only the parts of that link.
 3. Your text reply is read aloud. Talk straight to the student (use "you") in plain spoken English, at most 35 words: first say what they got right, then add the missing link.
 ${common}`;
   const user = stage === 'diagnose' ? `My guess: ${text}${pointed ? ` (I tapped: ${name(pointed)})` : ''}` : `My explanation: ${text}`;
