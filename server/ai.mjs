@@ -192,11 +192,11 @@ export async function explainBack({ exhibit: id, lesson, text, lang }) {
   const e = exhibit(id, lang), l = (e.lessons || []).find((x) => x.id === lesson);
   if (!l) throw fail('unknown lesson');
   const n = l.steps.length;
-  const system = EN(e) ? `The student has just finished the lesson "${l.title}" and now explains it in their own words. Check each of the ${n} cause-and-effect links below and decide whether they covered it: the right meaning counts, the wording doesn't have to match, judge casual speech and typos by meaning; a link they got wrong counts as not covered.
-Output JSON only: {"covered":[${n} true/false values],"wrong":"what they got wrong, at most 15 words, or an empty string","say":"at most 35 words of plain spoken English, said straight to them (use 'you'): first praise what they got right, then point out the first missing link"}
+  const system = EN(e) ? `The student has just finished the lesson "${l.title}" and now explains it in their own words. Check each of the ${n} cause-and-effect links below and decide whether they covered it: stating the main cause and effect counts, the wording doesn't have to match, a term, comparison or number inside the link left unsaid is not a miss, judge casual speech and typos by meaning; a link they got wrong (a number or direction reversed, say) counts as not covered.
+Output JSON only: {"covered":[${n} true/false values],"wrong":"what they got wrong, at most 15 words, or an empty string","say":"at most 35 words of plain spoken English, said straight to them (use 'you'): first praise what they got right, then correct anything they got wrong, or if nothing was wrong point out the first missing link"}
 Links:
-${l.steps.map((s, i) => `${i + 1}. ${s.say}`).join('\n')}` : `學生剛上完「${l.title}」，現在用自己的話講一遍。逐一對照下面 ${n} 個因果環節，判斷他有沒有講到：意思對就算，用詞不必一樣，口語和錯字照意思評；講錯的算沒講到。
-只輸出 JSON：{"covered":[${n} 個 true/false],"wrong":"他講錯的地方 ≤ 30 字，沒有就空字串","say":"≤ 60 字台灣繁體中文口語，直接對他說（用「你」）：先肯定講對的，再點出漏掉的第一個環節"}
+${l.steps.map((s, i) => `${i + 1}. ${s.say}`).join('\n')}` : `學生剛上完「${l.title}」，現在用自己的話講一遍。逐一對照下面 ${n} 個因果環節，判斷他有沒有講到：講出主要的因果就算，用詞不必一樣，環節裡的術語、比喻、數字沒提到不算漏，口語和錯字照意思評；講錯的（例如數字或方向相反）算沒講到。
+只輸出 JSON：{"covered":[${n} 個 true/false],"wrong":"他講錯的地方 ≤ 30 字，沒有就空字串","say":"≤ 60 字台灣繁體中文口語，直接對他說（用「你」）：先肯定講對的，有講錯就更正講錯的地方，沒有才點出漏掉的第一個環節"}
 環節：
 ${l.steps.map((s, i) => `${i + 1}. ${s.say}`).join('\n')}`;
   const r = await retried((content) => chat({ system, json: true, temperature: 0, maxTokens: 300, messages: [{ role: 'user', content }] }), text, EN(e) ? `The student's words: "${text}"` : `學生的原話：「${text}」`);
@@ -276,6 +276,8 @@ export function cleanFix(calls, e, stage) {
   else Object.assign(out, { grade: VERDICTS.includes(c.verdict) ? { verdict: c.verdict, gap: clip(c.gap, EN(e) ? 150 : 60) } : null, next: faultKeys().includes(c.next) ? c.next : null });
   return out;
 }
+// Muse writes its line before it runs the tools, so a miss often ends with no clue: fall back on the exhibit's own question (an empty line gets it too)
+export const withClue = (say, f, result) => (!result || result === 'found' || /[？?]/.test(say) ? say : [say, f.observe].filter(Boolean).join(' '));
 export async function fix({ exhibit: id, fault, stage, text, pointed, history = [], solved = [], lang }) {
   const e = exhibit(id, lang), f = (e.faults || []).find((x) => x.id === fault);
   if (!f) throw fail('unknown fault');
@@ -287,11 +289,11 @@ ${e.parts.map((p) => `${p.id}=${p.name}${p.info ? '：' + p.info : ''}`).join('\
 這題的機構「${drive?.name || f.drive}」依序帶動：${(drive?.moves || []).map((m) => name(m.part)).join(' → ')}`;
   const system = stage === 'diagnose'
     ? `你是「${e.title || e.name}」3D 模型旁的修理教練。模型現在故障了，學生看到的症狀：${f.symptom}
-真正的故障（不能直接說出來）：${f.title}。${f.cause} 壞的零件：${f.broken.join('、')}。故障時不會動的零件：${f.stops.map(name).join('、')}。
+真正的故障（不能直接說出來）：${f.title}。${f.cause} 壞的零件：${f.broken.map(name).join('、')}。故障時不會動的零件：${f.stops.map(name).join('、')}。
 學生會說出他的猜測，口語、錯字照意思理解。每一輪在同一個回覆裡：
 1. 呼叫 check 判斷他的猜測，suspect 填他懷疑的零件。
-2. 用工具在模型上檢查他懷疑的地方給他看：isolate 那些零件；用 drive 讓他看它們有沒有在動（模型照故障的狀態運轉，不會動的零件會停著）；要看清楚就 detach。整段 3–8 秒。
-3. 文字回覆會被唸出來，直接對學生說（用「你」），台灣繁體中文口語 ≤ 50 字：說你檢查了什麼、看到什麼。not_it 或 close 就用一個問題給線索（沿著力量傳過去的路線往下找），絕對不要說出答案。found 就稱讚他，說出他找到的是什麼。
+2. 用工具在模型上檢查他懷疑的地方給他看：isolate 那些零件；用 drive 讓他看它們有沒有在動（模型照故障的狀態運轉，不會動的零件會停著）；要看清楚就 detach。整段 3–8 秒。not_it 或 close 時不可以 detach 壞的零件，也不可以只亮它，那等於直接給答案。
+3. 文字回覆會被唸出來，直接對學生說（用「你」），台灣繁體中文口語 ≤ 50 字：說你檢查了什麼、看到什麼（哪個零件有轉、哪個停著），不要只說「我來看看」。not_it 或 close 最後一定要用一個問題給線索（沿著力量傳過去的路線往下找），絕對不要說出答案。found 就稱讚他，說出他找到的是什麼。
 ${common}`
     : `你是「${e.title || e.name}」3D 模型旁的修理教練。學生剛找出故障「${f.title}」，模型已經修好了。你問他：${f.why}
 正確的解釋：${f.answer}
@@ -304,7 +306,8 @@ ${common}`;
   const suspect = mentioned(e, text)?.name || (pointed && name(pointed));
   const plain = stage === 'diagnose' ? (suspect ? `我的猜測：${suspect}` : '我不確定，給我一個線索。') : `學生的原話：「${text}」`;
   const r = await retried((content) => chat({ system, tools: fixTools(e, stage), maxTokens: 900, messages: [...history.slice(-4), { role: 'user', content }] }), user, plain);
-  return { say: r.text.slice(0, 200), ...cleanFix(r.calls, e, stage), model: r.model };
+  const out = cleanFix(r.calls, e, stage);
+  return { say: withClue(r.text.slice(0, 200), f, out.result), ...out, model: r.model };
 }
 async function fixEn(e, f, stage, text, pointed, history, solved, name, drive) {
   const common = `Parts (id=name: description):
@@ -312,11 +315,11 @@ ${partList(e)}
 The mechanism in this challenge, "${drive?.name || f.drive}", drives in order: ${(drive?.moves || []).map((m) => name(m.part)).join(' → ')}`;
   const system = stage === 'diagnose'
     ? `You are a repair coach beside a 3D model of the ${e.title || e.name}. The model is broken right now. The symptom the student sees: ${f.symptom}
-The real fault (never say it outright): ${f.title}. ${f.cause} Broken parts: ${f.broken.join(', ')}. Parts that stop moving because of the fault: ${f.stops.map(name).join(', ')}.
+The real fault (never say it outright): ${f.title}. ${f.cause} Broken parts: ${f.broken.map(name).join(', ')}. Parts that stop moving because of the fault: ${f.stops.map(name).join(', ')}.
 The student will say a guess; understand casual speech and typos by meaning. Every turn, in the same reply:
 1. Call check to judge the guess; put the parts they suspect in suspect.
-2. Check the suspected spot on the model with the tools: isolate those parts; use drive so they can see whether the parts move (the model runs in its broken state, so the stopped parts stay still); detach to see clearly. 3–8 seconds in all.
-3. Your text reply is read aloud. Talk straight to the student (use "you") in plain spoken English, at most 30 words: say what you checked and what you saw. For not_it or close, give a clue as a question (follow the path the force travels), and never give the answer away. For found, praise them and name what they found.
+2. Check the suspected spot on the model with the tools: isolate those parts; use drive so they can see whether the parts move (the model runs in its broken state, so the stopped parts stay still); detach to see clearly. 3–8 seconds in all. For not_it or close, never detach the broken part or light it up alone: that gives the answer away.
+3. Your text reply is read aloud. Talk straight to the student (use "you") in plain spoken English, at most 30 words: say what you checked and what you saw (which part turned, which stayed still), not just "let me look". For not_it or close, always end on a clue as a question (follow the path the force travels), and never give the answer away. For found, praise them and name what they found.
 ${common}`
     : `You are a repair coach beside a 3D model of the ${e.title || e.name}. The student has just found the fault "${f.title}" and the model is repaired. You asked them: ${f.why}
 The correct explanation: ${f.answer}
@@ -329,5 +332,6 @@ ${common}`;
   const suspect = mentioned(e, text)?.name || (pointed && name(pointed));
   const plain = stage === 'diagnose' ? (suspect ? `My guess: the ${suspect.toLowerCase()}` : "I'm not sure. Give me a clue.") : `The student's words: "${text}"`;
   const r = await retried((content) => chat({ system, tools: fixTools(e, stage), maxTokens: 900, messages: [...history.slice(-4), { role: 'user', content }] }), user, plain);
-  return { say: r.text.slice(0, 400), ...cleanFix(r.calls, e, stage), model: r.model };
+  const out = cleanFix(r.calls, e, stage);
+  return { say: withClue(r.text.slice(0, 400), f, out.result), ...out, model: r.model };
 }
