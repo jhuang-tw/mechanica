@@ -2,7 +2,7 @@
 // or 原理 on the same exhibit (tap parts, explode, ask the AI, lessons, quiz, tutor); the landing page picks another machine.
 // Photo and VR are reachable from both.
 import { cleanSteps } from './choreo.js';
-import { Recorder, shrink, speak, unlockSpeech } from './media.js';
+import { Recorder, shrink, speak, prefetch, unlockSpeech } from './media.js';
 import { t, lang, isEn, applyStatic, switchLang, here } from './i18n.js';
 import { localize } from './localize.js';
 
@@ -67,11 +67,11 @@ function home() { stopAll(); speak(''); tiles(); $('app').hidden = true; $('home
 $('back').onclick = home;
 
 // ---------- caption ----------
-function say(title, text, thinking = false, voice = false) {
+function say(title, text, thinking = false, voice = false) {   // -> resolves when the spoken line ends
   $('cap-title').textContent = title; $('cap-text').textContent = text;
   $('caption').classList.toggle('thinking', thinking);
-  if (voice) speak(text);
   vr?.say(text);
+  return voice ? speak(text) : Promise.resolve();
 }
 
 // ---------- parts ----------
@@ -159,7 +159,7 @@ const release = async () => {
 for (const ev of ['pointerup', 'pointercancel']) $('mic').addEventListener(ev, () => { if (!tapMode) lift(); });
 
 // ---------- 因果連動 / 先猜再看: manifest lessons, one cause → effect per step ----------
-function startLesson(l, quiz) { stopAll(); lesson = { l, quiz, i: 0 }; Object.assign(viewer, { lessonMode: true, userView: false }); document.body.classList.add('lesson'); $('lesson').hidden = false; showStep(); }
+function startLesson(l, quiz) { stopAll(); lesson = { l, quiz, i: 0 }; Object.assign(viewer, { lessonMode: true, userView: false }); document.body.classList.add('lesson'); $('lesson').hidden = false; prefetch(l.steps.slice(1, 3).map((s) => s.say)); showStep(); }
 function showStep() {
   const { l, quiz: guess, i } = lesson, s = l.steps[i];
   $('l-step').textContent = `${l.title} · ${i + 1}/${l.steps.length}`;
@@ -205,9 +205,11 @@ function playAll() {
 function flowStep() {
   const { l, i } = lesson, s = l.steps[i];
   rig.highlight(s.parts);
-  say(t('stepN', i + 1), s.say, false, true);
   clearTimeout(flow);
-  flow = setTimeout(() => { if (lesson?.all) { lesson.i = (i + 1) % l.steps.length; showStep(); } }, 2500 + s.say.length * (isEn ? 70 : 220));   // roughly the time to read or hear it
+  const me = lesson, read = new Promise((ok) => { flow = setTimeout(ok, 2500 + s.say.length * (isEn ? 70 : 220)); });   // roughly the time to read it
+  prefetch([l.steps[(i + 1) % l.steps.length].say]);
+  // next step once the line has been both read and heard: a fixed timer cut the voice off mid-sentence
+  Promise.all([read, say(t('stepN', i + 1), s.say, false, true)]).then(() => { flow = setTimeout(() => { if (lesson === me && me.all && me.i === i) { me.i = (i + 1) % l.steps.length; showStep(); } }, 400); });
 }
 // ---------- 坐上去: first person on a vehicle, throttle and gears with the real rpm and speed ----------
 let ride = null;
