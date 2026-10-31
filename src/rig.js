@@ -154,7 +154,7 @@ export class Rig {
   // move a held part as the hand goes from `from` to `to` (world points)
   drag(h, from, to) {
     const p = this.parts.get(h.part), par = p.obj.parent, a = par.worldToLocal(from.clone()), d = par.worldToLocal(to.clone()).sub(a);   // in the part's parent space
-    if (h.pull) { p.offset.copy(h.pull).multiplyScalar(Math.min(this.size * 0.3, Math.max(0, p.offset.dot(h.pull) + d.dot(h.pull)))); return; }
+    if (h.pull) { const out = Math.min(this.size * 0.3, Math.max(0, p.offset.dot(h.pull) + d.dot(h.pull))); p.offset.copy(h.pull).multiplyScalar(out); return; }
     let da;
     if (h.mv.slide) { const v = new THREE.Vector3(...h.mv.slide); da = (d.dot(v) / v.lengthSq()) * h.amp; }
     else {   // the angle the hand sweeps around the part's axis

@@ -231,6 +231,10 @@ test('hands-on: dragging a pedal turns the whole drive, a door stays within its 
   assert.equal(car.parts.get('door_fr').angle, 0, 'the other doors stay shut');
   assert.equal(car.grab('piston_1').part, 'crankshaft', 'a piston turns the crankshaft');
   const b = car.grab('battery'), bat = car.parts.get('battery');
+  car.drag(b, new THREE.Vector3(), new THREE.Vector3());
+  assert.equal(bat.offset.length(), 0, 'holding still moves nothing');
+  car.drag(b, new THREE.Vector3(), b.pull.clone().multiplyScalar(0.01));
+  assert.ok(Math.abs(bat.offset.length() - 0.01) < 1e-9, 'it follows the hand, no jump to the limit');
   car.drag(b, new THREE.Vector3(), b.pull.clone().multiplyScalar(0.2));
   assert.ok(bat.offset.length() > 0.1, 'battery pulled out');
   car.drag(b, new THREE.Vector3(), b.pull.clone().multiplyScalar(-5));
