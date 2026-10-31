@@ -4,6 +4,7 @@
 import * as THREE from 'three';
 import { isFist, isOpen, isPinch, palmNormal, twoHand, twoHandStart } from './gestures.js';
 import { t } from './i18n.js';
+import { drawIcon } from './icons.js';
 
 const JOINTS = ['wrist', 'thumb-metacarpal', 'thumb-phalanx-proximal', 'thumb-phalanx-distal', 'thumb-tip',
   ...['index', 'middle', 'ring', 'pinky'].flatMap((f) => ['metacarpal', 'phalanx-proximal', 'phalanx-intermediate', 'phalanx-distal', 'tip'].map((b) => `${f}-finger-${b}`))];
@@ -11,7 +12,8 @@ const C = { bg: '#141b24', btn: '#222c38', on: '#ffb13b', text: '#e8edf3', dim: 
 const WHITE = new THREE.Color(0xdfe6ee), ORANGE = new THREE.Color(0xff9a2e), BLUE = new THREE.Color(0x4fb3ff);
 const FONT = '"Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif', LINE = 1.25;
 
-// a flat panel of buttons drawn on a canvas; `buttons` = [{x, y, w, h, label?, img?, active?, on?}] in canvas pixels
+// a flat panel of buttons drawn on a canvas; `buttons` = [{x, y, w, h, label?, icon?, img?, active?, on?}] in canvas pixels
+// (icon = a vector icon from icons.js, drawn left of the label, or centred when there is no label)
 class Panel {
   constructor(w, h, px = 1024) {
     this.canvas = Object.assign(document.createElement('canvas'), { width: px, height: Math.round((px * h) / w) });
@@ -26,7 +28,17 @@ class Panel {
     for (const b of buttons) {
       g.fillStyle = b.active ? C.on : b.color || C.btn; g.beginPath(); g.roundRect(b.x, b.y, b.w, b.h, 18); g.fill();
       if (b.img?.complete && b.img.naturalWidth) { g.save(); g.beginPath(); g.roundRect(b.x + 6, b.y + 6, b.w - 12, b.h - 52, 14); g.clip(); g.drawImage(b.img, b.x + 6, b.y + 6, b.w - 12, b.h - 52); g.restore(); }
-      g.fillStyle = b.active ? '#1a1206' : C.text; g.font = `${b.size || 34}px ${FONT}`; g.textAlign = 'center'; g.textBaseline = 'middle';
+      const ink = b.active ? '#1a1206' : C.text;
+      g.fillStyle = ink; g.font = `${b.size || 34}px ${FONT}`; g.textAlign = 'center'; g.textBaseline = 'middle';
+      if (b.icon) {
+        const is = b.iconSize || Math.min(b.h * 0.52, 46), gap = b.label ? 14 : 0, room = b.w - 28 - is - gap;
+        for (let px = b.size || 34; px > 24 && g.measureText(b.label || '').width > room; px -= 2) g.font = `${px - 2}px ${FONT}`;   // shrink a little before cutting
+        const label = b.label ? fit(g, b.label, room) : '';
+        const x0 = b.x + b.w / 2 - (is + gap + (label ? g.measureText(label).width : 0)) / 2;
+        drawIcon(g, b.icon, x0 + is / 2, b.y + b.h / 2, is, ink);
+        if (label) { g.textAlign = 'left'; g.fillText(label, x0 + is + gap, b.y + b.h / 2); }
+        continue;
+      }
       const lines = b.lines || [fit(g, b.label || '', b.w - 20)], mid = b.img ? b.y + b.h - 24 : b.y + b.h / 2, lh = (b.size || 34) * LINE;
       lines.forEach((l, i) => g.fillText(l, b.x + b.w / 2, mid + (i - (lines.length - 1) / 2) * lh));
     }
@@ -261,22 +273,22 @@ export class VR {
     let y = pad + Math.ceil(tiles.length / cols) * (th + pad) + 6;
     const row = (items) => { const w = (W - pad * (items.length + 1)) / items.length; items.forEach((it, i) => B.push({ x: pad + i * (w + pad), y, w, h: 84, ...it })); y += 84 + pad; };
     const close = (fn) => () => { this.menu.mesh.visible = false; fn(); };
-    row(a.ex.lessons.map((l) => ({ label: `⛓ ${l.title}`, size: 28, on: close(() => a.startLesson(l, false)) })));
+    row(a.ex.lessons.map((l) => ({ icon: 'lesson', label: l.title, size: 28, on: close(() => a.startLesson(l, false)) })));
     row([
-      { label: t('vrTutor'), on: close(() => a.startTutor()) },
-      { label: t('vrGuess'), on: close(() => a.quizLesson()) },
-      { label: a.rig.explodeTarget > 0.5 ? t('vrClose') : t('vrOpen'), on: () => { a.explode(a.rig.explodeTarget > 0.5 ? 0 : 1); this.drawMenu(); } },
-      { label: t('vrReset'), on: close(() => { a.reset(); this.fitStage(); }) },
+      { icon: 'tutor', label: t('vrTutor'), on: close(() => a.startTutor()) },
+      { icon: 'guess', label: t('vrGuess'), on: close(() => a.quizLesson()) },
+      { ...(a.rig.explodeTarget > 0.5 ? { icon: 'assemble', label: t('vrClose') } : { icon: 'explode', label: t('vrOpen') }), on: () => { a.explode(a.rig.explodeTarget > 0.5 ? 0 : 1); this.drawMenu(); } },
+      { icon: 'reset', label: t('vrReset'), on: close(() => { a.reset(); this.fitStage(); }) },
     ]);
     row([
-      { label: a.recording ? t('vrDone') : a.tutoring ? t('vrAnswer') : t('vrAsk'), color: a.recording ? C.rec : undefined, on: () => { a.talk(!a.recording); setTimeout(() => this.menu.mesh.visible && this.drawMenu(), 50); } },
-      { label: t('vrMenuClose'), on: () => (this.menu.mesh.visible = false) },
-      { label: t('vrExit'), on: () => this.xr.getSession()?.end() },
+      { icon: a.recording ? 'stop' : 'mic', label: a.recording ? t('vrDone') : a.tutoring ? t('vrAnswer') : t('vrAsk'), color: a.recording ? C.rec : undefined, on: () => { a.talk(!a.recording); setTimeout(() => this.menu.mesh.visible && this.drawMenu(), 50); } },
+      { icon: 'close', label: t('vrMenuClose'), on: () => (this.menu.mesh.visible = false) },
+      { icon: 'exit', label: t('vrExit'), on: () => this.xr.getSession()?.end() },
     ]);
     this.menu.resize(y + 2);
     this.menu.draw(B);
   }
-  // lesson bar (◀ step ▶ ✕) and quiz answers, or the current options, near your hands
+  // lesson bar (back, step, next, close) and quiz answers, or the current options, near your hands
   refresh() {
     const a = this.app, p = this.lessonPanel, L = a.lesson, more = L ? [] : a.choices;
     if (!L && !more.length) { p.mesh.visible = false; return; }
@@ -284,8 +296,8 @@ export class VR {
     const opts = L ? (a.quiz || []).map(([text], i) => [text, () => a.answer(i)]) : more.map((b) => [b.textContent, () => { b.click(); setTimeout(() => this.refresh(), 50); }, b.getAttribute('aria-pressed') === 'true']);
     const W = 1024, pad = 20, g = p.canvas.getContext('2d'), size = 30, B = [];
     let y = L ? 120 : pad;
-    if (L) B.push({ x: pad, y: pad, w: 140, h: 80, label: '◀', on: () => a.go(-1) }, { x: W - 2 * (140 + pad), y: pad, w: 140, h: 80, label: '▶', on: () => a.go(1) },
-      { x: W - 140 - pad, y: pad, w: 140, h: 80, label: '✕', on: () => a.stopLesson() },
+    if (L) B.push({ x: pad, y: pad, w: 140, h: 80, icon: 'prev', on: () => a.go(-1) }, { x: W - 2 * (140 + pad), y: pad, w: 140, h: 80, icon: 'next', on: () => a.go(1) },
+      { x: W - 140 - pad, y: pad, w: 140, h: 80, icon: 'close', on: () => a.stopLesson() },
       { x: 180, y: pad, w: W - 180 - 2 * (140 + pad) - pad, h: 80, label: `${L.i + 1} / ${L.l.steps.length}`, color: C.bg, on: null });
     g.font = `${size}px ${FONT}`;
     for (const [text, on, active] of opts) {
@@ -306,6 +318,6 @@ export class VR {
 function gearTexture() {
   const c = Object.assign(document.createElement('canvas'), { width: 128, height: 128 }), g = c.getContext('2d');
   g.fillStyle = 'rgba(20,27,36,0.85)'; g.beginPath(); g.arc(64, 64, 62, 0, Math.PI * 2); g.fill();
-  g.fillStyle = C.on; g.font = `84px ${FONT}`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('⚙', 64, 70);
+  drawIcon(g, 'gear', 64, 64, 92, C.on);
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
 }

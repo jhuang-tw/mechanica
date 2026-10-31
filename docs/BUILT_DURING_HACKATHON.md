@@ -73,6 +73,7 @@ None of its code, models or media are in this repository; everything here was re
 | Content tools: export all teaching text to Markdown and import it back by key | — | `2c8e43d`, `b59b25f` | 2026-10-31 |
 | Teaching text rewrite: shorter, plainer part info, lesson lines, quizzes and repair hints (edited with Gemini, imported with the content tools) | — | `31c7b23` | 2026-10-31 |
 | Steam repair challenge hides the coupling rods while they are off | — | `e1f985d` | 2026-10-31 |
+| VR menu without emoji: own vector line icons (lesson, tutor, guess, explode / put together, reset, mic / stop, close, exit, back / next, wrist gear) drawn on the panel canvas next to plain labels, so every headset browser shows the same thing | — | `ddcf05f` | 2026-10-31 |
 
 ## Third-party (unmodified dependencies, used under their licenses)
 | Package | License |
