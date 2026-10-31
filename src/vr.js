@@ -36,13 +36,16 @@ class Panel {
       g.fillStyle = ink; g.font = `${b.size || 34}px ${FONT}`; g.textAlign = 'center'; g.textBaseline = 'middle';
       if (b.icon) {
         const is = b.iconSize || Math.min(b.h * 0.52, 46), gap = b.label ? 14 : 0, room = b.w - 28 - is - gap;
-        for (let px = b.size || 34; px > 24 && g.measureText(b.label || '').width > room; px -= 2) g.font = `${px - 2}px ${FONT}`;   // shrink a little before cutting
-        const label = b.label ? fit(g, b.label, room) : '';
-        const x0 = b.x + b.w / 2 - (is + gap + (label ? g.measureText(label).width : 0)) / 2;
+        let px = b.size || 34;
+        for (; px > 24 && g.measureText(b.label || '').width > room; px -= 2) g.font = `${px - 2}px ${FONT}`;   // shrink, then wrap: the whole label stays readable
+        const lines = b.label ? wrap(g, b.label, room, Math.max(1, Math.floor(b.h / (px * LINE)))) : [];
+        const x0 = b.x + b.w / 2 - (is + gap + Math.max(0, ...lines.map((l) => g.measureText(l).width))) / 2;
         drawIcon(g, b.icon, x0 + is / 2, b.y + b.h / 2, is, ink);
-        if (label) { g.textAlign = 'left'; g.fillText(label, x0 + is + gap, b.y + b.h / 2); }
+        g.textAlign = 'left';
+        lines.forEach((l, i) => g.fillText(l, x0 + is + gap, b.y + b.h / 2 + (i - (lines.length - 1) / 2) * px * LINE));
         continue;
       }
+      if (!b.lines) for (let px = b.size || 34; px > 22 && g.measureText(b.label || '').width > b.w - 20; px -= 2) g.font = `${px - 2}px ${FONT}`;
       const lines = b.lines || [fit(g, b.label || '', b.w - 20)], mid = b.img ? b.y + b.h - 24 : b.y + b.h / 2, lh = (b.size || 34) * LINE;
       lines.forEach((l, i) => g.fillText(l, b.x + b.w / 2, mid + (i - (lines.length - 1) / 2) * lh));
     }
@@ -91,7 +94,7 @@ export class VR {
   constructor(viewer, app) {
     this.v = viewer; this.app = app; this.xr = viewer.renderer.xr; this.scene = viewer.scene;
     this.root = new THREE.Group(); this.scene.add(this.root);   // everything VR adds, removed on exit
-    this.menu = new Panel(0.56, 0.5); this.lessonPanel = new Panel(0.5, 0.12); this.sub = new Panel(1, 0.08, 1400);
+    this.menu = new Panel(0.34, 0.3); this.lessonPanel = new Panel(0.4, 0.12); this.sub = new Panel(1, 0.08, 1400);
     this.cue = new Panel(0.6, 0.1, 1200);   // the green "fixed" banner
     for (const p of [this.sub, this.cue]) { p.mesh.material.depthTest = false; p.mesh.renderOrder = 20; }
     this.root.add(this.menu.mesh, this.lessonPanel.mesh, this.sub.mesh, this.cue.mesh);
@@ -108,7 +111,6 @@ export class VR {
     await this.xr.setSession(session);
     this.fitStage();
     session.addEventListener('end', () => this.end());
-    this.say(this.app.ex.name);
   }
   end() {
     this.scene.remove(this.root);
@@ -145,7 +147,11 @@ export class VR {
     this.place = { dist: 0.45 + s * k * 0.45, height: s * k < 1.2 ? 0.75 - box.min.y * k : -box.min.y * k, yaw: 0 };
     this.v.rig.setExplode(0);
     this.applyPlace();
+    this.zoom = k;
+    this.nameIt();
   }
+  // a small thing shown bigger than life says so
+  nameIt() { this.say(`${this.app.ex.name}${this.zoom > 1.05 ? ` · ×${Math.round(this.zoom)}` : ''}`); }
   applyPlace() {
     const p = this.place;
     this.v.stage.position.set(0, p.height, -Math.max(0.3, p.dist)); this.v.stage.rotation.y = p.yaw;
@@ -166,7 +172,7 @@ export class VR {
     if (show) {
       this.gear.position.copy(wrist).addScaledVector(n, 0.025); this.gear.lookAt(this.gear.position.clone().add(n));
       const tip = js[R]?.['index-finger-tip'], touch = !!tip && tip.distanceTo(this.gear.position) < 0.025;
-      if (touch && !this.gearTouch) this.once(() => this.toggleMenu(), 0.8);   // on the way in only, so a resting finger doesn't flicker it
+      if (touch && !this.gearTouch) this.once(() => this.toggleMenu(), 1.4);   // on the way in only, so a resting finger doesn't flicker it
       this.gearTouch = touch;
     } else this.gearTouch = false;
     // controllers: Y or B opens the menu; squeeze counts as a fist
@@ -177,7 +183,7 @@ export class VR {
       s.yb = !!b[5]?.pressed; s.fist = !!b[1]?.pressed;
     }
     // pokes on the panels
-    for (const [i, s] of this.inputs.entries()) { const tip = js[i]?.['index-finger-tip']; if (tip) for (const p of [this.menu, this.lessonPanel]) this.poke(s, p, tip); }
+    for (const [i, s] of this.inputs.entries()) { const tip = js[i]?.['index-finger-tip']; s.near = false; if (tip) for (const p of [this.menu, this.lessonPanel]) { this.poke(s, p, tip); s.near ||= this.within(p, tip); } }
     for (const [i, s] of this.inputs.entries()) this.dragHeld(s, js[i]);
     // two fists: explode / turn / move, one gesture per hold
     const a = this.inputs[L], b = this.inputs[R], pa = this.grabPoint(a, js[L]), pb = this.grabPoint(b, js[R]);
@@ -219,7 +225,7 @@ export class VR {
   }
   drawHand(s, j) {
     s.nodes.visible = !!j;
-    s.ctl.children[0].visible = !j || !s.fist;
+    s.ctl.children[0].visible = s === this.pointer() && !s.fist && !s.near;
     if (!j) return;
     const m = new THREE.Matrix4(), pinch = isPinch(j), hide = new THREE.Matrix4().makeScale(0, 0, 0);
     // the hand mesh carries the shape; dots stay only on thumb and index tips: blue while pinching, orange on a fist
@@ -232,6 +238,8 @@ export class VR {
     if (mesh?.material?.emissive) { mesh.material.emissive.set(s.fist ? 0x7a3a00 : 0x000000); }
     s.nodes.instanceMatrix.needsUpdate = true; s.nodes.instanceColor.needsUpdate = true;
   }
+  // the hand that last pinched or pulled the trigger, else the right one
+  pointer() { return this.active?.src ? this.active : this.inputs.find((s) => s.src?.handedness === 'right') || this.inputs.find((s) => s.src); }
   grabPoint(s, j) { return s && (j ? j['middle-finger-metacarpal'] : s.src && !s.src.hand ? s.ctl.getWorldPosition(new THREE.Vector3()) : null); }
   once(fn, gap = 0.4) { const t = performance.now() / 1000; if (t - this.last > gap) { this.last = t; fn(); } }
 
@@ -242,6 +250,8 @@ export class VR {
     s.poke.set(p, l.z);
     if (was > 0.004 && l.z <= 0.004 && Math.abs(l.x) < p.w / 2 && Math.abs(l.y) < p.h / 2) { const b = p.at(l); if (b) this.once(() => b.on()); }
   }
+  // close enough to poke: the finger is the pointer, no ray needed
+  within(p, tip) { if (!p.mesh.visible) return false; const l = p.mesh.worldToLocal(tip.clone()); return Math.abs(l.z) < 0.12 && Math.abs(l.x) < p.w / 2 + 0.03 && Math.abs(l.y) < p.h / 2 + 0.03; }
   aim(ctl) {
     this.ray.ray.origin.setFromMatrixPosition(ctl.matrixWorld);
     this.ray.ray.direction.set(0, 0, -1).transformDirection(ctl.matrixWorld);
@@ -250,6 +260,7 @@ export class VR {
   }
   // trigger / pinch ray: panels first, then the parts (unless that press dragged a part)
   select(s) {
+    this.active = s;
     const hit = this.aim(s.ctl);
     if (hit) { const p = hit.object === this.menu.mesh ? this.menu : this.lessonPanel, b = p.at(p.mesh.worldToLocal(hit.point.clone())); return b && this.once(() => b.on(), 0.2); }
     if (!s.grab?.moved && !s.dragged) this.app.pick(this.v.hit(this.ray));
@@ -258,6 +269,7 @@ export class VR {
   // polled each frame (trigger, or pinch for a hand) rather than selectstart/selectend, whose order differs between runtimes
   dragHeld(s, j) {
     const down = j ? isPinch(j) : !!s.src?.gamepad?.buttons[0]?.pressed;
+    if (down && !s.down) this.active = s;
     if (down && !s.down && !this.aim(s.ctl)) { s.grab = this.v.grabAt(this.ray); s.dragged = false; if (s.grab) s.grab.from = s.grab.at.clone(); }
     if (!down && s.grab) { s.dragged = s.grab.moved; this.v.rig.release(s.grab); s.grab = null; }
     s.down = down;
@@ -269,13 +281,13 @@ export class VR {
   }
 
   // ---- panels ----
-  facing(mesh, ahead, below) {
+  facing(mesh, ahead, below, right = 0) {
     const { hp, fwd } = this.head || { hp: new THREE.Vector3(0, 1.6, 0), fwd: new THREE.Vector3(0, 0, -1) };
-    mesh.position.copy(hp).addScaledVector(fwd, ahead).y -= below; mesh.lookAt(hp);
+    mesh.position.copy(hp).addScaledVector(fwd, ahead).addScaledVector(new THREE.Vector3(-fwd.z, 0, fwd.x).normalize(), right).y -= below; mesh.lookAt(hp);
   }
   toggleMenu() {
     this.menu.mesh.visible = !this.menu.mesh.visible;
-    if (this.menu.mesh.visible) { this.facing(this.menu.mesh, 0.5, 0.12); this.drawMenu(); }
+    if (this.menu.mesh.visible) { this.drawMenu(); this.facing(this.menu.mesh, 0.5, 0.1 + this.menu.h / 2, 0.3); }   // low and to the right: the exhibit keeps the middle of the view, the hand that opened it drops clear
   }
   drawMenu() {
     const a = this.app, B = [], W = 1024, pad = 24;
@@ -283,9 +295,10 @@ export class VR {
     const tiles = a.list.filter((e) => e.id !== 'car');
     tiles.forEach((e, i) => B.push({ x: pad + (i % cols) * (tw + pad), y: pad + Math.floor(i / cols) * (th + pad), w: tw, h: th, img: this.thumbs[e.id], label: e.title, size: 28, active: a.ex.id === e.id, on: () => { this.menu.mesh.visible = false; a.open(e.id); } }));
     let y = pad + Math.ceil(tiles.length / cols) * (th + pad) + 6;
-    const row = (items) => { const w = (W - pad * (items.length + 1)) / items.length; items.forEach((it, i) => B.push({ x: pad + i * (w + pad), y, w, h: 84, ...it })); y += 84 + pad; };
+    const row = (items, h = 84) => { const w = (W - pad * (items.length + 1)) / items.length; items.forEach((it, i) => B.push({ x: pad + i * (w + pad), y, w, h, ...it })); y += h + pad; };
     const close = (fn) => () => { this.menu.mesh.visible = false; fn(); };
-    row(a.ex.lessons.map((l) => ({ icon: 'lesson', label: l.title, size: 28, on: close(() => a.startLesson(l, false)) })));
+    const ls = a.ex.lessons.map((l) => ({ icon: 'lesson', label: l.title, size: 28, on: close(() => a.startLesson(l, false)) })), per = ls.length > 3 ? 2 : 3;   // long titles need the width
+    for (let i = 0; i < ls.length; i += per) row(ls.slice(i, i + per), 112);
     row([
       { icon: 'tutor', label: t('vrTutor'), on: close(() => a.startTutor()) },
       { icon: 'guess', label: t('vrGuess'), on: close(() => a.quizLesson()) },
@@ -318,7 +331,7 @@ export class VR {
     }
     p.resize(y + 4);
     p.draw(B);
-    if (!p.mesh.visible) { p.mesh.visible = true; this.facing(p.mesh, 0.45, 0.2); }
+    if (!p.mesh.visible) { p.mesh.visible = true; this.facing(p.mesh, 0.45, 0.15 + p.h / 2); }
   }
   say(text) {
     this.sub.pill((text || '').match(/^[^。！？\n]*?(?:[。！？]|[.!?](?=\s|$)|$)/m)[0], 'rgba(10,14,20,0.78)', C.text);   // the first sentence; the voice says the rest

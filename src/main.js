@@ -61,6 +61,7 @@ async function open(id) {
   chat = []; pointed = null;
   chips();
   say(ex.name, ex.intro);
+  vr?.nameIt();
   $('vr').hidden = !(await Viewer.vrSupported());
 }
 function home() { stopAll(); speak(''); tiles(); $('app').hidden = true; $('home').hidden = false; window.history.replaceState(null, '', here()); }
