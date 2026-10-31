@@ -4,7 +4,7 @@
 import { cleanSteps } from './choreo.js';
 import { Recorder, shrink, speak, prefetch, unlockSpeech } from './media.js';
 import { t, lang, isEn, applyStatic, switchLang, here } from './i18n.js';
-import { localize } from './localize.js';
+import { localize, mentioned } from './localize.js';
 
 // dev only: ?xr emulates a headset (Meta's IWER) so the VR mode can be tried in a desktop browser
 if (import.meta.env.DEV && new URLSearchParams(location.search).has('xr')) { const { XRDevice, metaQuest3 } = await import('iwer'); (window.xrDevice = new XRDevice(metaQuest3)).installRuntime({ forceInstall: true }); }   // the desktop browser has its own (headset-less) navigator.xr
@@ -127,7 +127,7 @@ async function ask(text) {
   }
 }
 // without the AI: a question that names a part still gets that part
-const offline = (text) => ex.parts.find((p) => [p.name, ...p.aliases].some((n) => text.toLowerCase().includes(n.toLowerCase())));
+const offline = (text) => mentioned(ex, text);
 
 $('type').onclick = () => { $('ask').hidden = !$('ask').hidden; if (!$('ask').hidden) $('q').focus(); };
 $('ask').onsubmit = (e) => { e.preventDefault(); ask($('q').value); $('q').value = ''; $('ask').hidden = true; };
@@ -471,6 +471,7 @@ function repair(x) {
   viewer.choreo.cancel(); rig.setFault(null);
   symptom();
   card('right', t('repaired'), x.f.cause); reasons(x);
+  vr?.cheer(t('repaired'));
   $('f-q').textContent = x.f.why; $('f-hint').textContent = t('explainHint'); $('f-hint').hidden = false; $('f-help').hidden = false; $('f-help').textContent = t('dunno');
   speak(`${x.f.cause} ${x.f.why}`); vr?.say(x.f.why);
 }
@@ -496,6 +497,7 @@ function finish(x, next, answer) {
   const l = ex.lessons.find((y) => y.id === x.f.lesson);
   if (answer) card('partial', t('fullAnswer'), answer);
   $('f-q').textContent = t('exFixed', ex.name); $('f-hint').hidden = true; $('f-help').hidden = true;
+  vr?.cheer(t('exFixed', ex.name));
   choices([...(n ? [[t('nextFix', exhibits[n.ex].name, n.f.short), () => startFix(n.key), true]] : []), ...(l ? [[t('seeLesson', l.title), async () => { await learn(); startLesson(l, false); }]] : [])]);
   symptom();
 }
@@ -524,7 +526,9 @@ const app = {
   onExit: () => (vr = null),
 };
 async function enterVR() {
-  try { vr = await viewer.enterVR(app); } catch { vr = null; toast(t('noVR')); }
+  try { vr = await viewer.enterVR(app); } catch { vr = null; toast(t('noVR')); return; }
+  vr.refresh();   // a repair or lesson already running keeps its options in the headset
+  if (fix) vr.say($('f-q').textContent);
 }
 $('vr').onclick = enterVR;
 viewerModule.then(async ({ Viewer }) => { if (await Viewer.vrSupported()) $('home-vr').hidden = false; });
