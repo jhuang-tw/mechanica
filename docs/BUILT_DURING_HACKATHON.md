@@ -73,6 +73,8 @@ None of its code, models or media are in this repository; everything here was re
 | Content tools: export all teaching text to Markdown and import it back by key | — | `2c8e43d`, `b59b25f` | 2026-10-31 |
 | Teaching text rewrite: shorter, plainer part info, lesson lines, quizzes and repair hints (edited with Gemini, imported with the content tools) | — | `31c7b23` | 2026-10-31 |
 | Steam repair challenge hides the coupling rods while they are off | — | `e1f985d` | 2026-10-31 |
+| Repair challenge: Muse makes every model check in one reply, then a second call says what the model showed and ends on a clue; a failed call falls back to the exhibit's clue | Muse Spark tool calling | `34fc6c7` | 2026-11-01 |
+| 90-second demo video: screen capture of the running app, English voice-over from the app's own `/api/tts` (Inworld TTS-2, voice Ashley), no music | Muse Spark, Muse Voice Transcribe (real calls in the repair shots) | — | 2026-11-01 |
 
 ## Third-party (unmodified dependencies, used under their licenses)
 | Package | License |
