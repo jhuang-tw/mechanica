@@ -1,28 +1,28 @@
 {
  "name": "Bicycle",
  "title": "Road bike (2×11-speed)",
- "intro": "This is a road bike. Tap any part to see what it is, or ask me \"How does pedalling turn the rear wheel?\"",
+ "intro": "This is a road bike. Tap any part to see what it does, or ask me \"How does pedalling turn the rear wheel?\"",
  "suggest": ["How does pedalling turn the rear wheel?", "Why does the wheel keep turning when I stop pedalling?", "Show me how many more teeth the chainring has than the cassette"],
  "looksLike": "bicycle, bike, road bike, mountain bike, chain, chainring, derailleur",
  "parts": {
-  "frame": { "name": "Frame", "info": "A diamond frame made of a front and a rear triangle. Triangles don't deform easily under load, so the frame is light and stiff.", "aliases": ["frame", "body"] },
-  "fork": { "name": "Fork", "info": "Holds the front wheel; its top passes through the head tube. Turn the handlebar and the fork steers the front wheel with it.", "aliases": ["front fork"] },
-  "stem": { "name": "Stem", "info": "Clamps the handlebar to the fork. Its length and angle set where the handlebar sits.", "aliases": ["stem"] },
-  "handlebar": { "name": "Handlebar", "info": "A road bike's drop bar: the tops are relaxed, the drops cut the wind. The brake and shift levers live here.", "aliases": ["handlebars", "drop bar", "bars"] },
-  "seatpost": { "name": "Seatpost", "info": "Slides into the frame's seat tube; raising or lowering it sets the saddle height.", "aliases": ["seat post"] },
-  "saddle": { "name": "Saddle", "info": "Supports your sit bones. A road saddle is narrow so your thighs can move up and down freely.", "aliases": ["seat"] },
-  "front_wheel": { "name": "Front wheel", "info": "A 700C wheel: hub, spokes, rim and tyre. The spokes are pre-tensioned steel wires that hold the bike's weight by pulling.", "aliases": ["front tyre", "front tire"] },
-  "rear_wheel": { "name": "Rear wheel", "info": "The rear hub has a ratchet (freehub): it locks when you pedal forward and slips when you stop, so the wheel keeps turning.", "aliases": ["rear tyre", "rear tire", "back wheel"] },
-  "crank": { "name": "Crank", "info": "A lever about 17 cm long. Your foot's force times the crank length is the torque that turns the chainring. The left and right cranks are 180° apart.", "aliases": ["crank arm", "cranks"] },
-  "pedal_l": { "name": "Left pedal", "info": "Where your foot pushes. It sits at the end of the crank and goes round with it.", "aliases": ["pedal"] },
-  "pedal_r": { "name": "Right pedal", "info": "Where your foot pushes. It sits at the end of the crank and goes round with it.", "aliases": ["pedal"] },
-  "chainring": { "name": "Chainring", "info": "The big front sprocket, 50 teeth on this bike. One turn of the chainring pulls 50 links of chain.", "aliases": ["front sprocket", "big ring", "front gear"] },
-  "chain": { "name": "Chain", "info": "Carries the chainring's turning back to the cassette. The top run is pulled forward by the chainring; that is the side doing the work.", "aliases": ["chain"] },
-  "cassette": { "name": "Cassette", "info": "The stack of sprockets on the rear wheel, 11 to 28 teeth. Fewer teeth: harder and faster. More teeth: easier, good for climbing.", "aliases": ["rear sprockets", "rear gears", "cogs"] },
-  "rear_derailleur": { "name": "Rear derailleur", "info": "Pull the shifter and it pushes the chain onto another cassette sprocket: that is a gear change.", "aliases": ["derailleur", "rear mech"] },
-  "front_derailleur": { "name": "Front derailleur", "info": "Pushes the chain between the big and the small chainring.", "aliases": ["front mech"] },
-  "brake_front": { "name": "Front brake", "info": "Pull the brake lever, the cable pulls the caliper, and the pads squeeze the rim: friction turns speed into heat.", "aliases": ["brake", "brakes", "caliper"] },
-  "brake_rear": { "name": "Rear brake", "info": "Squeezes the rim like the front brake. When you brake your weight shifts forward, so the front brake does more of the work.", "aliases": ["back brake"] }
+  "frame": { "name": "Frame", "info": "A diamond frame made of front and rear triangles. Triangles resist bending under load, keeping the frame light and stiff.", "aliases": ["frame", "body"] },
+  "fork": { "name": "Fork", "info": "Holds the front wheel and passes through the head tube. Turning the handlebar steers the front wheel through the fork.", "aliases": ["front fork"] },
+  "stem": { "name": "Stem", "info": "Clamps the handlebar to the fork. Its length and angle set the reach and height of the bars.", "aliases": ["stem"] },
+  "handlebar": { "name": "Handlebar", "info": "Road drop bar: hold the tops to sit upright, or the drops to cut wind drag. Brake and shift levers sit here.", "aliases": ["handlebars", "drop bar", "bars"] },
+  "seatpost": { "name": "Seatpost", "info": "Slides inside the seat tube to adjust the saddle height.", "aliases": ["seat post"] },
+  "saddle": { "name": "Saddle", "info": "Supports your sit bones. Its narrow shape lets your thighs pedal freely without rubbing.", "aliases": ["seat"] },
+  "front_wheel": { "name": "Front wheel", "info": "A 700C wheel with hub, spokes, rim and tyre. Pre-tensioned steel spokes support the bike's weight through tension.", "aliases": ["front tyre", "front tire"] },
+  "rear_wheel": { "name": "Rear wheel", "info": "A one-way ratchet inside the rear hub locks when you pedal forward and slips when you stop, letting the bike coast.", "aliases": ["rear tyre", "rear tire", "back wheel"] },
+  "crank": { "name": "Crank", "info": "A 17 cm lever that turns foot force into torque on the chainring. Left and right cranks sit 180° apart.", "aliases": ["crank arm", "cranks"] },
+  "pedal_l": { "name": "Left pedal", "info": "Mounted at the end of the crank to take your foot's push as it circles around.", "aliases": ["pedal"] },
+  "pedal_r": { "name": "Right pedal", "info": "Mounted at the end of the crank to take your foot's push as it circles around.", "aliases": ["pedal"] },
+  "chainring": { "name": "Chainring", "info": "The 50-tooth front gear. One full turn pulls 50 chain links forward.", "aliases": ["front sprocket", "big ring", "front gear"] },
+  "chain": { "name": "Chain", "info": "Transfers power from the front chainring to the rear cassette. The tight top run pulls the load.", "aliases": ["chain"] },
+  "cassette": { "name": "Cassette", "info": "Rear gear stack (11 to 28 teeth). Smaller sprockets are harder but faster; larger ones make climbing easier.", "aliases": ["rear sprockets", "rear gears", "cogs"] },
+  "rear_derailleur": { "name": "Rear derailleur", "info": "Shifts the chain across different cassette sprockets when you press the shifter.", "aliases": ["derailleur", "rear mech"] },
+  "front_derailleur": { "name": "Front derailleur", "info": "Moves the chain between the big and small front chainrings for a larger gear jump.", "aliases": ["front mech"] },
+  "brake_front": { "name": "Front brake", "info": "Pulling the lever tightens the cable, making the caliper pads squeeze the rim and turn kinetic energy into heat.", "aliases": ["brake", "brakes", "caliper"] },
+  "brake_rear": { "name": "Rear brake", "info": "Squeezes the rear rim to slow down. Because weight shifts forward under braking, the front brake provides more stopping power.", "aliases": ["back brake"] }
  },
  "drives": {
   "pedal": "Pedalling (crank → chainring → chain → cassette → rear wheel)",
@@ -30,45 +30,45 @@
  },
  "lessons": {
   "drive": { "title": "From pedals to rear wheel", "steps": [
-   { "say": "Your foot pushes the pedal, and the crank works like a lever to turn the chainring.",
-     "quiz": { "q": "Push the pedal down. What turns with it first?", "options": [
-      ["The crank and the chainring", "The pedal is on the crank, and the crank is bolted to the chainring, so they turn together."],
-      ["The rear wheel", "The rear wheel only turns once the chain carries the motion back."],
-      ["The front wheel", "The front wheel isn't connected to the chain; it just rolls along with the bike."]] } },
-   { "say": "The chainring's teeth grab the chain and pull its top run forward." },
-   { "say": "The chain pulls the cassette at the back, and the cassette turns the rear wheel. 50 teeth on the chainring, 17 on the sprocket: one turn of the pedals turns the rear wheel almost three times.",
-     "quiz": { "q": "50-tooth chainring, 17-tooth sprocket. One turn of the pedals turns the rear wheel about how many times?", "options": [
-      ["About 3 times", "50 ÷ 17 ≈ 2.9. A big gear driving a small one makes the small one turn more times."],
-      ["Once", "It would only be one to one if the tooth counts were equal; here the sprocket is much smaller."],
-      ["Half a turn", "A small gear driven by a big one turns more, not less."]] } },
-   { "say": "Stop pedalling and the ratchet in the rear hub slips: the wheel keeps turning and the pedals stay still.",
-     "quiz": { "q": "You stop pedalling while riding. What do the pedals do?", "options": [
-      ["They stop", "The ratchet in the rear hub lets the wheel turn faster than the cassette, so the pedals aren't carried round."],
-      ["They keep turning with the wheel", "That's a fixed-gear bike with no ratchet. On a normal bike the pedals stop when you do."]] } }
+   { "say": "Push the pedal and the crank acts as a lever, creating torque to turn the chainring.",
+     "quiz": { "q": "When you push the pedal down, what turns first?", "options": [
+      ["The crank and chainring", "The pedal is fixed to the crank, which is bolted to the chainring, so they turn as one."],
+      ["The rear wheel", "Power must travel through the chain and cassette before reaching the rear wheel."],
+      ["The front wheel", "The front wheel isn't driven; it only rolls because the rear wheel pushes the bike forward."]] } },
+   { "say": "The chainring teeth engage the chain and pull its top run forward." },
+   { "say": "The chain turns the rear cassette and wheel. With a 50-tooth chainring and 17-tooth sprocket, one pedal turn spins the rear wheel almost three times.",
+     "quiz": { "q": "With a 50-tooth chainring and 17-tooth sprocket, one pedal turn spins the rear wheel about how many times?", "options": [
+      ["About 3 times", "50 ÷ 17 ≈ 2.9. When a large gear drives a small gear, the small gear spins more times."],
+      ["Once", "It would only be 1-to-1 if both gears had the same number of teeth."],
+      ["Half a turn", "A large gear driving a small one increases speed, so it turns more, not less."]] } },
+   { "say": "Stop pedalling and the one-way ratchet in the rear hub slips, letting the wheel spin while the pedals stay still.",
+     "quiz": { "q": "When you stop pedalling while coasting, what do the pedals do?", "options": [
+      ["Stay still", "The one-way ratchet lets the rear wheel spin freely without dragging the cassette and pedals along."],
+      ["Keep spinning with the wheel", "Only fixed-gear bikes without a ratchet do that; normal bikes let you coast."]] } }
   ] },
   "brake": { "title": "From brake lever to a stop", "steps": [
-   { "say": "Your hand pulls the brake lever, which pulls the steel cable inside." },
-   { "say": "The cable pulls the caliper, and the two brake pads squeeze the rim.",
-     "quiz": { "q": "Which part of the wheel do the brake pads squeeze?", "options": [
-      ["The sides of the rim", "These are rim brakes: the pads squeeze both sides of the rim."],
-      ["The tyre", "Squeezing the tyre would wear it out; the braking surface is on the rim."],
-      ["The hub", "Disc brakes grip a rotor next to the hub; this bike has rim brakes."]] } },
-   { "say": "Friction turns speed into heat and the wheel slows down. The front brake is the strongest, because your weight shifts forward when you brake." }
+   { "say": "Squeezing the brake lever pulls the steel cable inside the housing." },
+   { "say": "The cable pulls the caliper arms, pressing the two brake pads against the rim.",
+     "quiz": { "q": "Which part of the wheel do these brake pads squeeze?", "options": [
+      ["The sides of the rim", "Rim brakes press pads against the metal rim's sidewalls to slow the wheel."],
+      ["The tyre tread", "Rubbing the rubber tyre would quickly wear it through; braking happens on the metal rim."],
+      ["The central hub", "Disc brakes clamp a rotor near the hub, whereas this bike uses rim brakes."]] } },
+   { "say": "Friction converts kinetic energy into heat to slow the bike. Weight shifts forward when braking, making the front brake the most effective." }
   ] }
  },
  "faults": {
   "chain_off": {
    "title": "The chain came off",
    "short": "You pedal, but the rear wheel won't turn",
-   "symptom": "When you pedal, the crank and the chainring turn, but the rear wheel doesn't move at all. What do you think is broken?",
-   "hint": "Follow the force: foot → crank → chainring → ? → cassette → rear wheel. After which step does the motion stop?",
+   "symptom": "When you pedal, the crank and chainring spin, but the rear wheel doesn't move. What went wrong?",
+   "hint": "Follow the path: pedal → crank → chainring → ? → cassette → rear wheel. What's not moving after the chainring?",
    "suspects": ["The rear brake is stuck", "The chain fell off", "The rear wheel is broken"],
-   "observe": "Pedal and follow the motion: where along the way does it stop?",
-   "whys": ["The brake pads aren't gripping the rim, and a stuck brake wouldn't leave the chain hanging there. Look between the chainring and the cassette.", "", "The rear wheel itself is fine; no force reaches it at all. Look further forward: where does the motion stop?"],
-   "cause": "The chain has fallen off the chainring. The chainring turns, but nothing pulls the force back to the cassette.",
-   "why": "Why does the chainring still turn but the rear wheel doesn't, once the chain is off?",
-   "answer": "The chain carries the force from the chainring to the cassette, and the cassette turns the rear wheel. When the chain comes off, that drive path is broken, so the parts after it get no force.",
-   "reasons": ["A loose chain jams the chainring, so the rear wheel stops with it.","The front wheel drives the rear one, and without the chain it can't push it."]
+   "observe": "Watch the drive train as it pedals: where does the motion stop?",
+   "whys": ["A locked rear brake would also stop the chain and chainring from turning. Look at the chain between the chainring and cassette.", "", "Look at the cassette on the rear wheel—it isn't turning either, meaning no force reaches the back. Look forward toward the chainring."],
+   "cause": "The chain slipped off the chainring, leaving the chainring spinning without pulling the rear cassette.",
+   "why": "Why does the chainring keep spinning while the rear wheel stays still when the chain comes off?",
+   "answer": "The chainring relies on the chain to pull the cassette and rear wheel. Once the chain comes off, the drive path breaks and no force reaches the wheel.",
+   "reasons": ["A dropped chain jams the chainring, stopping the rear wheel too.","The front wheel drives the rear wheel, and dropping the chain stops the front wheel."]
   }
  }
 }
