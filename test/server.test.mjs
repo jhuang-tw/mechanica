@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
 
 const seen = [];
+let blocked = () => false;   // which user messages Meta's safety filter refuses
 // the lossless 27×60 example from @meta-sam/parser's README, decoded by the real parser
 let samText = "<0f>0<|box;x1=211;y1=228;x2=270;y2=254;w=320;h=334|><|mask;x=0;y=0;data=27,60,~!!!!M!0c[0o91w?q1!pIH4pPRVp2B3'7`e.ioeAf6-k/#Xd8%dX9x(|>";
 const meta = createServer(async (req, res) => {
@@ -18,6 +19,7 @@ const meta = createServer(async (req, res) => {
   if (req.url === '/v1/asr/transcribe') return res.end(JSON.stringify({ transcript: '链条怎么带动后轮' }));
   if (req.url === '/v1/responses') return res.end(JSON.stringify({ status: 'completed', output: [{ content: [{ type: 'output_text', text: b.input[0].content[0].text === 'bicycle chain' ? '' : samText }] }] }));
   const sys = b.messages[0].content, user = b.messages.at(-1).content;
+  if (blocked(String(user))) { res.statusCode = 400; return res.end('{"error":{"code":"content_policy_violation"}}'); }
   if (b.tools?.some((t) => t.function.name === 'check')) return msg({ content: '你說得對，鏈條掉了。', tool_calls: [
     ['check', { result: 'found', suspect: ['chain', 'nope'] }], ['isolate', { parts: ['chain', 'chainring'] }], ['drive', { drive: 'pedal', duration: 3, at: 0.5 }],
   ].map(([name, a], i) => ({ id: 'k' + i, type: 'function', function: { name, arguments: JSON.stringify(a) } })) });
@@ -38,7 +40,7 @@ const meta = createServer(async (req, res) => {
   return msg({ content: '```json\n{"match":true,"exhibit":"bike","confidence":0.9,"machine":"公路車","parts":["chain","rear_derailleur","made_up","chain"],"say":"這是公路車，看看鏈條。"}\n```' });
 });
 await new Promise((ok) => meta.listen(0, ok));
-Object.assign(process.env, { INWORLD_API_KEY: 'aW53b3JsZA==', INWORLD_BASE_URL: `http://127.0.0.1:${meta.address().port}`, AZURE_SPEECH_KEY: 'speech-key', AZURE_SPEECH_ENDPOINT: `http://127.0.0.1:${meta.address().port}`, META_API_KEY: 'test-key', META_BASE_URL: `http://127.0.0.1:${meta.address().port}/v1`, DAILY_LIMIT: '17' });
+Object.assign(process.env, { INWORLD_API_KEY: 'aW53b3JsZA==', INWORLD_BASE_URL: `http://127.0.0.1:${meta.address().port}`, AZURE_SPEECH_KEY: 'speech-key', AZURE_SPEECH_ENDPOINT: `http://127.0.0.1:${meta.address().port}`, META_API_KEY: 'test-key', META_BASE_URL: `http://127.0.0.1:${meta.address().port}/v1`, DAILY_LIMIT: '23' });
 const { server, overBudget } = await import('../server/serve.mjs');
 await new Promise((ok) => server.listen(0, ok));
 const app = `http://127.0.0.1:${server.address().port}`;
@@ -77,6 +79,17 @@ try {
   assert.equal(seen.at(-1).b.reasoning_effort, 'minimal');
   assert.equal((await post('/api/ask', { exhibit: '__proto__', text: 'x' })).status, 400);
   assert.equal((await post('/api/ask', '{bad', 'application/json')).status, 400);
+  // the safety filter refuses a harmless wording: a plain question about the part, then the exhibit itself
+  blocked = (u) => u.startsWith('鏈條為什麼');
+  let n = seen.length;
+  r = await (await post('/api/ask', { exhibit: 'bike', text: '鏈條為什麼會斷？' })).json();
+  assert.equal(seen.slice(n).at(-1).b.messages.at(-1).content, '鏈條是做什麼用的？');
+  assert.ok(r.say && r.steps.length);
+  blocked = () => true;
+  r = await (await post('/api/ask', { exhibit: 'bike', text: '鏈條為什麼會斷？' })).json();
+  assert.deepEqual(r.steps, [{ do: 'isolate', at: 0, parts: ['chain'] }]);
+  assert.equal(r.model, 'exhibit');
+  blocked = () => false;
 
   // speech -> traditional text with the part vocabulary
   r = await (await post('/api/stt?exhibit=bike', Buffer.from('RIFF'), 'audio/wav')).json();
@@ -110,6 +123,21 @@ try {
   assert.deepEqual([r.grade, r.next], [{ verdict: 'partial', gap: '漏了齒盤' }, null]);
   assert.ok(seen.at(-1).b.tools.find((t) => t.function.name === 'grade').function.parameters.properties.next.enum.includes('heli/tail_shaft'));
   assert.equal((await post('/api/fix', { exhibit: 'bike', fault: 'nope', stage: 'diagnose', text: 'x' })).status, 400);
+
+  // the safety filter refuses the learner's first wording on the other AI calls too
+  const lastUser = () => seen.at(-1).b.messages.at(-1).content;
+  blocked = (u) => u.startsWith('我的回答');
+  assert.equal((await post('/api/tutor', { exhibit: 'bike', answer: '鏈條帶後輪' })).status, 200);
+  assert.equal(lastUser(), '請繼續上課，問我下一題。');
+  blocked = (u) => u.startsWith('踩踏板');
+  assert.equal((await post('/api/explain', { exhibit: 'bike', lesson: 'drive', text: '踩踏板曲柄帶齒盤' })).status, 200);
+  assert.equal(lastUser(), '學生的原話：「踩踏板曲柄帶齒盤」');
+  blocked = (u) => u.startsWith('我的猜測：鏈條掉了');
+  assert.equal((await post('/api/fix', { exhibit: 'bike', fault: 'chain_off', stage: 'diagnose', text: '鏈條掉了吧' })).status, 200);
+  assert.equal(lastUser(), '我的猜測：鏈條');
+  blocked = () => true;
+  assert.equal((await post('/api/fix', { exhibit: 'bike', fault: 'chain_off', stage: 'diagnose', text: '鏈條掉了吧' })).status, 502);
+  blocked = () => false;
 
   // speech: Inworld first (Taiwan Mandarin for Chinese, English otherwise), its NDJSON chunks decoded back into one MP3; repeats come from the cache
   let a = await fetch(app + '/api/tts?text=' + encodeURIComponent('這是曲柄'));

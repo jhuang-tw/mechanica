@@ -43,7 +43,7 @@ export const S = {
   // ask
   youAsked: ['你問', 'You asked'], aiDown: ['AI 暫時連不上', 'The AI is not reachable'], aiDownTip: ['可以先上一堂課，或點零件看說明。', 'Try a lesson, or tap a part to read about it.'],
   // mic
-  tapAgain: ['說完再點一下送出', 'Tap again when you are done'], speakNow: ['說吧，放開就送出', 'Speak, release to send'], vrSpeak: ['🎤 說吧，說完按 ⏹', '🎤 Speak, then press ⏹'],
+  tapAgain: ['說完再點一下送出', 'Tap again when you are done'], speakNow: ['說吧，放開就送出', 'Speak, release to send'], vrSpeak: ['說吧，說完按「說完了」', 'Speak, then press Done'],
   noMic: ['沒有麥克風權限，改用鍵盤打字', 'No microphone access, type instead'], vrNoMic: ['沒有麥克風權限', 'No microphone access'],
   tooShort: ['太短了，按住久一點', 'Too short, hold a little longer'], youSaid: ['你說', 'You said'], transcribing: ['聽寫中', 'Listening'],
   notHeard: ['沒聽清楚，再說一次？', "Didn't catch that. Say it again?"], noVoice: ['語音暫時不能用，改用鍵盤打字。', 'Voice is not available right now, type instead.'],
@@ -82,9 +82,9 @@ export const S = {
   clue: ['線索', 'Clue'], seeAnswer: ['看答案', 'Show answer'], answerT: ['答案', 'Answer'],
   // VR
   noVR: ['這個瀏覽器不能進 VR', 'This browser cannot enter VR'],
-  vrTutor: ['🎓 AI 家教', '🎓 AI tutor'], vrGuess: ['❓ 先猜再看', '❓ Guess first'], vrClose: ['🧩 合起來', '🧩 Put together'], vrOpen: ['💥 拆開', '💥 Explode'],
-  vrReset: ['↺ 重設', '↺ Reset'], vrDone: ['⏹ 說完了', '⏹ Done'], vrAnswer: ['🎤 回答家教', '🎤 Answer'], vrAsk: ['🎤 問 AI', '🎤 Ask AI'],
-  vrMenuClose: ['✕ 關選單', '✕ Close'], vrExit: ['🚪 離開 VR', '🚪 Exit VR'],
+  vrTutor: ['AI 家教', 'AI tutor'], vrGuess: ['先猜再看', 'Guess first'], vrClose: ['合起來', 'Put together'], vrOpen: ['拆開', 'Explode'],
+  vrReset: ['重設', 'Reset'], vrDone: ['說完了', 'Done'], vrAnswer: ['回答家教', 'Answer'], vrAsk: ['問 AI', 'Ask AI'],
+  vrMenuClose: ['關選單', 'Close'], vrExit: ['離開 VR', 'Exit VR'],
   // language switch: names the other language
   switchTo: ['EN', '中文'], switchAria: ['Switch to English', '切換成中文'],
 };
