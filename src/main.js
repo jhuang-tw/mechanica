@@ -373,7 +373,7 @@ function setMode(m) { $('m-fix').setAttribute('aria-pressed', String(m === 'fix'
 async function learn(id = ex?.id) { await open(id); stopAll(); setMode('learn'); say(ex.name, ex.intro); }
 $('m-learn').onclick = () => { if (fix) learn(); };
 $('m-fix').onclick = () => { if (!fix && ex.faults?.length) startFix(`${ex.id}/${ex.faults[0].id}`); };
-const card = (cls, label, text, clue) => { $('f-v').className = cls; $('f-v').replaceChildren(...(label ? [Object.assign(document.createElement('b'), { textContent: label }), ' '] : []), text, ...(clue ? [Object.assign(document.createElement('span'), { className: 'clue', textContent: t('clueLine', clue) })] : [])); };
+const card = (cls, label, text, clue) => { $('fix').classList.remove('replay'); $('f-v').className = cls; $('f-v').replaceChildren(...(label ? [Object.assign(document.createElement('b'), { textContent: label }), ' '] : []), text, ...(clue ? [Object.assign(document.createElement('span'), { className: 'clue', textContent: t('clueLine', clue) })] : [])); };
 const choices = (items) => { $('f-choices').replaceChildren(...items.map(([text, run, go]) => Object.assign(document.createElement('button'), { type: 'button', textContent: text, className: go ? 'go' : '', onclick: run }))); vr?.refresh(); };
 const driveParts = (f) => [...new Set([...(ex.drives.find((d) => d.id === f.drive)?.moves || []).map((m) => m.part), ...f.broken])];
 async function startFix(key) {
@@ -429,7 +429,8 @@ async function fixTurn(text, pointed) {
   card(v, { right: t('gRight'), partial: t('vPartial'), wrong: t('vWrong') }[v], r.say);
   if (v === 'right' || x.tries >= 2) return finish(x, r.next, v === 'right' ? '' : x.f.answer);
   $('f-q').textContent = t('sayAgain', x.f.why);
-  symptomT = setTimeout(symptom, Math.max(wait, 1500));
+  $('fix').classList.toggle('replay', steps.length > 0);
+  symptomT = setTimeout(() => { $('fix').classList.remove('replay'); vr?.refresh(); symptom(); }, Math.max(wait, 1500));
 }
 // three guesses from the start (a ruled-out one stays greyed); the mic, the keyboard and a tapped part still go to Muse
 function suspects(x) {

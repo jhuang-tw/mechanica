@@ -269,11 +269,11 @@ export function fixTools(e, stage) {
         gap: { type: 'string', description: '漏掉的關鍵，≤ 30 字；答對留空' },
         next: { type: 'string', enum: faultKeys(), description: '答對時挑下一題：先挑沒修過的，學生弱的概念優先' } } } }];
 }
-export function cleanFix(calls, e, stage) {
+export function cleanFix(calls, e, stage, solved = []) {
   const c = calls.find((x) => x.name === (stage === 'diagnose' ? 'check' : 'grade'))?.args || {}, ids = new Set(e.parts.map((p) => p.id));
   const out = { steps: cleanSteps(calls, e) };
   if (stage === 'diagnose') Object.assign(out, { result: RESULTS.includes(c.result) ? c.result : 'not_it', suspect: (Array.isArray(c.suspect) ? c.suspect : []).filter((p) => ids.has(p)).slice(0, 4) });
-  else Object.assign(out, { grade: VERDICTS.includes(c.verdict) ? { verdict: c.verdict, gap: clip(c.gap, EN(e) ? 150 : 60) } : null, next: faultKeys().includes(c.next) ? c.next : null });
+  else Object.assign(out, { grade: VERDICTS.includes(c.verdict) ? { verdict: c.verdict, gap: clip(c.gap, EN(e) ? 150 : 60) } : null, next: faultKeys().includes(c.next) && !solved.includes(c.next) ? c.next : null });
   return out;
 }
 // Muse writes its line before it runs the tools, so a miss often ends with no clue: fall back on the exhibit's own question (an empty line gets it too)
@@ -297,6 +297,7 @@ export async function fix({ exhibit: id, fault, stage, text, pointed, history = 
   const e = exhibit(id, lang), f = (e.faults || []).find((x) => x.id === fault);
   if (!f) throw fail('unknown fault');
   if (!['diagnose', 'explain'].includes(stage)) throw fail('unknown stage');
+  solved = [...solved, `${id}/${fault}`];   // the one just repaired is fixed too: Muse must not hand it back as next
   const name = (p) => e.parts.find((x) => x.id === p)?.name || p, drive = e.drives.find((d) => d.id === f.drive);
   if (EN(e)) return fixEn(e, f, stage, text, pointed, history, solved, name, drive);
   const common = `零件（id=名稱：說明）：
@@ -322,7 +323,7 @@ ${common}`;
   const plain = stage === 'diagnose' ? (suspect ? `我的猜測：${suspect}` : '我不確定，給我一個線索。') : `學生的原話：「${text}」`;
   const messages = [...history.slice(-4), { role: 'user', content: user }];
   const r = await retried((content) => chat({ system, tools: fixTools(e, stage), maxTokens: 900, messages: [...history.slice(-4), { role: 'user', content }] }), user, plain);
-  const out = cleanFix(r.calls, e, stage);
+  const out = cleanFix(r.calls, e, stage, solved);
   return { say: await afterTools({ system, messages: [...messages, ...(r.text ? [{ role: 'assistant', content: r.text }] : [])], out, stage, f, e, name, first: r.text, max: 200 }), ...out, model: r.model };
 }
 async function fixEn(e, f, stage, text, pointed, history, solved, name, drive) {
@@ -349,6 +350,6 @@ ${common}`;
   const plain = stage === 'diagnose' ? (suspect ? `My guess: the ${suspect.toLowerCase()}` : "I'm not sure. Give me a clue.") : `The student's words: "${text}"`;
   const messages = [...history.slice(-4), { role: 'user', content: user }];
   const r = await retried((content) => chat({ system, tools: fixTools(e, stage), maxTokens: 900, messages: [...history.slice(-4), { role: 'user', content }] }), user, plain);
-  const out = cleanFix(r.calls, e, stage);
+  const out = cleanFix(r.calls, e, stage, solved);
   return { say: await afterTools({ system, messages: [...messages, ...(r.text ? [{ role: 'assistant', content: r.text }] : [])], out, stage, f, e, name, first: r.text, max: 400 }), ...out, model: r.model };
 }
