@@ -60,6 +60,7 @@ None of its code, models or media are in this repository; everything here was re
 | Mic: tap to start, tap again to send; AI questions get their own row | — | `8832687` | 2026-10-28 |
 | Tutor and explain-back in one compact card, choices as pills | — | `41f5ead` | 2026-10-28 |
 | Desktop: chips wrap for mouse users, panel uses the full right column | — | `b9ea3a6` | 2026-10-28 |
+| X-ray shells: taking a machine apart turns its outer shell to glass (clear face-on, a cool glow at the edges) and keeps it close around the insides; `shell: true` parts on seven exhibits, `Rig.setXray()`, an `xray` tool for Muse Spark in demos, tutor and repair; taps reach the parts inside. Same code on phones and in VR | Muse Spark (tool calling) | `4819091` | 2026-11-01 |
 | Repair challenge (修理挑戰): the app opens on a broken machine; the learner guesses the fault, Muse checks the guess on the model, the learner repairs it and hears why; three guesses from the start, wrong picks explained | Muse Spark | `75e93c3`, `54086d4` | 2026-10-28 |
 | Close-up detail pass on all 8 models (bike, headset, car, jet, heli, steam, watch, moto) | — | `3aff675`, `dcea7c9`, `0b63c1a`, `f6817ae`, `8678b8c`, `7cbe41e`, `fb7d73a`, `5ed2417` | 2026-10-28 |
 | English site: the whole app in English or 繁體中文 (browser, switch or `?lang=`), English by default | — | `6da3806`, `8e7a311` | 2026-10-28 |
