@@ -119,7 +119,7 @@ export class Viewer {
       if (holds) continue;
       b.setFromObject(p.obj);
       if (b.isEmpty()) continue;
-      const m = p.obj.parent.matrixWorld, v = p.explodeVec.clone().multiplyScalar(explode - this.rig.explode).applyMatrix4(m).sub(new THREE.Vector3().applyMatrix4(m));
+      const m = p.obj.parent.matrixWorld, v = p.spread.clone().multiplyScalar(explode - this.rig.explode).applyMatrix4(m).sub(new THREE.Vector3().applyMatrix4(m));
       b.translate(v);
       if (eyes.some((e) => { const d = e.distanceTo(target); ray.set(e, target.clone().sub(e).normalize()); return ray.intersectBox(b, hit) && e.distanceTo(hit) < d * 0.9; })) cut.push(id);
     }
@@ -140,7 +140,7 @@ export class Viewer {
       b.setFromObject(p.obj);
       if (b.isEmpty()) continue;
       const m = p.obj.parent.matrixWorld;
-      v.copy(p.explodeVec).multiplyScalar(t - this.rig.explode).applyMatrix4(m).sub(o.set(0, 0, 0).applyMatrix4(m));
+      v.copy(p.spread).multiplyScalar(t - this.rig.explode).applyMatrix4(m).sub(o.set(0, 0, 0).applyMatrix4(m));
       box.union(b.translate(v));
     }
     return box.isEmpty() ? new THREE.Box3().setFromObject(this.model) : box;

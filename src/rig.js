@@ -10,7 +10,7 @@ const ease = (t) => (t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2);
 export class Rig {
   constructor(root, manifest) {
     this.root = root; this.m = manifest;
-    this.parts = new Map();   // id -> { obj, def, base: {pos, quat}, angle, offset, explodeVec, meshes }
+    this.parts = new Map();   // id -> { obj, def, base: {pos, quat}, angle, offset, explodeVec, spread, meshes }
     const box = new THREE.Box3().setFromObject(root);
     this.size = box.getSize(new THREE.Vector3()).length() || 1;
     const centre = box.getCenter(new THREE.Vector3());
@@ -26,17 +26,31 @@ export class Rig {
       // explode: the model's own vector (node extras `explode`, metres) or straight out from the centre;
       // parts inside other parts ride with their parent unless they have their own vector.
       // shortcut: offsets are applied in the parent's space, so non-part container nodes must be unrotated and unscaled
-      const c = new THREE.Box3().setFromObject(obj).getCenter(new THREE.Vector3()).sub(centre), ex = obj.userData.explode;
+      const b = new THREE.Box3().setFromObject(obj), c = b.getCenter(new THREE.Vector3()).sub(centre), ex = obj.userData.explode;
       let nested = false;   // inside another part (pedals on the crank)
       for (let o = obj.parent; o && o !== root; o = o.parent) if (ids.has(o.name)) nested = true;
       this.parts.set(def.id, {
-        obj, def, meshes, nested,
+        obj, def, meshes, nested, low: b.min.y,
         base: { pos: obj.position.clone(), quat: obj.quaternion.clone() },
         axis: new THREE.Vector3(...(def.axis || obj.userData.axis || [0, 0, 1])).normalize(),
         angle: 0, offset: new THREE.Vector3(),
         explodeVec: (Array.isArray(ex) ? new THREE.Vector3(...ex) : nested ? new THREE.Vector3()
           : (c.lengthSq() < 1e-6 ? new THREE.Vector3(0, 1, 0) : c.normalize()).multiplyScalar(this.size * 0.2)).multiplyScalar(def.shell ? 0.25 : 1),   // glass stays close: the machine's outline around its insides
       });
+    }
+    // an explode never goes below the ground (manifest `floor`, else the model's lowest point): the part that would go
+    // deepest stays there and the rest rise by that much, so every gap stays. Fixed parts standing on the ground stay too.
+    const floor = manifest.floor ?? box.min.y;
+    let rise = 0;
+    for (const p of this.parts.values()) {
+      let y = p.explodeVec.y;
+      for (let o = p.obj.parent; o && o !== root; o = o.parent) y += this.parts.get(o.name)?.explodeVec.y ?? 0;
+      p.sink = Math.min(0, floor - p.low);   // what it may still drop; a wheel's flange already sits below the rail top
+      rise = Math.max(rise, p.sink - y);
+    }
+    for (const p of this.parts.values()) {
+      p.spread = p.explodeVec.clone();
+      if (!p.nested && !(p.def.fixed && p.low <= box.min.y + this.size * 1e-3)) p.spread.y += rise;
     }
     this.explode = 0; this.explodeTarget = 0;
     this.xray = null; this.glass = 0;   // shell parts: xray forces see-through 0..1, null follows the explode
@@ -196,7 +210,8 @@ export class Rig {
       // `level`: undo the parent part's turn, so a pedal stays flat while its crank goes round
       const par = p.def.level && this.parts.get(p.obj.parent.name);
       if (par) p.obj.quaternion.premultiply(q.setFromAxisAngle(par.axis, -par.angle));
-      p.obj.position.copy(p.base.pos).add(p.offset).addScaledVector(p.explodeVec, this.explode);
+      p.obj.position.copy(p.base.pos).add(p.offset).addScaledVector(p.spread, this.explode);
+      if (!p.nested) p.obj.position.y = Math.max(p.obj.position.y, p.base.pos.y + p.sink);   // a detach or drag stops at the ground too
     }
     for (const l of this.linkages) if (l.type === 'swashplate') this.swashplate(l); else this.sliderCrank(l);
   }
