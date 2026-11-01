@@ -388,25 +388,17 @@ async function explainBack(text) {
 }
 $('t-stop').onclick = () => { stopAll(); speak(''); say(ex.name, ex.intro); };
 
-// ---------- 📷 a real machine → the matching exhibit, its part lit, and the AI shows how it moves ----------
+// ---------- 📷 a real machine → Muse names it, SAM 3.1 traces its parts, a tapped part flies into the 3D model (src/photo.js) ----------
 const photoIn = $('photo-in');
 $('photo').onclick = $('home-photo').onclick = () => photoIn.click();
 photoIn.onchange = async () => {
   const f = photoIn.files[0]; photoIn.value = '';
   if (!f) return;
-  toast(t('looking'), 20000);
   try {
-    const res = await fetch(`/api/identify?lang=${lang}`, { method: 'POST', headers: { 'Content-Type': 'image/jpeg' }, body: await shrink(f), signal: AbortSignal.timeout(30000) });
-    const r = await res.json();
-    toast('');
-    if (!res.ok) throw new Error(r.error);
-    if (!r.match || !exhibits[r.exhibit]) { if (!$('app').hidden) say(t('photoSaw'), r.say, false, true); else toast(r.say, 5000); return; }
-    await learn(r.exhibit);
-    if (r.parts?.length) rig.isolate(r.parts);
-    say(t('photoSaw'), r.say, false, true);
-    const part = ex.parts.find((p) => p.id === r.parts?.[0]);
-    setTimeout(() => startTutor(part?.id), 3500);   // the tutor starts its lesson from the part in the photo
-  } catch { toast(t('photoFail'), 4000); }
+    const { runPhoto } = await import('./photo.js');
+    await runPhoto(f, { shrink, learn, say, speak, cleanSteps, stop: stopAll, explode: (v) => { rig.setExplode(v); $('explode-r').value = v; },
+      get viewer() { return viewer; }, get rig() { return rig; }, get ex() { return ex; } });
+  } catch (e) { console.warn('photo failed:', e.message); toast(t('photoFail'), 4000); }
 };
 
 // ---------- 修理挑戰: the exhibit's fault breaks a drive; guess → Muse checks it on the model → repair → explain why → next ----------

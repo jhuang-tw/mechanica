@@ -33,11 +33,13 @@ export async function identify({ image, mime, lang }) {
   const list = Object.values(all).map((e) => en ? `${e.id} | ${e.name} (looks like: ${e.looksLike || e.name}) | parts: ${e.parts.map((p) => `${p.id}=${p.name}`).join(', ')}` : `${e.id}｜${e.name}（像：${e.looksLike || e.name}）｜零件：${e.parts.map((p) => `${p.id}=${p.name}`).join('、')}`).join('\n');
   const system = en ? `The user took a phone photo of a real machine. Find the closest exhibit and the parts that are visible in the photo and that the exhibit also has (at most 4, most obvious first).
 If it is not a machine (an animal, food, scenery), match=false. say: one short spoken English sentence, at most 25 words, saying what you see and which part to look at.
-Output JSON only: {"match":true,"exhibit":"id","confidence":0.0,"machine":"at most 4 words","parts":["part id"],"say":""}
+boxes: for each listed part, where that one part is in the photo, [left, top, right, bottom] from 0 to 1000 of the photo's width and height (a wheel: only the one the part id means, e.g. rear_wheel is the back one).
+Output JSON only: {"match":true,"exhibit":"id","confidence":0.0,"machine":"at most 4 words","parts":["part id"],"boxes":{"part id":[0,0,1000,1000]},"say":""}
 Exhibits (id | name | parts):
 ${list}` : `使用者用手機拍了一張真實機器的照片。找出最接近的展品，以及照片裡看得到、展品也有的零件（最多 4 個，最明顯的在前）。
 不是機器（動物、食物、風景）就 match=false。say：一句台灣繁體中文口語 ≤ 40 字，說看到什麼、要看哪個零件。
-只輸出 JSON：{"match":true,"exhibit":"id","confidence":0.0,"machine":"≤12字","parts":["零件id"],"say":""}
+boxes：每個列出的零件在照片裡的位置 [左, 上, 右, 下]，以照片寬高的 0–1000 表示（只框那一個，例如 rear_wheel 只框後輪）。
+只輸出 JSON：{"match":true,"exhibit":"id","confidence":0.0,"machine":"≤12字","parts":["零件id"],"boxes":{"零件id":[0,0,1000,1000]},"say":""}
 展品（id｜名稱｜零件）：
 ${list}`;
   let j = null, model;
@@ -48,10 +50,21 @@ ${list}`;
   const e = j && Object.hasOwn(all, j.exhibit) ? all[j.exhibit] : null;
   const confidence = num(j?.confidence, 0, 1, 0.5);
   if (!e || j.match === false || confidence < 0.2) return { match: false, say: String(j?.say || (en ? "That doesn't look like a machine. Try a bike or a car." : '這好像不是機器，拍拍看腳踏車或車子。')).slice(0, en ? 200 : 80), model };
-  const ids = new Set(e.parts.map((p) => p.id));
-  return { match: true, exhibit: e.id, confidence, machine: String(j.machine || '').slice(0, 24),
-    parts: [...new Set(Array.isArray(j.parts) ? j.parts : [])].filter((p) => ids.has(p)).slice(0, 4),
+  const ids = new Set(e.parts.map((p) => p.id)), parts = [...new Set(Array.isArray(j.parts) ? j.parts : [])].filter((p) => ids.has(p)).slice(0, 4);
+  return { match: true, exhibit: e.id, confidence, machine: String(j.machine || '').slice(0, 24), parts, boxes: boxesOf(j.boxes, parts),
     say: String(j.say || (en ? `This is a ${e.name}.` : `這是${e.name}。`)).slice(0, en ? 200 : 80), model };
+}
+
+// Muse's box per part, as fractions of the photo [left, top, right, bottom]; anything malformed is dropped
+export function boxesOf(raw, parts) {
+  const out = {};
+  for (const id of parts) {
+    const b = raw?.[id];
+    if (!Array.isArray(b) || b.length !== 4 || !b.every((v) => Number.isFinite(Number(v)))) continue;
+    const [l, t, r, d] = b.map((v) => Math.min(1, Math.max(0, Number(v) / 1000)));
+    if (r - l > 0.01 && d - t > 0.01) out[id] = [l, t, r, d].map((v) => Math.round(v * 1000) / 1000);
+  }
+  return out;
 }
 
 // ---------- photo + parts -> SAM masks ----------
@@ -59,8 +72,14 @@ ${list}`;
 export async function segment({ image, mime, exhibit: id, parts }) {
   const e = exhibit(id), want = [...new Set(parts)].slice(0, 4).map((p) => e.parts.find((x) => x.id === p));
   if (!want.length || want.some((p) => !p)) throw fail('unknown part');
-  const out = await Promise.allSettled(want.map(async (p) => ({ part: p.id, masks: parseMasks(await sam({ prompt: p.en || p.name, mime, image })) })));
+  const out = await Promise.allSettled(want.map(async (p) => { const text = await sam({ prompt: p.en || p.name, mime, image }); return { part: p.id, frame: frameOf(text), masks: parseMasks(text) }; }));
+  out.forEach((r, i) => r.status === 'rejected' && console.error(`${new Date().toISOString()} /api/segment ${want[i].id}: ${String(r.reason?.message).slice(0, 120)}`));
   return { exhibit: e.id, results: out.filter((r) => r.status === 'fulfilled' && r.value.masks.length).map((r) => r.value) };
+}
+// the pixel size SAM measured its boxes in (the box token's w/h), so the browser can lay the masks over the photo it showed
+export function frameOf(text) {
+  const [, w, h] = /<\|box;[^|]*?\bw=(\d+);h=(\d+)/.exec(text) || [];
+  return w && h ? { w: Number(w), h: Number(h) } : undefined;
 }
 export function parseMasks(text) {
   // read each mask's H×W before decoding, so a hostile payload can't make us allocate a huge raster (NaN fails too)
@@ -71,7 +90,7 @@ export function parseMasks(text) {
   const out = reader.finish({ status: 'completed' }).result;
   if (out.diagnostics.length) throw fail('SAM returned an invalid mask', 502);
   return SAM.recordsOfKind(out.records, 'mask')
-    .map(({ bounds, mask }) => ({ bounds, width: mask.width, height: mask.height, path: SAM.decodeMaskToSVGPath(mask) }))
+    .map(({ bounds, mask, confidence }) => ({ bounds, width: mask.width, height: mask.height, path: SAM.decodeMaskToSVGPath(mask), ...(Number.isFinite(confidence) && { confidence }) }))
     .filter(({ path, bounds: b }) => path && [b.left, b.top, b.right, b.bottom].every(Number.isFinite) && b.right > b.left && b.bottom > b.top);
 }
 

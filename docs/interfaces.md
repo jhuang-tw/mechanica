@@ -55,7 +55,7 @@
 | `POST /api/tutor` | `{exhibit, answer?, history?, known?[{concept, verdict}], focus?}` | `{say, grade?{verdict, concept, gap}, question?{q, choices[]}, steps[]}` |
 | `POST /api/fix` | `{exhibit, fault, stage: diagnose\|explain, text, pointed?, history?, solved?[fault keys]}` | diagnose：`{say, result: found\|close\|not_it, suspect[], steps[]}`；explain：`{say, grade?{verdict, gap}, next? ("<exhibit>/<fault>"), steps[]}` |
 | `POST /api/identify` | 圖片（不儲存） | `{match, exhibit, confidence, machine, parts[≤4], say}` |
-| `POST /api/segment?exhibit=&part=` | 圖片 | `{exhibit, results:[{part, masks:[{bounds, width, height, path}]}]}` |
+| `POST /api/segment?exhibit=&part=` | 圖片 | `{exhibit, results:[{part, frame?{w,h}, masks:[{bounds, width, height, path}]}]}`（`bounds` 是 SAM 在 `frame` 像素裡的框，`path` 是遮罩自己 width×height 格子裡的輪廓；`src/photo.js` 把它疊回照片） |
 | `POST /api/stt?exhibit=` | 16 kHz 單聲道 WAV | `{text}` |
 
 每個 JSON API 都可以帶 `lang: "en"`（`/api/identify`、`/api/stt` 用 `?lang=en`）：讀英文展品、用英文提示詞，Muse 用英文回答。
