@@ -12,7 +12,7 @@ try {
     if (value && !(key in process.env)) process.env[key] = value;
   }
 } catch { /* no .env */ }
-const { identify, segment, choreograph, transcribe, tutor, explainBack, fix, exhibit } = await import('./ai.mjs');
+const { identify, segment, choreograph, transcribe, tutor, explainBack, fix, tour, exhibit } = await import('./ai.mjs');
 const { configured } = await import('./meta.mjs');
 const tts = await import('./tts.mjs');
 
@@ -62,6 +62,10 @@ async function api(req, res, path, q) {
       exhibit(str(b.exhibit, 20));   // unknown exhibit -> 400 before any model call
       const history = (Array.isArray(b.history) ? b.history : []).slice(-4).map((m) => ({ role: m.role === 'assistant' ? 'assistant' : 'user', content: str(m.content, 800) }));
       return send(res, 200, await choreograph({ exhibit: b.exhibit, text: str(b.text, 600), pointed: str(b.pointed, 60), history, lang: en(b) }));
+    }
+    if (path === '/api/tour') {
+      const b = JSON.parse(await body(req, 4 << 10));
+      return send(res, 200, await tour({ exhibit: str(b.exhibit, 20), lang: en(b), fresh: b.fresh === true }));
     }
     if (path === '/api/explain') {
       const b = JSON.parse(await body(req, 16 << 10));

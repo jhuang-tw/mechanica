@@ -2,9 +2,10 @@
 // or 原理 on the same exhibit (tap parts, explode, ask the AI, lessons, quiz, tutor); the landing page picks another machine.
 // Photo and VR are reachable from both.
 import { cleanSteps } from './choreo.js';
+import { cleanTour, fallbackTour, TourPlayer } from './tour.js';
 import { Recorder, shrink, speak, prefetch, unlockSpeech } from './media.js';
 import { t, lang, isEn, applyStatic, switchLang, here } from './i18n.js';
-import { localize } from './localize.js';
+import { localize, mentioned } from './localize.js';
 
 // dev only: ?xr emulates a headset (Meta's IWER) so the VR mode can be tried in a desktop browser
 if (import.meta.env.DEV && new URLSearchParams(location.search).has('xr')) { const { XRDevice, metaQuest3 } = await import('iwer'); (window.xrDevice = new XRDevice(metaQuest3)).installRuntime({ forceInstall: true }); }   // the desktop browser has its own (headset-less) navigator.xr
@@ -43,6 +44,7 @@ function tiles() {
   }));
 }
 tiles();
+const note = (msg) => { toast(msg, 6000); vr?.note(msg); };
 const toast = (msg, ms = 2500) => { $('toast').textContent = msg; $('toast').hidden = !msg; clearTimeout(toast.t); if (msg) toast.t = setTimeout(() => ($('toast').hidden = true), ms); };
 
 async function open(id) {
@@ -61,6 +63,7 @@ async function open(id) {
   chat = []; pointed = null;
   chips();
   say(ex.name, ex.intro);
+  vr?.nameIt();
   $('vr').hidden = !(await Viewer.vrSupported());
 }
 function home() { stopAll(); speak(''); tiles(); $('app').hidden = true; $('home').hidden = false; window.history.replaceState(null, '', here()); }
@@ -85,15 +88,16 @@ function pick(id) {
   say(p.name, p.info, false, true);
 }
 $('explode-r').oninput = (e) => rig?.setExplode(+e.target.value);
-function stopAll() { clearTimeout(flow); clearTimeout(symptomT); stopRide(); if (fix) { fix = null; rig?.setFault(null); } document.body.classList.remove('fix'); $('fix').hidden = true; if (viewer) viewer.lessonMode = false; lesson = quiz = tutor = explain = null; vr?.refresh(); document.body.classList.remove('lesson', 'tutor'); $('lesson').hidden = $('quiz').hidden = $('tutor').hidden = true; $('q').placeholder = t('askPh'); viewer?.choreo?.cancel(); rig?.reset(); $('explode-r').value = 0; }
+function stopAll() { endTour(); clearTimeout(flow); clearTimeout(symptomT); stopRide(); if (fix) { fix = null; rig?.setFault(null); } document.body.classList.remove('fix'); $('fix').hidden = true; if (viewer) viewer.lessonMode = false; lesson = quiz = tutor = explain = null; vr?.refresh(); document.body.classList.remove('lesson', 'tutor'); $('lesson').hidden = $('quiz').hidden = $('tutor').hidden = true; $('q').placeholder = t('askPh'); viewer?.choreo?.cancel(); rig?.reset(); $('explode-r').value = 0; }
 $('reset').onclick = () => { if (fix) { viewer.frame(); return symptom(); } stopAll(); speak(''); viewer.frame(); pointed = null; say(ex.name, ex.intro); };
 
 // ---------- suggestions: AI questions and lessons ----------
 function chips() {
-  const chip = (cls, label, run) => { const b = Object.assign(document.createElement('button'), { className: `chip ${cls}`, type: 'button', onclick: run }); b.innerHTML = icon({ lesson: 'book', quiz: 'q', ai: 'spark', ask: 'spark', tutor: 'cap' }[cls.split(' ').pop()]) + '<span></span>'; b.lastChild.textContent = label; return b; };
+  const chip = (cls, label, run) => { const b = Object.assign(document.createElement('button'), { className: `chip ${cls}`, type: 'button', onclick: run }); b.innerHTML = icon({ lesson: 'book', quiz: 'q', ai: 'spark', ask: 'spark', tutor: 'cap', tour: 'spark' }[cls.split(' ').pop()]) + '<span></span>'; b.lastChild.textContent = label; return b; };
   // 原理: one row, the lessons in order first; the AI tutor and a typed question after them (the mic asks anything)
   $('ai-chips').replaceChildren();
   $('chips').replaceChildren(
+    chip('ai tour', t('tourChip'), () => startTour()),
     ...ex.lessons.map((l, i) => chip('lesson', i ? l.title : t('firstLesson', l.title), () => startLesson(l, false))),
     ...(ex.lessons.some((l) => l.steps.some((s) => s.quiz)) ? [chip('lesson quiz', t('guessFirst'), () => startLesson(ex.lessons.find((l) => l.steps.some((s) => s.quiz)), true))] : []),
     ...(ex.ride ? [chip('lesson', t('ride'), startRide)] : []),
@@ -116,7 +120,7 @@ async function ask(text) {
     const r = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(r.error || `HTTP ${res.status}`);
     chat = [...chat, { role: 'user', content: text }, { role: 'assistant', content: r.say }].slice(-6);
-    say('AI', r.say, false, true);
+    say('Muse Spark', r.say, false, true);
     const steps = cleanSteps(r.steps, ex);
     if (steps.length) viewer.choreo.play(steps);
   } catch (e) {
@@ -126,8 +130,46 @@ async function ask(text) {
     console.warn('ask failed:', e.message);
   }
 }
+// ---------- 讓 Muse 帶你看: one tap, Muse Spark directs a 30–60 s narrated teardown (camera, X-ray, explode, drives) ----------
+let touring = null;   // the exhibit a tour was asked for, while it plans or plays
+const xray = (v) => rig?.setXray(v || null);   // 0: the shell follows the explode (glass while apart)
+function endTour() {
+  if (!touring) return;
+  touring = null; tourPlayer?.stop(); xray(null);
+  document.body.classList.remove('touring'); $('tour').hidden = true;
+}
+let tourPlayer = null;
+async function startTour(fresh = false) {
+  if (!rig) return;
+  stopAll(); speak(''); setMode('learn');
+  const me = touring = { ex };
+  document.body.classList.add('touring'); $('tour').hidden = false;
+  $('tour-t').textContent = t('museDirector'); $('tour-by').textContent = '';
+  say(t('museDirector'), t('tourPlanning'), true);
+  vr?.say(t('tourPlanning'));
+  let r;
+  try {
+    const res = await fetch('/api/tour', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ exhibit: ex.id, lang, fresh }), signal: AbortSignal.timeout(55000) });
+    r = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(r.error || `HTTP ${res.status}`);
+  } catch (e) { console.warn('tour failed:', e.message); r = { scenes: fallbackTour(ex), model: 'exhibit' }; }
+  if (touring !== me) return;
+  const scenes = cleanTour(r.scenes, ex);
+  if (!scenes.length) { endTour(); return say(ex.name, ex.intro); }
+  prefetch(scenes.map((s) => s.say));
+  $('tour-by').textContent = r.model === 'exhibit' ? t('tourOffline') : t('tourBy', r.calls || scenes.length);
+  tourPlayer ||= new TourPlayer(viewer, {
+    xray, explode: (v) => ($('explode-r').value = v),
+    done: (finished) => { if (!finished) return; touring = null; xray(null); document.body.classList.remove('touring'); $('tour').hidden = true; say(ex.name, t('tourDone'), false, true); },
+  });
+  tourPlayer.line = (i, s) => { $('tour-t').textContent = t('tourShot', i + 1, scenes.length); return say(t('museDirector'), s.say, false, true); };
+  tourPlayer.play(scenes);
+}
+$('tour-stop').onclick = () => { stopAll(); speak(''); viewer.frame(); say(ex.name, ex.intro); };
+$('tour-again').onclick = () => startTour(true);
+
 // without the AI: a question that names a part still gets that part
-const offline = (text) => ex.parts.find((p) => [p.name, ...p.aliases].some((n) => text.toLowerCase().includes(n.toLowerCase())));
+const offline = (text) => mentioned(ex, text);
 
 $('type').onclick = () => { $('ask').hidden = !$('ask').hidden; if (!$('ask').hidden) $('q').focus(); };
 $('ask').onsubmit = (e) => { e.preventDefault(); ask($('q').value); $('q').value = ''; $('ask').hidden = true; };
@@ -153,7 +195,7 @@ const release = async () => {
   try {
     const res = await fetch(`/api/stt?exhibit=${ex.id}&lang=${lang}`, { method: 'POST', headers: { 'Content-Type': 'audio/wav' }, body: wav, signal: AbortSignal.timeout(20000) });
     const { text } = await res.json();
-    if (text) ask(text); else say('', t('notHeard'));
+    if (text) { note(t('museHeard', text)); ask(text); } else say('', t('notHeard'));
   } catch { say('', t('noVoice')); }
 };
 for (const ev of ['pointerup', 'pointercancel']) $('mic').addEventListener(ev, () => { if (!tapMode) lift(); });
@@ -346,25 +388,17 @@ async function explainBack(text) {
 }
 $('t-stop').onclick = () => { stopAll(); speak(''); say(ex.name, ex.intro); };
 
-// ---------- 📷 a real machine → the matching exhibit, its part lit, and the AI shows how it moves ----------
+// ---------- 📷 a real machine → Muse names it, SAM 3.1 traces its parts, a tapped part flies into the 3D model (src/photo.js) ----------
 const photoIn = $('photo-in');
 $('photo').onclick = $('home-photo').onclick = () => photoIn.click();
 photoIn.onchange = async () => {
   const f = photoIn.files[0]; photoIn.value = '';
   if (!f) return;
-  toast(t('looking'), 20000);
   try {
-    const res = await fetch(`/api/identify?lang=${lang}`, { method: 'POST', headers: { 'Content-Type': 'image/jpeg' }, body: await shrink(f), signal: AbortSignal.timeout(30000) });
-    const r = await res.json();
-    toast('');
-    if (!res.ok) throw new Error(r.error);
-    if (!r.match || !exhibits[r.exhibit]) { if (!$('app').hidden) say(t('photoSaw'), r.say, false, true); else toast(r.say, 5000); return; }
-    await learn(r.exhibit);
-    if (r.parts?.length) rig.isolate(r.parts);
-    say(t('photoSaw'), r.say, false, true);
-    const part = ex.parts.find((p) => p.id === r.parts?.[0]);
-    setTimeout(() => startTutor(part?.id), 3500);   // the tutor starts its lesson from the part in the photo
-  } catch { toast(t('photoFail'), 4000); }
+    const { runPhoto } = await import('./photo.js');
+    await runPhoto(f, { shrink, learn, say, speak, cleanSteps, stop: stopAll, explode: (v) => { rig.setExplode(v); $('explode-r').value = v; },
+      get viewer() { return viewer; }, get rig() { return rig; }, get ex() { return ex; } });
+  } catch (e) { console.warn('photo failed:', e.message); toast(t('photoFail'), 4000); }
 };
 
 // ---------- 修理挑戰: the exhibit's fault breaks a drive; guess → Muse checks it on the model → repair → explain why → next ----------
@@ -373,7 +407,7 @@ function setMode(m) { $('m-fix').setAttribute('aria-pressed', String(m === 'fix'
 async function learn(id = ex?.id) { await open(id); stopAll(); setMode('learn'); say(ex.name, ex.intro); }
 $('m-learn').onclick = () => { if (fix) learn(); };
 $('m-fix').onclick = () => { if (!fix && ex.faults?.length) startFix(`${ex.id}/${ex.faults[0].id}`); };
-const card = (cls, label, text, clue) => { $('f-v').className = cls; $('f-v').replaceChildren(...(label ? [Object.assign(document.createElement('b'), { textContent: label }), ' '] : []), text, ...(clue ? [Object.assign(document.createElement('span'), { className: 'clue', textContent: t('clueLine', clue) })] : [])); };
+const card = (cls, label, text, clue) => { $('fix').classList.remove('replay'); $('f-v').className = cls; $('f-v').replaceChildren(...(label ? [Object.assign(document.createElement('b'), { textContent: label }), ' '] : []), text, ...(clue ? [Object.assign(document.createElement('span'), { className: 'clue', textContent: t('clueLine', clue) })] : [])); };
 const choices = (items) => { $('f-choices').replaceChildren(...items.map(([text, run, go]) => Object.assign(document.createElement('button'), { type: 'button', textContent: text, className: go ? 'go' : '', onclick: run }))); vr?.refresh(); };
 const driveParts = (f) => [...new Set([...(ex.drives.find((d) => d.id === f.drive)?.moves || []).map((m) => m.part), ...f.broken])];
 async function startFix(key) {
@@ -382,6 +416,7 @@ async function startFix(key) {
   await open(c.ex);
   stopAll(); speak('');
   fix = { ...c, stage: 'diagnose', tries: 0, help: 0, history: [], out: new Set() };
+  $('f-trace').textContent = '';
   rig.setFault(c.f);
   document.body.classList.add('fix'); $('fix').hidden = false; setMode('fix');
   $('f-bar').textContent = t('fixBarEx', ex.name);
@@ -399,21 +434,35 @@ function symptom() {
   if (fix.f.see) { rig.isolate(fix.f.see); rig.highlight([]); }   // the mechanism in view, nothing lit: finding it is the learner's job
   rig.drive(fix.f.drive, fix.f.speed ?? 0.5);
 }
+// the tool calls Muse Spark made this turn, one at a time as the model plays them
+const callName = (s) => { const p = s.parts || []; return [s.do, s.drive, p.slice(0, 2).join(', ') + (p.length > 2 ? ` +${p.length - 2}` : '')].filter(Boolean).join(' '); };
+function traceCalls(x, r) {
+  const calls = [], show = (c) => {
+    calls.push(c);
+    $('f-trace').textContent = `Muse Spark · ${calls.join(' → ')}`;
+    vr?.note(`Muse Spark · ${calls.slice(-3).join(' → ')}`);   // the panel holds three lines
+  };
+  viewer.choreo.onStep = (s) => { if (fix === x) show(callName(s)); };
+  if (r.result) show(callName({ do: 'check', parts: r.suspect }));
+  else if (r.grade) show(`grade ${r.grade.verdict}`);
+}
 async function fixTurn(text, pointed) {
   const x = fix;
   if (!x || x.busy || x.stage === 'done') return;
   x.busy = true; clearTimeout(symptomT); speak('');
   card('', '', x.stage === 'diagnose' ? t('youGuess', text) : t('youSay', text)); $('fix').classList.add('thinking'); $('f-hint').hidden = true;
-  let r;
+  $('f-trace').textContent = ''; viewer.choreo.onStep = null;
+  let r, live = true;
   try {
     const res = await fetch('/api/fix', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ exhibit: x.ex, lang, fault: x.f.id, stage: x.stage, text, pointed, history: x.history, solved: solvedKeys() }), signal: AbortSignal.timeout(30000) });
     r = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(r.error || `HTTP ${res.status}`);
-  } catch (e) { console.warn('fix failed:', e.message); r = offlineFix(x, text, pointed); }
+  } catch (e) { console.warn('fix failed:', e.message); r = offlineFix(x, text, pointed); live = false; }
   x.busy = false; $('fix').classList.remove('thinking');
   if (fix !== x) return;
   x.history = [...x.history, { role: 'user', content: text }, { role: 'assistant', content: r.say }].slice(-4);
   const steps = cleanSteps(r.steps, ex);
+  if (live) traceCalls(x, r);
   if (steps.length) viewer.choreo.play(steps);
   const wait = (steps.length ? Math.min(12, Math.max(...steps.map((s) => s.at + (s.duration || 2)))) + 1.5 : 0) * 1000;
   speak(r.say); vr?.say(r.say);
@@ -429,7 +478,8 @@ async function fixTurn(text, pointed) {
   card(v, { right: t('gRight'), partial: t('vPartial'), wrong: t('vWrong') }[v], r.say);
   if (v === 'right' || x.tries >= 2) return finish(x, r.next, v === 'right' ? '' : x.f.answer);
   $('f-q').textContent = t('sayAgain', x.f.why);
-  symptomT = setTimeout(symptom, Math.max(wait, 1500));
+  $('fix').classList.toggle('replay', steps.length > 0);
+  symptomT = setTimeout(() => { $('fix').classList.remove('replay'); vr?.refresh(); symptom(); }, Math.max(wait, 1500));
 }
 // three guesses from the start (a ruled-out one stays greyed); the mic, the keyboard and a tapped part still go to Muse
 function suspects(x) {
@@ -471,6 +521,7 @@ function repair(x) {
   viewer.choreo.cancel(); rig.setFault(null);
   symptom();
   card('right', t('repaired'), x.f.cause); reasons(x);
+  vr?.cheer(t('repaired'));
   $('f-q').textContent = x.f.why; $('f-hint').textContent = t('explainHint'); $('f-hint').hidden = false; $('f-help').hidden = false; $('f-help').textContent = t('dunno');
   speak(`${x.f.cause} ${x.f.why}`); vr?.say(x.f.why);
 }
@@ -496,6 +547,7 @@ function finish(x, next, answer) {
   const l = ex.lessons.find((y) => y.id === x.f.lesson);
   if (answer) card('partial', t('fullAnswer'), answer);
   $('f-q').textContent = t('exFixed', ex.name); $('f-hint').hidden = true; $('f-help').hidden = true;
+  vr?.cheer(t('exFixed', ex.name));
   choices([...(n ? [[t('nextFix', exhibits[n.ex].name, n.f.short), () => startFix(n.key), true]] : []), ...(l ? [[t('seeLesson', l.title), async () => { await learn(); startLesson(l, false); }]] : [])]);
   symptom();
 }
@@ -515,7 +567,7 @@ const app = {
   get ex() { return ex; }, get rig() { return rig; }, get lesson() { return lesson; }, get quiz() { return quiz; }, get recording() { return holding; },
   get tutoring() { return !!(tutor || explain); },
   get choices() { return [...document.querySelectorAll('#f-choices button, #t-choices button')].filter((b) => !b.disabled && b.offsetParent); },   // tutor / repair / explain options, tapped in VR
-  open, pick, go, answer, startLesson, startTutor: () => startTutor(),
+  open, pick, go, answer, startLesson, startTutor: () => startTutor(), startTour: () => startTour(),
   quizLesson: () => startLesson(ex.lessons.find((l) => l.steps.some((s) => s.quiz)) || ex.lessons[0], true),
   stopLesson: () => { stopAll(); say(ex.name, ex.intro); },
   explode: (v) => { rig.setExplode(v); $('explode-r').value = v; },
@@ -524,7 +576,9 @@ const app = {
   onExit: () => (vr = null),
 };
 async function enterVR() {
-  try { vr = await viewer.enterVR(app); } catch { vr = null; toast(t('noVR')); }
+  try { vr = await viewer.enterVR(app); } catch { vr = null; toast(t('noVR')); return; }
+  vr.refresh();   // a repair or lesson already running keeps its options in the headset
+  if (fix) vr.say($('f-q').textContent);
 }
 $('vr').onclick = enterVR;
 viewerModule.then(async ({ Viewer }) => { if (await Viewer.vrSupported()) $('home-vr').hidden = false; });
@@ -534,5 +588,6 @@ $('home-vr').onclick = async () => { await learn(ex?.id || list[0]); enterVR(); 
 addEventListener('pointerdown', unlockSpeech, { once: true });
 // no landing page first: a broken machine is the way in (?ex= picks which, ?learn opens 原理)
 const qs = new URLSearchParams(location.search), start = exhibits[qs.get('ex')] ? qs.get('ex') : null;
-if (qs.has('learn') && start) learn(start);
+if (qs.has('tour') && start) learn(start).then(() => startTour());   // ?ex=jet&tour: straight into Muse's tour (a demo link)
+else if (qs.has('learn') && start) learn(start);
 else startFix(faults.find((x) => x.ex === start)?.key || faults.find((x) => !solvedKeys().includes(x.key))?.key || faults[0]?.key);

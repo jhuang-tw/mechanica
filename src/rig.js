@@ -3,14 +3,14 @@
 // and reset() always gets back there.
 import * as THREE from 'three';
 
-const AMBER = new THREE.Color(1, 0.62, 0.15), GHOST = 0.1, TAU = Math.PI * 2;
+const AMBER = new THREE.Color(1, 0.62, 0.15), GHOST = 0.1, SHELL = 0.4, TAU = Math.PI * 2;
 const DIRS = { up: [0, 1, 0], down: [0, -1, 0], front: [1, 0, 0], back: [-1, 0, 0], left: [0, 0, -1], right: [0, 0, 1] };
 const ease = (t) => (t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2);
 
 export class Rig {
   constructor(root, manifest) {
     this.root = root; this.m = manifest;
-    this.parts = new Map();   // id -> { obj, def, base: {pos, quat}, angle, offset, explodeVec, meshes }
+    this.parts = new Map();   // id -> { obj, def, base: {pos, quat}, angle, offset, explodeVec, spread, meshes }
     const box = new THREE.Box3().setFromObject(root);
     this.size = box.getSize(new THREE.Vector3()).length() || 1;
     const centre = box.getCenter(new THREE.Vector3());
@@ -26,19 +26,34 @@ export class Rig {
       // explode: the model's own vector (node extras `explode`, metres) or straight out from the centre;
       // parts inside other parts ride with their parent unless they have their own vector.
       // shortcut: offsets are applied in the parent's space, so non-part container nodes must be unrotated and unscaled
-      const c = new THREE.Box3().setFromObject(obj).getCenter(new THREE.Vector3()).sub(centre), ex = obj.userData.explode;
+      const b = new THREE.Box3().setFromObject(obj), c = b.getCenter(new THREE.Vector3()).sub(centre), ex = obj.userData.explode;
       let nested = false;   // inside another part (pedals on the crank)
       for (let o = obj.parent; o && o !== root; o = o.parent) if (ids.has(o.name)) nested = true;
       this.parts.set(def.id, {
-        obj, def, meshes, nested,
+        obj, def, meshes, nested, low: b.min.y,
         base: { pos: obj.position.clone(), quat: obj.quaternion.clone() },
         axis: new THREE.Vector3(...(def.axis || obj.userData.axis || [0, 0, 1])).normalize(),
         angle: 0, offset: new THREE.Vector3(),
-        explodeVec: Array.isArray(ex) ? new THREE.Vector3(...ex) : nested ? new THREE.Vector3()
-          : (c.lengthSq() < 1e-6 ? new THREE.Vector3(0, 1, 0) : c.normalize()).multiplyScalar(this.size * 0.2),
+        explodeVec: (Array.isArray(ex) ? new THREE.Vector3(...ex) : nested ? new THREE.Vector3()
+          : (c.lengthSq() < 1e-6 ? new THREE.Vector3(0, 1, 0) : c.normalize()).multiplyScalar(this.size * 0.2)).multiplyScalar(def.shell ? 0.25 : 1),   // glass stays close: the machine's outline around its insides
       });
     }
+    // an explode never goes below the ground (manifest `floor`, else the model's lowest point): the part that would go
+    // deepest stays there and the rest rise by that much, so every gap stays. Fixed parts standing on the ground stay too.
+    const floor = manifest.floor ?? box.min.y;
+    let rise = 0;
+    for (const p of this.parts.values()) {
+      let y = p.explodeVec.y;
+      for (let o = p.obj.parent; o && o !== root; o = o.parent) y += this.parts.get(o.name)?.explodeVec.y ?? 0;
+      p.sink = Math.min(0, floor - p.low);   // what it may still drop; a wheel's flange already sits below the rail top
+      rise = Math.max(rise, p.sink - y);
+    }
+    for (const p of this.parts.values()) {
+      p.spread = p.explodeVec.clone();
+      if (!p.nested && !(p.def.fixed && p.low <= box.min.y + this.size * 1e-3)) p.spread.y += rise;
+    }
     this.explode = 0; this.explodeTarget = 0;
+    this.xray = null; this.glass = 0;   // shell parts: xray forces see-through 0..1, null follows the explode
     this.tweens = []; this.spins = new Map();   // part id -> rad/s
     this.swings = new Map();   // part id -> { amp (rad), w (rad/s), t }: back-and-forth, like a steering wheel
     this.linkages = (manifest.linkages || []).filter((l) => (l.type === 'slider_crank' && this.parts.has(l.crank)) || (l.type === 'swashplate' && this.parts.has(l.mast)));
@@ -55,10 +70,13 @@ export class Rig {
   paint() {
     for (const [id, p] of this.parts) {
       const ghost = this.isolated && !this.isolated.has(id), lit = this.lit.has(id);
+      const fade = p.def.shell && !lit ? this.glass : 0, clear = ghost || fade > 0;   // an opening shell turns to glass; below 0.5 opacity taps reach the parts inside
       for (const { o, base } of p.meshes) {
-        if (o.material.transparent !== (ghost || base.transparent)) { o.material.transparent = ghost || base.transparent; o.material.needsUpdate = true; }
-        o.material.opacity = ghost ? GHOST : base.opacity;
-        o.material.depthWrite = !ghost;
+        if (o.material.transparent !== (clear || base.transparent)) { o.material.transparent = clear || base.transparent; o.material.needsUpdate = true; }
+        o.material.opacity = ghost ? GHOST : base.opacity + (SHELL - base.opacity) * fade;
+        o.material.depthWrite = !clear;
+        if (p.def.shell) o.castShadow = fade < 0.5;
+        if (o.material.userData.glass) o.material.userData.glass.value = ghost ? 0 : fade;
         if (o.material.userData.rim) o.material.userData.rim.value = lit ? 1 : 0;   // look.js: rim glow, the material stays visible
         else if (o.material.emissive) o.material.emissive.copy(lit ? AMBER : base.emissive).multiplyScalar(lit ? 0.45 : 1);
       }
@@ -101,9 +119,10 @@ export class Rig {
   spin(id, rad) { if (rad) this.spins.set(id, rad); else this.spins.delete(id); }
   stop() { this.spins.clear(); for (const [id, s] of this.swings) { const p = this.parts.get(id); p.angle = 0; if (s.slide) p.offset.set(0, 0, 0); } this.swings.clear(); }
   setExplode(t) { this.explodeTarget = Math.min(1, Math.max(0, t)); }
+  setXray(t) { this.xray = t == null ? null : Math.min(1, Math.max(0, t)); }
 
   reset() {
-    this.tweens = []; this.stop(); this.lit.clear(); this.isolated = null; this.explodeTarget = 0;
+    this.tweens = []; this.stop(); this.lit.clear(); this.isolated = null; this.explodeTarget = 0; this.xray = null;
     for (const p of this.parts.values()) { p.angle = 0; p.offset.set(0, 0, 0); p.obj.visible = true; }
     this.brokenLook();
     this.paint();
@@ -154,7 +173,7 @@ export class Rig {
   // move a held part as the hand goes from `from` to `to` (world points)
   drag(h, from, to) {
     const p = this.parts.get(h.part), par = p.obj.parent, a = par.worldToLocal(from.clone()), d = par.worldToLocal(to.clone()).sub(a);   // in the part's parent space
-    if (h.pull) { p.offset.copy(h.pull).multiplyScalar(Math.min(this.size * 0.3, Math.max(0, p.offset.dot(h.pull) + d.dot(h.pull)))); return; }
+    if (h.pull) { const out = Math.min(this.size * 0.3, Math.max(0, p.offset.dot(h.pull) + d.dot(h.pull))); p.offset.copy(h.pull).multiplyScalar(out); return; }
     let da;
     if (h.mv.slide) { const v = new THREE.Vector3(...h.mv.slide); da = (d.dot(v) / v.lengthSq()) * h.amp; }
     else {   // the angle the hand sweeps around the part's axis
@@ -183,13 +202,16 @@ export class Rig {
     // swings: back and forth, or with oneWay 0 → amp → 0 (a door)
     for (const [id, s] of this.swings) { const a = (s.t += dt) * s.w, k = s.oneWay ? (1 - Math.cos(a)) / 2 : Math.sin(a), p = this.parts.get(id); if (s.slide) p.offset.copy(s.slide).multiplyScalar(k); else p.angle = s.amp * k; }
     this.explode += (this.explodeTarget - this.explode) * Math.min(1, dt * 6);
+    const see = this.xray ?? this.explodeTarget;
+    if (this.glass !== see) { this.glass = Math.abs(see - this.glass) < 0.002 ? see : this.glass + (see - this.glass) * Math.min(1, dt * 6); this.paint(); }
     const q = new THREE.Quaternion();
     for (const p of this.parts.values()) {
       p.obj.quaternion.copy(p.base.quat).multiply(q.setFromAxisAngle(p.axis, p.angle));
       // `level`: undo the parent part's turn, so a pedal stays flat while its crank goes round
       const par = p.def.level && this.parts.get(p.obj.parent.name);
       if (par) p.obj.quaternion.premultiply(q.setFromAxisAngle(par.axis, -par.angle));
-      p.obj.position.copy(p.base.pos).add(p.offset).addScaledVector(p.explodeVec, this.explode);
+      p.obj.position.copy(p.base.pos).add(p.offset).addScaledVector(p.spread, this.explode);
+      if (!p.nested) p.obj.position.y = Math.max(p.obj.position.y, p.base.pos.y + p.sink);   // a detach or drag stops at the ground too
     }
     for (const l of this.linkages) if (l.type === 'swashplate') this.swashplate(l); else this.sliderCrank(l);
   }

@@ -34,7 +34,7 @@
    ]
   },
   {
-   "id": "valve_cover",
+   "id": "valve_cover", "shell": true,
    "name": "氣門室蓋",
    "en": "car valve cover",
    "info": "引擎最上方的護蓋，密封凸輪軸與氣門機構，防止機油外漏。",
@@ -605,7 +605,7 @@
    ]
   },
   {
-   "id": "body",
+   "id": "body", "shell": true,
    "fixed": true,
    "name": "車身",
    "en": "car body shell",
@@ -617,7 +617,7 @@
    ]
   },
   {
-   "id": "hood",
+   "id": "hood", "shell": true,
    "name": "引擎蓋",
    "en": "car hood",
    "info": "引擎室上蓋，鉸鏈設在擋風玻璃側，掀開即可檢修引擎。",
@@ -627,7 +627,7 @@
    ]
   },
   {
-   "id": "door_fl",
+   "id": "door_fl", "shell": true,
    "name": "左前門（駕駛座）",
    "en": "car front left door",
    "info": "鉸鏈在門前緣，行駛時風壓會把門往內推緊；門板內有防撞鋼樑強化側面安全。",
@@ -637,7 +637,7 @@
    ]
   },
   {
-   "id": "door_fr",
+   "id": "door_fr", "shell": true,
    "name": "右前門",
    "en": "car front right door",
    "info": "副駕駛座車門，前緣鉸鏈設計，內部同樣配有側面防撞鋼樑。",
@@ -647,7 +647,7 @@
    ]
   },
   {
-   "id": "door_rl",
+   "id": "door_rl", "shell": true,
    "name": "左後門",
    "en": "car rear left door",
    "info": "左後座車門，內建側面防撞鋼樑。",
@@ -657,7 +657,7 @@
    ]
   },
   {
-   "id": "door_rr",
+   "id": "door_rr", "shell": true,
    "name": "右後門",
    "en": "car rear right door",
    "info": "右後座車門，內建側面防撞鋼樑。",
@@ -667,7 +667,7 @@
    ]
   },
   {
-   "id": "trunk",
+   "id": "trunk", "shell": true,
    "name": "行李廂蓋",
    "en": "car trunk lid",
    "info": "後車廂蓋，鉸鏈位於後擋風玻璃下方。",

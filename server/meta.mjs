@@ -8,7 +8,7 @@ const fail = (message, status = 502) => { const e = new Error(message); e.status
 async function call(path, init, ms) {
   if (!configured()) throw fail('META_API_KEY not set', 503);
   const res = await fetch(base() + path, { ...init, headers: { Authorization: `Bearer ${env('META_API_KEY')}`, ...init.headers }, signal: AbortSignal.timeout(ms) });
-  if (!res.ok) throw fail(`Meta HTTP ${res.status}`, [401, 403].includes(res.status) ? 503 : 502);
+  if (!res.ok) throw Object.assign(fail(`Meta HTTP ${res.status}`, [401, 403].includes(res.status) ? 503 : 502), { policy: /content_policy/.test(await res.text().catch(() => '')) });
   return res.json();
 }
 const post = (path, body, ms) => call(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }, ms);

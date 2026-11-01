@@ -13,7 +13,7 @@
  "looksLike": "VR 頭戴裝置、VR 眼鏡、虛擬實境頭盔、MR 頭戴裝置",
  "parts": [
   {
-   "id": "front_cover",
+   "id": "front_cover", "shell": true,
    "name": "前蓋",
    "en": "VR headset front cover",
    "info": "最外層的護蓋，後方藏有追蹤鏡頭與散熱出風口。",
@@ -23,7 +23,7 @@
    ]
   },
   {
-   "id": "housing",
+   "id": "housing", "shell": true,
    "fixed": true,
    "name": "外殼",
    "en": "VR headset housing",

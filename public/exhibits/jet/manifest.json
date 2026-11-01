@@ -18,7 +18,7 @@
  "looksLike": "噴射引擎、飛機引擎、渦扇引擎、渦輪引擎、飛機",
  "parts": [
   {
-   "id": "nacelle_inlet",
+   "id": "nacelle_inlet", "shell": true,
    "name": "進氣唇口",
    "en": "turbofan nacelle inlet",
    "info": "引擎最前端的圓弧進氣口，確保飛機抬頭或遇側風時，氣流都能平順進入風扇。",
@@ -40,7 +40,7 @@
    ]
   },
   {
-   "id": "fan_case",
+   "id": "fan_case", "shell": true,
    "name": "風扇機匣",
    "en": "turbofan fan case",
    "info": "包圍大風扇的高強度外環；萬一葉片斷裂時，必須將碎片擋在機匣內保護機身。",
@@ -50,7 +50,7 @@
    ]
   },
   {
-   "id": "fan_cowl_left",
+   "id": "fan_cowl_left", "shell": true,
    "name": "左風扇整流罩",
    "en": "turbofan left fan cowl",
    "info": "可向上掀開的左側維修外蓋，方便檢修內部的附件齒輪箱與管線。",
@@ -61,7 +61,7 @@
    ]
   },
   {
-   "id": "fan_cowl_right",
+   "id": "fan_cowl_right", "shell": true,
    "name": "右風扇整流罩",
    "en": "turbofan right fan cowl",
    "info": "可向上掀開的右側維修外蓋。",
@@ -72,7 +72,7 @@
    ]
   },
   {
-   "id": "thrust_reverser",
+   "id": "thrust_reverser", "shell": true,
    "name": "反推力裝置",
    "en": "turbofan thrust reverser",
    "info": "降落觸地後會往後滑開，擋住外圈旁通氣流並經格柵轉折往前吹，幫飛機大幅減速。",
@@ -154,7 +154,7 @@
    ]
   },
   {
-   "id": "core_case",
+   "id": "core_case", "shell": true,
    "name": "核心機匣",
    "en": "turbofan core case",
    "info": "包覆壓縮機、燃燒室與渦輪的耐高溫高壓金屬殼體。",
@@ -164,7 +164,7 @@
    ]
   },
   {
-   "id": "core_cowl",
+   "id": "core_cowl", "shell": true,
    "name": "核心整流罩",
    "en": "turbofan core cowl",
    "info": "核心機匣外的流線外罩，與外層風扇機匣之間形成旁通氣道。",

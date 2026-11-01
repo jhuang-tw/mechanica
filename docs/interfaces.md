@@ -17,7 +17,7 @@
 | `intro` | 打開展品時的一句話 |
 | `suggest[]` | 建議問題（畫面上的按鈕，送給 AI） |
 | `looksLike` | 真實世界裡像什麼（拍照比對用） |
-| `parts[]` | `{id, name, en, info, aliases[], axis?}`。`id` 就是模型的節點名稱；`en` 是給 SAM 的完整英文描述（"bicycle chain"）；`axis` 是零件自己的轉軸（零件本身座標），有 axis 的零件可以自由旋轉；`fixed: true` 的零件（車架、車身這類底座）不能拖，拖它就是轉視角 |
+| `parts[]` | `{id, name, en, info, aliases[], axis?}`。`id` 就是模型的節點名稱；`en` 是給 SAM 的完整英文描述（"bicycle chain"）；`axis` 是零件自己的轉軸（零件本身座標），有 axis 的零件可以自由旋轉；`fixed: true` 的零件（車架、車身這類底座）不能拖，拖它就是轉視角；`shell: true` 的外殼零件在拆解或 Rig 的 `setXray(t)` 時淡成玻璃，點擊會穿過去選到內部 |
 | `drives[]` | 真實機構 `{id, name, rpm, moves:[{part, ratio}]}`：速度 1 時第一個零件轉 rpm，其他乘 ratio |
 | `drives[].swing` | 有 `swing`（度）就是來回擺動（方向盤），`period` 秒一個來回；ratio 乘在角度上；move 有 `slide:[x,y,z]`（公尺）就改成沿這個向量來回滑動；`oneWay: true` 只往一邊擺（0 → swing → 0，像門、引擎蓋）；move 也可以有自己的 `period`（擒縱叉擺得比擺輪快一倍） |
 | `linkages[]` | 曲柄滑塊（引擎）`{type:"slider_crank", crank, r, L, up, cylinders:[{piston, rod, phase, slides?, follow?, valve?, valveAmp?, valveLead?}]}`：活塞（和 `slides`，如十字頭）沿 `up` 滑動、連桿從曲柄銷擺到活塞銷、`follow`（聯結桿）跟著曲柄銷平移不轉、`valve` 領先 `valveLead` 弧度滑動 `valveAmp` 公尺，跟著 `crank` 的角度。<br>斜盤（直升機）`{type:"swashplate", mast, plates[], hub, blades[], collective:{part,max}, cyclic:{part,max}, rise, tilt, pitch, cyclicPitch, flap}`：總距桿角度（÷max）讓斜盤上升 `rise` 公尺、槳葉一起變距 `pitch` 度；週期桿讓斜盤前傾 `tilt` 度、每片槳葉變距 `cyclicPitch`·sin(方位角)、蹺蹺板旋翼頭傾 `flap` 度 |
@@ -41,6 +41,7 @@
 - 公尺；+x 往前、+y 往上；自行車的輪軸沿 z，驅動側在 +z。
 - 節點 extras 可帶 `axis`（轉軸）和 `explode`（爆炸圖位移，公尺）；manifest 有寫的話以 manifest 為準。
 - 子零件跟著父零件動（自行車：`pedal_l`、`pedal_r` 是 `crank` 的子節點）。爆炸圖只移動最上層的零件。
+- 爆炸圖不會穿過地面：最深的零件停在地面，其他零件一起上升同樣高度，間距不變；踩在地面上的 `fixed` 零件（軌道、支架）不動。地面預設是模型最低點，模型含路基時用 manifest 的 `floor`（公尺，蒸汽火車是軌面 0）。
 - 參考：`tools/placeholder-bike.mjs`（用幾何體做的暫用模型，完全照這份約定）。
 
 ## API（server/）
@@ -55,7 +56,7 @@
 | `POST /api/tutor` | `{exhibit, answer?, history?, known?[{concept, verdict}], focus?}` | `{say, grade?{verdict, concept, gap}, question?{q, choices[]}, steps[]}` |
 | `POST /api/fix` | `{exhibit, fault, stage: diagnose\|explain, text, pointed?, history?, solved?[fault keys]}` | diagnose：`{say, result: found\|close\|not_it, suspect[], steps[]}`；explain：`{say, grade?{verdict, gap}, next? ("<exhibit>/<fault>"), steps[]}` |
 | `POST /api/identify` | 圖片（不儲存） | `{match, exhibit, confidence, machine, parts[≤4], say}` |
-| `POST /api/segment?exhibit=&part=` | 圖片 | `{exhibit, results:[{part, masks:[{bounds, width, height, path}]}]}` |
+| `POST /api/segment?exhibit=&part=` | 圖片 | `{exhibit, results:[{part, frame?{w,h}, masks:[{bounds, width, height, path}]}]}`（`bounds` 是 SAM 在 `frame` 像素裡的框，`path` 是遮罩自己 width×height 格子裡的輪廓；`src/photo.js` 把它疊回照片） |
 | `POST /api/stt?exhibit=` | 16 kHz 單聲道 WAV | `{text}` |
 
 每個 JSON API 都可以帶 `lang: "en"`（`/api/identify`、`/api/stt` 用 `?lang=en`）：讀英文展品、用英文提示詞，Muse 用英文回答。

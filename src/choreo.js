@@ -1,7 +1,7 @@
 // AI-composed demonstrations: a list of timed steps from /api/ask, played on the Rig.
 // Steps are model output, so every field is checked here: unknown parts and actions are dropped, numbers are clamped.
 export const LIMITS = { steps: 16, total: 30, duration: [0.3, 10], degrees: 1080, rpm: 60, amount: 1 };
-const ACTIONS = new Set(['highlight', 'isolate', 'hide', 'show', 'detach', 'translate', 'rotate', 'drive', 'reset']);
+const ACTIONS = new Set(['highlight', 'isolate', 'hide', 'show', 'detach', 'translate', 'rotate', 'drive', 'reset', 'xray']);
 const clamp = (v, lo, hi, d) => (Number.isFinite(+v) ? Math.min(hi, Math.max(lo, +v)) : d);
 
 export function cleanSteps(raw, manifest) {
@@ -10,11 +10,12 @@ export function cleanSteps(raw, manifest) {
   for (const s of Array.isArray(raw) ? raw : []) {
     if (!s || !ACTIONS.has(s.do)) continue;
     const step = { do: s.do === 'translate' ? 'detach' : s.do, at: clamp(s.at, 0, LIMITS.total, 0) };
-    if (!['drive', 'reset'].includes(step.do)) {
+    if (!['drive', 'reset', 'xray'].includes(step.do)) {
       step.parts = (Array.isArray(s.parts) ? s.parts : [s.part]).filter((id) => parts.has(id));
       if (!step.parts.length) continue;
     }
     if (step.do === 'drive') { if (!drives.has(s.drive)) continue; step.drive = s.drive; step.speed = clamp(s.speed, -1, 1, 0.5); }
+    if (step.do === 'xray') step.amount = clamp(s.amount, 0, 1, 1);
     if (s.duration !== undefined) step.duration = clamp(s.duration, ...LIMITS.duration, 2);
     if (step.do === 'rotate') {
       if (s.rpm !== undefined) step.rpm = clamp(s.rpm, -LIMITS.rpm, LIMITS.rpm, 10);
@@ -38,6 +39,7 @@ export class Choreo {
   }
   run(s) {
     const r = this.rig, end = (fn) => s.duration && this.stops.push([this.t + s.duration, fn]);
+    this.onStep?.(s);
     switch (s.do) {
       case 'highlight': return r.highlight([...r.lit, ...s.parts]);
       case 'isolate': return r.isolate(s.parts);
@@ -47,6 +49,7 @@ export class Choreo {
       case 'rotate': r.rotate(s.parts, s); return s.rpm !== undefined && end(() => r.rotate(s.parts, { rpm: 0 }));
       case 'drive': r.drive(s.drive, s.speed); return end(() => r.drive(s.drive, 0));
       case 'reset': return r.reset();
+      case 'xray': return r.setXray(s.amount);
     }
   }
 }

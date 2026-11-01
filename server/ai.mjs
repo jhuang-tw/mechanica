@@ -2,12 +2,14 @@
 //   identify()    photo -> exhibit + the parts in view (muse-spark vision)
 //   segment()     photo + parts -> one mask per part (SAM 3.1), the start of taking the real thing apart
 //   choreograph() question -> a timed demonstration the browser plays (muse-spark tool calling over the exhibit's parts)
+//   tour()        one tap -> a 30–60 s narrated, cinematic teardown Muse Spark directs scene by scene (tool calling)
 //   transcribe()  speech -> Taiwan traditional text (Muse ASR + one quick cleanup pass)
 // Exhibits come from public/exhibits/index.json + <id>/manifest.json, the same manifest the browser loads. Every model answer is checked against it.
 import { readFileSync } from 'node:fs';
 import * as SAM from '@meta-sam/parser';
 import { chat, sam, asr } from './meta.mjs';
-import { localize } from '../src/localize.js';
+import { localize, mentioned } from '../src/localize.js';
+import { TOUR, cleanTour, fallbackTour } from '../src/tour.js';
 
 const DIR = new URL('../public/exhibits/', import.meta.url);
 const fail = (message, status = 400) => Object.assign(new Error(message), { status });
@@ -31,11 +33,13 @@ export async function identify({ image, mime, lang }) {
   const list = Object.values(all).map((e) => en ? `${e.id} | ${e.name} (looks like: ${e.looksLike || e.name}) | parts: ${e.parts.map((p) => `${p.id}=${p.name}`).join(', ')}` : `${e.id}｜${e.name}（像：${e.looksLike || e.name}）｜零件：${e.parts.map((p) => `${p.id}=${p.name}`).join('、')}`).join('\n');
   const system = en ? `The user took a phone photo of a real machine. Find the closest exhibit and the parts that are visible in the photo and that the exhibit also has (at most 4, most obvious first).
 If it is not a machine (an animal, food, scenery), match=false. say: one short spoken English sentence, at most 25 words, saying what you see and which part to look at.
-Output JSON only: {"match":true,"exhibit":"id","confidence":0.0,"machine":"at most 4 words","parts":["part id"],"say":""}
+boxes: for each listed part, where that one part is in the photo, [left, top, right, bottom] from 0 to 1000 of the photo's width and height (a wheel: only the one the part id means, e.g. rear_wheel is the back one).
+Output JSON only: {"match":true,"exhibit":"id","confidence":0.0,"machine":"at most 4 words","parts":["part id"],"boxes":{"part id":[0,0,1000,1000]},"say":""}
 Exhibits (id | name | parts):
 ${list}` : `使用者用手機拍了一張真實機器的照片。找出最接近的展品，以及照片裡看得到、展品也有的零件（最多 4 個，最明顯的在前）。
 不是機器（動物、食物、風景）就 match=false。say：一句台灣繁體中文口語 ≤ 40 字，說看到什麼、要看哪個零件。
-只輸出 JSON：{"match":true,"exhibit":"id","confidence":0.0,"machine":"≤12字","parts":["零件id"],"say":""}
+boxes：每個列出的零件在照片裡的位置 [左, 上, 右, 下]，以照片寬高的 0–1000 表示（只框那一個，例如 rear_wheel 只框後輪）。
+只輸出 JSON：{"match":true,"exhibit":"id","confidence":0.0,"machine":"≤12字","parts":["零件id"],"boxes":{"零件id":[0,0,1000,1000]},"say":""}
 展品（id｜名稱｜零件）：
 ${list}`;
   let j = null, model;
@@ -46,10 +50,21 @@ ${list}`;
   const e = j && Object.hasOwn(all, j.exhibit) ? all[j.exhibit] : null;
   const confidence = num(j?.confidence, 0, 1, 0.5);
   if (!e || j.match === false || confidence < 0.2) return { match: false, say: String(j?.say || (en ? "That doesn't look like a machine. Try a bike or a car." : '這好像不是機器，拍拍看腳踏車或車子。')).slice(0, en ? 200 : 80), model };
-  const ids = new Set(e.parts.map((p) => p.id));
-  return { match: true, exhibit: e.id, confidence, machine: String(j.machine || '').slice(0, 24),
-    parts: [...new Set(Array.isArray(j.parts) ? j.parts : [])].filter((p) => ids.has(p)).slice(0, 4),
+  const ids = new Set(e.parts.map((p) => p.id)), parts = [...new Set(Array.isArray(j.parts) ? j.parts : [])].filter((p) => ids.has(p)).slice(0, 4);
+  return { match: true, exhibit: e.id, confidence, machine: String(j.machine || '').slice(0, 24), parts, boxes: boxesOf(j.boxes, parts),
     say: String(j.say || (en ? `This is a ${e.name}.` : `這是${e.name}。`)).slice(0, en ? 200 : 80), model };
+}
+
+// Muse's box per part, as fractions of the photo [left, top, right, bottom]; anything malformed is dropped
+export function boxesOf(raw, parts) {
+  const out = {};
+  for (const id of parts) {
+    const b = raw?.[id];
+    if (!Array.isArray(b) || b.length !== 4 || !b.every((v) => Number.isFinite(Number(v)))) continue;
+    const [l, t, r, d] = b.map((v) => Math.min(1, Math.max(0, Number(v) / 1000)));
+    if (r - l > 0.01 && d - t > 0.01) out[id] = [l, t, r, d].map((v) => Math.round(v * 1000) / 1000);
+  }
+  return out;
 }
 
 // ---------- photo + parts -> SAM masks ----------
@@ -57,8 +72,14 @@ ${list}`;
 export async function segment({ image, mime, exhibit: id, parts }) {
   const e = exhibit(id), want = [...new Set(parts)].slice(0, 4).map((p) => e.parts.find((x) => x.id === p));
   if (!want.length || want.some((p) => !p)) throw fail('unknown part');
-  const out = await Promise.allSettled(want.map(async (p) => ({ part: p.id, masks: parseMasks(await sam({ prompt: p.en || p.name, mime, image })) })));
+  const out = await Promise.allSettled(want.map(async (p) => { const text = await sam({ prompt: p.en || p.name, mime, image }); return { part: p.id, frame: frameOf(text), masks: parseMasks(text) }; }));
+  out.forEach((r, i) => r.status === 'rejected' && console.error(`${new Date().toISOString()} /api/segment ${want[i].id}: ${String(r.reason?.message).slice(0, 120)}`));
   return { exhibit: e.id, results: out.filter((r) => r.status === 'fulfilled' && r.value.masks.length).map((r) => r.value) };
+}
+// the pixel size SAM measured its boxes in (the box token's w/h), so the browser can lay the masks over the photo it showed
+export function frameOf(text) {
+  const [, w, h] = /<\|box;[^|]*?\bw=(\d+);h=(\d+)/.exec(text) || [];
+  return w && h ? { w: Number(w), h: Number(h) } : undefined;
 }
 export function parseMasks(text) {
   // read each mask's H×W before decoding, so a hostile payload can't make us allocate a huge raster (NaN fails too)
@@ -69,7 +90,7 @@ export function parseMasks(text) {
   const out = reader.finish({ status: 'completed' }).result;
   if (out.diagnostics.length) throw fail('SAM returned an invalid mask', 502);
   return SAM.recordsOfKind(out.records, 'mask')
-    .map(({ bounds, mask }) => ({ bounds, width: mask.width, height: mask.height, path: SAM.decodeMaskToSVGPath(mask) }))
+    .map(({ bounds, mask, confidence }) => ({ bounds, width: mask.width, height: mask.height, path: SAM.decodeMaskToSVGPath(mask), ...(Number.isFinite(confidence) && { confidence }) }))
     .filter(({ path, bounds: b }) => path && [b.left, b.top, b.right, b.bottom].every(Number.isFinite) && b.right > b.left && b.bottom > b.top);
 }
 
@@ -88,6 +109,7 @@ export function toolsFor(e) {
     T('detach', '把零件拆下來、往外移開，看清楚它', { parts, at, dir: { type: 'string', enum: DIRS }, amount: { type: 'number', description: '展品大小的比例 0–1' } }, ['parts']),
     T('rotate', '單獨轉動零件（不連動別的）', { parts, at, degrees: { type: 'number', description: '±1080' }, duration: { type: 'number', description: '秒 0.5–8' } }, ['parts']),
     ...(e.drives?.length ? [T('drive', '讓真實機構運轉：照真實連動帶動整串零件', { drive: { type: 'string', enum: e.drives.map((d) => d.id), description: e.drives.map((d) => `${d.id}=${d.name}`).join('；') }, speed: { type: 'number', description: '−1–1' }, duration: { type: 'number', description: '秒 1–10' }, at }, ['drive'])] : []),
+    ...(e.parts.some((p) => p.shell) ? [T('xray', '把外殼變透明，看見被擋住的內部機構', { amount: { type: 'number', description: '透明程度 0–1，0 是還原' }, at })] : []),
     T('reset', '全部還原', { at }),
   ];
 }
@@ -103,6 +125,7 @@ function toolsEn(e) {
     T('detach', 'Take the parts off and move them out to see them clearly', { parts, at, dir: { type: 'string', enum: DIRS }, amount: { type: 'number', description: 'fraction of the exhibit size, 0–1' } }, ['parts']),
     T('rotate', 'Turn parts on their own (nothing else follows)', { parts, at, degrees: { type: 'number', description: '±1080' }, duration: { type: 'number', description: 'seconds, 0.5–8' } }, ['parts']),
     ...(e.drives?.length ? [T('drive', 'Run the real mechanism: every linked part moves at its real ratio', { drive: { type: 'string', enum: e.drives.map((d) => d.id), description: e.drives.map((d) => `${d.id}=${d.name}`).join('; ') }, speed: { type: 'number', description: '−1–1' }, duration: { type: 'number', description: 'seconds, 1–10' }, at }, ['drive'])] : []),
+    ...(e.parts.some((p) => p.shell) ? [T('xray', 'Turn the outer shell see-through to reveal the mechanism behind it', { amount: { type: 'number', description: 'how see-through, 0–1; 0 puts it back' }, at })] : []),
     T('reset', 'Put everything back', { at }),
   ];
 }
@@ -113,6 +136,7 @@ export function cleanSteps(calls, e) {
     const s = { do: name, at: num(a.at, 0, MAX_T, 0) };
     if (name === 'drive') return drives.has(a.drive) ? { ...s, drive: a.drive, speed: num(a.speed, -1, 1, 0.5), duration: num(a.duration, 1, 10, 4) } : null;
     if (name === 'reset') return s;
+    if (name === 'xray') return { ...s, amount: num(a.amount, 0, 1, 1) };
     const parts = (Array.isArray(a.parts) ? a.parts : []).filter((p) => ids.has(p));
     if (!parts.length) return null;
     if (name === 'detach') return { ...s, parts, dir: DIRS.includes(a.dir) ? a.dir : 'out', amount: num(a.amount, 0, 1, 0.3) };
@@ -121,6 +145,8 @@ export function cleanSteps(calls, e) {
   }).filter(Boolean).sort((x, y) => x.at - y.at).slice(0, MAX_STEPS);
 }
 const partList = (e) => e.parts.map((p) => `${p.id}=${p.name}${p.info ? (EN(e) ? ': ' : '：') + p.info : ''}`).join('\n');
+// Meta's safety filter refuses some harmless wordings ("Why does a helicopter need a tail rotor?"): ask once more in plain words
+const retried = async (ask, first, plain) => { try { return await ask(first); } catch (err) { if (!err.policy) throw err; return ask(plain); } };
 export async function choreograph({ exhibit: id, text, pointed, history = [], lang }) {
   const e = exhibit(id, lang);
   const system = EN(e) ? `You narrate a 3D teaching model of the ${e.title || e.name}. Your answer is read aloud.
@@ -132,8 +158,76 @@ ${partList(e)}` : `你是「${e.title || e.name}」3D 教學模型的解說員�
 同時在文字回覆裡用台灣繁體中文口語講 1–2 句（≤ 50 字）。數字規格只能用零件說明裡有的。
 零件（id=名稱：說明）：
 ${e.parts.map((p) => `${p.id}=${p.name}${p.info ? '：' + p.info : ''}`).join('\n')}`;
-  const r = await chat({ system, tools: toolsFor(e), maxTokens: 900, messages: [...history.slice(-4), { role: 'user', content: pointed ? `${text}\n${EN(e) ? `(pointing at: ${pointed})` : `（正指著：${pointed}）`}` : text }] });
+  const ask = (q) => chat({ system, tools: toolsFor(e), maxTokens: 900, messages: [...history.slice(-4), { role: 'user', content: pointed ? `${q}\n${EN(e) ? `(pointing at: ${pointed})` : `（正指著：${pointed}）`}` : q }] });
+  const part = mentioned(e, text) || e.parts.find((p) => p.id === pointed);
+  const plain = part ? (EN(e) ? `What is the ${part.name.toLowerCase()} for?` : `${part.name}是做什麼用的？`) : EN(e) ? `How does the ${e.name.toLowerCase()} work?` : `${e.name}是怎麼運作的？`;
+  let r;
+  try { r = await retried(ask, text, plain); } catch (err) {
+    if (!err.policy) throw err;
+    return { say: part?.info || e.intro, steps: part ? [{ do: 'isolate', at: 0, parts: [part.id] }] : [], model: 'exhibit' };
+  }
   return { say: r.text.slice(0, EN(e) ? 400 : 200), steps: cleanSteps(r.calls, e), model: r.model };
+}
+
+// ---------- one tap -> a Muse-directed tour ----------
+// Muse Spark plans the whole film in one call: it calls scene() once per shot, in order. cleanTour() checks every shot
+// against the manifest. A good tour is kept for a while per exhibit and language (it is the same machine), unless asked fresh.
+export function tourTools(e) {
+  const en = EN(e), ids = e.parts.map((p) => p.id);
+  const parts = (d) => ({ type: 'array', items: { type: 'string', enum: ids }, description: d });
+  const p = {
+    say: { type: 'string', description: en ? 'the narrator\'s one spoken sentence for this shot, at most 30 words, vivid and concrete' : '這個鏡頭的一句旁白，台灣繁體中文口語，≤ 40 字，生動具體' },
+    seconds: { type: 'number', description: en ? `how long the shot holds, ${TOUR.seconds.join('–')} s` : `鏡頭停留秒數 ${TOUR.seconds.join('–')}` },
+    focus: parts(en ? 'parts the camera frames; empty = the whole machine' : '鏡頭對準的零件；空的＝整台'),
+    orbit: { type: 'number', description: en ? `degrees the camera circles during the shot, ±${TOUR.orbit} (slow drama: 30–90)` : `鏡頭在這段繞著轉幾度，±${TOUR.orbit}（慢慢轉最有戲：30–90）` },
+    explode: { type: 'number', description: en ? 'how far the whole machine is pulled apart, 0 (assembled) – 1 (fully exploded)' : '整台拆開的程度，0（組好）– 1（全部拉開）' },
+    ...(e.parts.some((x) => x.shell) ? { xray: { type: 'number', description: en ? 'how see-through the outer shell is, 0 – 1 (0.8: you see the insides through a glass shell); while exploded the shell is glass anyway' : '外殼透明程度 0–1（0.8：隔著像玻璃的外殼看見內部）；拆開時外殼本來就會變透明' } } : {}),
+    isolate: parts(en ? 'parts to light up while everything else goes faint' : '要亮起來的零件，其他變淡'),
+    detach: parts(en ? 'parts lifted out on their own to be seen clearly' : '單獨拆出來看清楚的零件'),
+    ...(e.drives?.length ? { drive: { type: 'string', enum: e.drives.map((d) => d.id), description: e.drives.map((d) => `${d.id}=${d.name}`).join(en ? '; ' : '；') }, speed: { type: 'number', description: '−1–1' } } : {}),
+  };
+  return [{ name: 'scene', description: en ? `One shot of the tour. Call it ${TOUR.scenes.join('–')} times in a row, in playing order.` : `導覽的一個鏡頭。連續呼叫 ${TOUR.scenes.join('–')} 次，照播放順序。`, parameters: { type: 'object', properties: p, required: ['say', 'seconds'] } }];
+}
+const tours = new Map();   // `${exhibit}|${lang}` -> { at, out }
+const TOUR_KEEP = 30 * 60e3;
+export async function tour({ exhibit: id, lang, fresh = false }) {
+  const e = exhibit(id, lang), en = EN(e), key = `${e.id}|${en ? 'en' : 'zh'}`, kept = tours.get(key);
+  if (!fresh && kept && Date.now() - kept.at < TOUR_KEEP) return { ...kept.out, kept: true };
+  const chain = (e.lessons || []).map((l) => `${l.title}: ${l.steps.map((s) => s.say).join(' → ')}`).join('\n');
+  const system = en ? `You are the film director and narrator of a ${TOUR.total >= 60 ? '30–60' : '30'} second cinematic teardown of a 3D ${e.title || e.name}, made for a stage demo. Every shot is read aloud by a voice.
+Direct it with the scene tool: call it ${TOUR.scenes.join('–')} times, in order. Make it feel like a premium product film:
+1. Open wide on the whole machine, the camera circling slowly (orbit 40–90), one line that hooks the viewer.
+2. Turn the shell to glass (xray 0.8) to reveal what is inside.
+3. Pull it apart (explode 0.6–1) for the big reveal, keep the glass shell.
+4. Follow the power path link by link: focus and isolate the parts, run the real mechanism with drive, detach a key part to show it alone.
+5. Close: explode 0, xray 0, the camera circling once more, one line that makes them want to try it themselves.
+Rules: one sentence per shot, at most 30 words, plain spoken English; only numbers and specs that appear in the part descriptions; follow the cause → effect chains below; 30–60 seconds in all.
+Parts (id=name: description):
+${partList(e)}
+Cause → effect chains:
+${chain}` : `你是「${e.title || e.name}」3D 模型的電影導演兼旁白，要做一段 30–60 秒、上台展示用的電影式拆解導覽。每個鏡頭的旁白都會被唸出來。
+用 scene 工具導：連續呼叫 ${TOUR.scenes.join('–')} 次，照播放順序。拍得像頂級產品廣告片：
+1. 開場：整台遠景，鏡頭慢慢繞（orbit 40–90），一句抓住人的話。
+2. 外殼變成玻璃（xray 0.8），露出裡面。
+3. 拆開（explode 0.6–1），最震撼的一刻，外殼保持透明。
+4. 順著動力一路追下去：focus、isolate 每一段零件，用 drive 讓真實機構動起來，detach 把關鍵零件單獨拉出來看。
+5. 收尾：explode 0、xray 0，鏡頭再繞一圈，一句讓人想自己動手玩的話。
+規則：每個鏡頭一句，台灣繁體中文口語 ≤ 40 字；數字規格只能用零件說明裡有的；照下面的因果鏈；全長 30–60 秒。
+零件（id=名稱：說明）：
+${partList(e)}
+因果鏈：
+${chain}`;
+  const plain = en ? `Give me a tour of the ${e.name.toLowerCase()}.` : `帶我看${e.name}。`;
+  const ask = (content) => chat({ system, tools: tourTools(e), maxTokens: 1800, ms: 45000, temperature: 0.5, messages: [{ role: 'user', content }] });
+  let scenes = [], model = 'exhibit', calls = 0;
+  try {
+    const r = await retried(ask, en ? `Direct a tour of the ${e.name.toLowerCase()} that makes people say wow.` : `導一段讓人驚呼的${e.name}導覽。`, plain);
+    calls = r.calls.length; scenes = cleanTour(r.calls.filter((c) => c.name === 'scene').map((c) => c.args), e); model = r.model;
+  } catch (err) { console.error(`tour: ${err.name === 'TimeoutError' ? 'timeout' : String(err.message).slice(0, 80)}`); }   // no Muse: the exhibit's own tour, never nothing
+  if (scenes.length < TOUR.scenes[0]) return { scenes: fallbackTour(e), model: 'exhibit', calls };
+  const out = { scenes, model, calls };
+  tours.set(key, { at: Date.now(), out });
+  return out;
 }
 
 // ---------- speech -> text ----------
@@ -190,7 +284,7 @@ ${l.steps.map((s, i) => `${i + 1}. ${s.say}`).join('\n')}` : `學生剛上完「
 只輸出 JSON：{"covered":[${n} 個 true/false],"wrong":"他講錯的地方 ≤ 30 字，沒有就空字串","say":"≤ 60 字台灣繁體中文口語，直接對他說（用「你」）：先肯定講對的，有講錯就更正講錯的地方，沒有才點出漏掉的第一個環節"}
 環節：
 ${l.steps.map((s, i) => `${i + 1}. ${s.say}`).join('\n')}`;
-  const r = await chat({ system, json: true, temperature: 0, maxTokens: 300, messages: [{ role: 'user', content: text }] });
+  const r = await retried((content) => chat({ system, json: true, temperature: 0, maxTokens: 300, messages: [{ role: 'user', content }] }), text, EN(e) ? `The student's words: "${text}"` : `學生的原話：「${text}」`);
   const j = json(r.text);
   if (!j) throw fail('Muse returned no verdict', 502);
   const k = EN(e) ? 2.5 : 1;
@@ -214,7 +308,7 @@ ${e.parts.map((p) => `${p.id}=${p.name}${p.info ? '：' + p.info : ''}`).join('\
 課綱（正確的因果）：
 ${course}`;
   const user = answer ? `我的回答：${answer}` : '開始上課，先問我第一題。';
-  const r = await chat({ system, tools: tutorTools(e), maxTokens: 900, messages: [...history.slice(-6), { role: 'user', content: user }] });
+  const r = await retried((content) => chat({ system, tools: tutorTools(e), maxTokens: 900, messages: [...history.slice(-6), { role: 'user', content }] }), user, '請繼續上課，問我下一題。');
   return { say: r.text.slice(0, 200), ...cleanTurn(r.calls, e), model: r.model };
 }
 async function tutorEn(e, part, answer, history, known) {
@@ -232,7 +326,7 @@ ${partList(e)}
 Syllabus (the correct cause and effect):
 ${course}`;
   const user = answer ? `My answer: ${answer}` : 'Start the lesson. Ask me the first question.';
-  const r = await chat({ system, tools: tutorTools(e), maxTokens: 900, messages: [...history.slice(-6), { role: 'user', content: user }] });
+  const r = await retried((content) => chat({ system, tools: tutorTools(e), maxTokens: 900, messages: [...history.slice(-6), { role: 'user', content }] }), user, 'Carry on with the lesson. Ask me the next question.');
   return { say: r.text.slice(0, 400), ...cleanTurn(r.calls, e), model: r.model };
 }
 
@@ -260,19 +354,35 @@ export function fixTools(e, stage) {
         gap: { type: 'string', description: '漏掉的關鍵，≤ 30 字；答對留空' },
         next: { type: 'string', enum: faultKeys(), description: '答對時挑下一題：先挑沒修過的，學生弱的概念優先' } } } }];
 }
-export function cleanFix(calls, e, stage) {
+export function cleanFix(calls, e, stage, solved = []) {
   const c = calls.find((x) => x.name === (stage === 'diagnose' ? 'check' : 'grade'))?.args || {}, ids = new Set(e.parts.map((p) => p.id));
   const out = { steps: cleanSteps(calls, e) };
   if (stage === 'diagnose') Object.assign(out, { result: RESULTS.includes(c.result) ? c.result : 'not_it', suspect: (Array.isArray(c.suspect) ? c.suspect : []).filter((p) => ids.has(p)).slice(0, 4) });
-  else Object.assign(out, { grade: VERDICTS.includes(c.verdict) ? { verdict: c.verdict, gap: clip(c.gap, EN(e) ? 150 : 60) } : null, next: faultKeys().includes(c.next) ? c.next : null });
+  else Object.assign(out, { grade: VERDICTS.includes(c.verdict) ? { verdict: c.verdict, gap: clip(c.gap, EN(e) ? 150 : 60) } : null, next: faultKeys().includes(c.next) && !solved.includes(c.next) ? c.next : null });
   return out;
 }
 // Muse writes its line before it runs the tools, so a miss often ends with no clue: fall back on the exhibit's own question (an empty line gets it too)
 export const withClue = (say, f, result) => (!result || result === 'found' || /[？?]/.test(say) ? say : [say, f.observe].filter(Boolean).join(' '));
+// a miss must not name the fault; the lookarounds keep "chain" from matching "chainring"
+export const leaks = (say, e, f) => f.broken.flatMap((id) => { const p = e.parts.find((x) => x.id === id); return p ? [p.name, ...(p.aliases || [])] : []; }).some((n) => new RegExp(`(?<![a-z])${n.replace(/[^\p{L}\p{N} -]/gu, '.')}(?![a-z])`, 'i').test(say));
+// That first line comes before the tools run, so it can only be a plan. With the check made, a second call says what the model showed.
+// The answer was already earned by the first call: any failure here keeps it (and its clue) rather than failing the turn.
+async function afterTools({ system, messages, out, stage, f, e, name, first, max }) {
+  const en = EN(e), shown = out.steps.map((s) => (s.parts ? `${s.do} ${s.parts.map(name).join(en ? ', ' : '、')}` : `${s.do} ${s.drive || ''}`.trim())).join(en ? '; ' : '；') || (en ? 'nothing' : '沒有');
+  const result = stage === 'diagnose'
+    ? (en ? `Check result: ${out.result}. Shown on the model: ${shown}. While it ran, these parts stayed still: ${f.stops.map(name).join(', ')}. Everything else moved normally.` : `檢查結果：${out.result}。模型上演的：${shown}。運轉時這些零件停著：${f.stops.map(name).join('、')}。其他零件都正常。`)
+    : (en ? `Grade: ${out.grade?.verdict || 'partial'}. Missing: ${out.grade?.gap || 'nothing'}. Shown on the model: ${shown}. The model is repaired now: every part moved and the wheels turned.` : `評分：${out.grade?.verdict || 'partial'}。漏掉的：${out.grade?.gap || '沒有'}。模型上演的：${shown}。模型已經修好，所有零件都正常運轉。`);
+  const say = en ? 'The tools have run. Do not call tools. Write only your spoken line under rule 3, in the past tense, about what the model showed.' : '工具已經跑完。不要再呼叫工具。只寫第 3 條的那句話，用已經做完的語氣，講模型呈現了什麼。';
+  const text = await retried((content) => chat({ system: `${system}\n${say}`, maxTokens: 150, ms: 8000, messages: [...messages, { role: 'user', content }] }), result, en ? 'Say your line now.' : '請說出你的那句話。').then((r) => r.text, (err) => (console.warn(`fix: second call failed: ${String(err.message).slice(0, 80)}`), ''));
+  const missed = stage === 'diagnose' && out.result !== 'found';
+  if (text && !(missed && (leaks(text, e, f) || !/[？?]/.test(text)))) return text.slice(0, max);
+  return withClue(missed && leaks(first, e, f) ? '' : first.slice(0, max), f, out.result);
+}
 export async function fix({ exhibit: id, fault, stage, text, pointed, history = [], solved = [], lang }) {
   const e = exhibit(id, lang), f = (e.faults || []).find((x) => x.id === fault);
   if (!f) throw fail('unknown fault');
   if (!['diagnose', 'explain'].includes(stage)) throw fail('unknown stage');
+  solved = [...solved, `${id}/${fault}`];   // the one just repaired is fixed too: Muse must not hand it back as next
   const name = (p) => e.parts.find((x) => x.id === p)?.name || p, drive = e.drives.find((d) => d.id === f.drive);
   if (EN(e)) return fixEn(e, f, stage, text, pointed, history, solved, name, drive);
   const common = `零件（id=名稱：說明）：
@@ -281,22 +391,25 @@ ${e.parts.map((p) => `${p.id}=${p.name}${p.info ? '：' + p.info : ''}`).join('\
   const system = stage === 'diagnose'
     ? `你是「${e.title || e.name}」3D 模型旁的修理教練。模型現在故障了，學生看到的症狀：${f.symptom}
 真正的故障（不能直接說出來）：${f.title}。${f.cause} 壞的零件：${f.broken.map(name).join('、')}。故障時不會動的零件：${f.stops.map(name).join('、')}。
-學生會說出他的猜測，口語、錯字照意思理解。每一輪在同一個回覆裡：
+學生會說出他的猜測，口語、錯字照意思理解。所有工具都要在這一個回覆裡一次呼叫完：模型運轉前不會有工具結果回來。每一輪在同一個回覆裡，以下全部都要做：
 1. 呼叫 check 判斷他的猜測，suspect 填他懷疑的零件。
 2. 用工具在模型上檢查他懷疑的地方給他看：isolate 那些零件；用 drive 讓他看它們有沒有在動（模型照故障的狀態運轉，不會動的零件會停著）；要看清楚就 detach。整段 3–8 秒。not_it 或 close 時不可以 detach 壞的零件，也不可以只亮它，那等於直接給答案。
 3. 文字回覆會被唸出來，直接對學生說（用「你」），台灣繁體中文口語 ≤ 50 字：說你檢查了什麼、看到什麼（哪個零件有轉、哪個停著），不要只說「我來看看」。not_it 或 close 最後一定要用一個問題給線索（沿著力量傳過去的路線往下找），絕對不要說出答案。found 就稱讚他，說出他找到的是什麼。
 ${common}`
     : `你是「${e.title || e.name}」3D 模型旁的修理教練。學生剛找出故障「${f.title}」，模型已經修好了。你問他：${f.why}
 正確的解釋：${f.answer}
-每一輪在同一個回覆裡：
+所有工具都要在這一個回覆裡一次呼叫完：模型運轉前不會有工具結果回來。每一輪在同一個回覆裡，以下全部都要做：
 1. 呼叫 grade 評他的解釋，口語、錯字照意思評。答對時 next 挑下一題（他修過的：${solved.join('、') || '還沒有'}）。
-2. 用工具動模型把這條傳動路線演一次：isolate 相關零件，再 drive，3–8 秒。
+2. 用工具動模型把這條傳動路線演一次：isolate 相關零件，再 drive，3–8 秒。他漏掉哪一環，就只 isolate 那一環的零件。
 3. 文字回覆會被唸出來，直接對學生說（用「你」），台灣繁體中文口語 ≤ 60 字：先說他講對的，再補漏掉的那一環。
 ${common}`;
   const user = stage === 'diagnose' ? `我的猜測：${text}${pointed ? `（我點了：${name(pointed)}）` : ''}` : `我的解釋：${text}`;
-  const r = await chat({ system, tools: fixTools(e, stage), maxTokens: 900, messages: [...history.slice(-4), { role: 'user', content: user }] });
-  const out = cleanFix(r.calls, e, stage);
-  return { say: withClue(r.text.slice(0, 200), f, out.result), ...out, model: r.model };
+  const suspect = mentioned(e, text)?.name || (pointed && name(pointed));
+  const plain = stage === 'diagnose' ? (suspect ? `我的猜測：${suspect}` : '我不確定，給我一個線索。') : `學生的原話：「${text}」`;
+  const messages = [...history.slice(-4), { role: 'user', content: user }];
+  const r = await retried((content) => chat({ system, tools: fixTools(e, stage), maxTokens: 900, messages: [...history.slice(-4), { role: 'user', content }] }), user, plain);
+  const out = cleanFix(r.calls, e, stage, solved);
+  return { say: await afterTools({ system, messages: [...messages, ...(r.text ? [{ role: 'assistant', content: r.text }] : [])], out, stage, f, e, name, first: r.text, max: 200 }), ...out, model: r.model };
 }
 async function fixEn(e, f, stage, text, pointed, history, solved, name, drive) {
   const common = `Parts (id=name: description):
@@ -305,20 +418,23 @@ The mechanism in this challenge, "${drive?.name || f.drive}", drives in order: $
   const system = stage === 'diagnose'
     ? `You are a repair coach beside a 3D model of the ${e.title || e.name}. The model is broken right now. The symptom the student sees: ${f.symptom}
 The real fault (never say it outright): ${f.title}. ${f.cause} Broken parts: ${f.broken.map(name).join(', ')}. Parts that stop moving because of the fault: ${f.stops.map(name).join(', ')}.
-The student will say a guess; understand casual speech and typos by meaning. Every turn, in the same reply:
+The student will say a guess; understand casual speech and typos by meaning. Make every tool call in this one reply: no tool results come back before the model runs. Every turn, in the same reply, all of these:
 1. Call check to judge the guess; put the parts they suspect in suspect.
 2. Check the suspected spot on the model with the tools: isolate those parts; use drive so they can see whether the parts move (the model runs in its broken state, so the stopped parts stay still); detach to see clearly. 3–8 seconds in all. For not_it or close, never detach the broken part or light it up alone: that gives the answer away.
 3. Your text reply is read aloud. Talk straight to the student (use "you") in plain spoken English, at most 30 words: say what you checked and what you saw (which part turned, which stayed still), not just "let me look". For not_it or close, always end on a clue as a question (follow the path the force travels), and never give the answer away. For found, praise them and name what they found.
 ${common}`
     : `You are a repair coach beside a 3D model of the ${e.title || e.name}. The student has just found the fault "${f.title}" and the model is repaired. You asked them: ${f.why}
 The correct explanation: ${f.answer}
-Every turn, in the same reply:
+Make every tool call in this one reply: no tool results come back before the model runs. Every turn, in the same reply, all of these:
 1. Call grade on their explanation, judging casual speech and typos by meaning. When it is right, pick the next challenge in next (already fixed: ${solved.join(', ') || 'none yet'}).
-2. Replay this drive path on the model with the tools: isolate the relevant parts, then drive, 3–8 seconds.
+2. Replay this drive path on the model with the tools: isolate the relevant parts, then drive, 3–8 seconds. If they missed a link, isolate only the parts of that link.
 3. Your text reply is read aloud. Talk straight to the student (use "you") in plain spoken English, at most 35 words: first say what they got right, then add the missing link.
 ${common}`;
   const user = stage === 'diagnose' ? `My guess: ${text}${pointed ? ` (I tapped: ${name(pointed)})` : ''}` : `My explanation: ${text}`;
-  const r = await chat({ system, tools: fixTools(e, stage), maxTokens: 900, messages: [...history.slice(-4), { role: 'user', content: user }] });
-  const out = cleanFix(r.calls, e, stage);
-  return { say: withClue(r.text.slice(0, 400), f, out.result), ...out, model: r.model };
+  const suspect = mentioned(e, text)?.name || (pointed && name(pointed));
+  const plain = stage === 'diagnose' ? (suspect ? `My guess: the ${suspect.toLowerCase()}` : "I'm not sure. Give me a clue.") : `The student's words: "${text}"`;
+  const messages = [...history.slice(-4), { role: 'user', content: user }];
+  const r = await retried((content) => chat({ system, tools: fixTools(e, stage), maxTokens: 900, messages: [...history.slice(-4), { role: 'user', content }] }), user, plain);
+  const out = cleanFix(r.calls, e, stage, solved);
+  return { say: await afterTools({ system, messages: [...messages, ...(r.text ? [{ role: 'assistant', content: r.text }] : [])], out, stage, f, e, name, first: r.text, max: 400 }), ...out, model: r.model };
 }

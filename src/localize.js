@@ -7,6 +7,11 @@
 //              faults: { id: { title, short, symptom, observe, hint, suspects[], whys[], cause, why, answer, reasons[] } } }
 // A part with no translation yet falls back to its `en` search name, so no Chinese shows on the English site.
 const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+// the part a question names, the longest name winning: "tail rotor" is the tail rotor, not the rotor hub whose alias is "rotor"
+export function mentioned(e, text) {
+  const q = text.toLowerCase();
+  return e.parts.flatMap((p) => [p.name, ...(p.aliases || [])].filter((n) => q.includes(n.toLowerCase())).map((n) => [n.length, p])).sort((a, b) => b[0] - a[0])[0]?.[1];
+}
 export function localize(m, o) {
   if (!o) return m;
   const pick = (base, over, keys) => { const r = { ...base }; for (const k of keys) if (over?.[k] != null) r[k] = over[k]; return r; };

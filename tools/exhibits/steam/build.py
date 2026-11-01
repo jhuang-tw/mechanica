@@ -456,9 +456,16 @@ def grab_rails():
             m.tube(V((x, y, 1.45)), V((x, y, 2.55)), 0.014, 'steel', 8); m.disc(V((x, y, 1.45)), Z, 0.02, 0.02, 'steel', 8)
             for z in (1.55, 2.45): m.tube(V((x, side * 1.09, z)), V((x, y, z)), 0.01, 'steel', 6)
 
+SPREAD, SHELL_SPREAD, LIFT, SHELL = 2, 2.2, 1.4, {'boiler_cladding', 'smokebox', 'tank_l', 'tank_r', 'cab', 'cab_roof'}
+
 def build():
     wheelsets(); frames(); boiler(); cab_controls(); rails(); tripo_body(); grab_rails()
     for side in (1, -1): motion(side)
+    # exploded view: the wheels stay on the rails and the rest rises off them in layers. The app scales shell parts by 0.25.
+    for pid, p in PARTS.items():
+        if pid.startswith('wheelset'): p['explode'] = V((0, 0, 0))
+        elif pid in SHELL: p['explode'] = p['explode'] * (SHELL_SPREAD / 0.25) + V((0, 0, LIFT / 0.25))
+        elif pid != 'track': p['explode'] = p['explode'] * SPREAD + V((0, 0, LIFT))
 
 VIEWS = {'left_34': ((5.4, 5.6, 2.6), (0.4, 0, 1.0), 35), 'right_side': ((0.4, -8.5, 1.3), (0.4, 0, 1.0), 35),
          'motion_r': ((1.3, -3.2, 1.0), (1.2, -1.0, 0.75), 35), 'front': ((7.5, 1.5, 2.0), (2.5, 0, 1.2), 40)}

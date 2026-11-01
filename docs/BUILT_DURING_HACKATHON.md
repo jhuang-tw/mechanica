@@ -60,6 +60,8 @@ None of its code, models or media are in this repository; everything here was re
 | Mic: tap to start, tap again to send; AI questions get their own row | — | `8832687` | 2026-10-28 |
 | Tutor and explain-back in one compact card, choices as pills | — | `41f5ead` | 2026-10-28 |
 | Desktop: chips wrap for mouse users, panel uses the full right column | — | `b9ea3a6` | 2026-10-28 |
+| Meta models named on screen: the tutor is Muse tutor, the spoken question appears under Muse Voice Transcribe, and a repair lists each Muse Spark tool call as the model plays it (check, isolate, drive), on phones and in VR | Muse Spark (tool calling), Muse Voice Transcribe | `7fa383b` | 2026-11-01 |
+| X-ray shells: taking a machine apart turns its outer shell to glass (clear face-on, a cool glow at the edges) and keeps it close around the insides; `shell: true` parts on seven exhibits, `Rig.setXray()`, an `xray` tool for Muse Spark in demos, tutor and repair; taps reach the parts inside. Same code on phones and in VR | Muse Spark (tool calling) | `4819091` | 2026-11-01 |
 | Repair challenge (修理挑戰): the app opens on a broken machine; the learner guesses the fault, Muse checks the guess on the model, the learner repairs it and hears why; three guesses from the start, wrong picks explained | Muse Spark | `75e93c3`, `54086d4` | 2026-10-28 |
 | Close-up detail pass on all 8 models (bike, headset, car, jet, heli, steam, watch, moto) | — | `3aff675`, `dcea7c9`, `0b63c1a`, `f6817ae`, `8678b8c`, `7cbe41e`, `fb7d73a`, `5ed2417` | 2026-10-28 |
 | English site: the whole app in English or 繁體中文 (browser, switch or `?lang=`), English by default | — | `6da3806`, `8e7a311` | 2026-10-28 |
@@ -73,6 +75,10 @@ None of its code, models or media are in this repository; everything here was re
 | Content tools: export all teaching text to Markdown and import it back by key | — | `2c8e43d`, `b59b25f` | 2026-10-31 |
 | Teaching text rewrite: shorter, plainer part info, lesson lines, quizzes and repair hints (edited with Gemini, imported with the content tools) | — | `31c7b23` | 2026-10-31 |
 | Steam repair challenge hides the coupling rods while they are off | — | `e1f985d` | 2026-10-31 |
+| VR menu without emoji: own vector line icons (lesson, tutor, guess, explode / put together, reset, mic / stop, close, exit, back / next, wrist gear) drawn on the panel canvas next to plain labels, so every headset browser shows the same thing | — | `ddcf05f` | 2026-10-31 |
+| 讓 Muse 帶你看 / Muse tour: one tap and Muse Spark directs a 30–60 s narrated teardown, calling a `scene` tool 3–8 times (camera framing and orbit, explode, X-ray glass shell, isolate, detach, real drives, one spoken line each); every shot checked against the manifest, kept 30 min per exhibit, exhibit's own tour as fallback; phone, VR menu and `?ex=jet&tour` link | Muse Spark tool calling (+ Inworld voice) | `168a606` | 2026-11-01 |
+| Photo to 3D: Muse Spark names the machine and the parts in a phone photo, SAM 3.1 traces each part on the photo, a tapped trace is cut out of the photo and flies into that part of the exploded 3D model, and Muse explains it and shows it moving | Muse Spark (vision, tool calling), SAM 3.1 | `9009acc`, `63e386b` | 2026-11-01 |
+| Explode stays above the ground: the part that would go deepest stops at the floor and the rest of the machine rises by the same height, so every gap stays; steam wheels stay on the rails while the engine lifts off them, fixed parts standing on the ground stay put | — | `07c2475` | 2026-11-02 |
 
 ## Third-party (unmodified dependencies, used under their licenses)
 | Package | License |
@@ -94,3 +100,6 @@ None of its code, models or media are in this repository; everything here was re
 | Helicopter shell (in `public/exhibits/heli/model.glb`) | Tripo3D mesh, generated 2026-10-27, then processed by `tools/exhibits/heli/build.py` | Generated on Jim's paid Tripo3D plan (confirmed 2026-10-28), which covers publishing |
 | Spoken lesson lines and answers | Generated at run time by Inworld TTS-2 Flash (voices Xinyi, Ashley) on Jim's Inworld account; Azure neural TTS or the browser's own voice as fallbacks. No audio files are stored in the repository | Under the Inworld and Azure terms of service |
 | Music | None in the app or the repository | — |
+| Demo film score (`mechanica-score.wav`, not in the repository) | Original, generated 2026-11-01 by a numpy and scipy script written for the film, no samples or third-party material | Ours |
+| Demo film photo (not in the repository) | "Electric bicycle with front motor.jpg", https://commons.wikimedia.org/wiki/File:Electric_bicycle_with_front_motor.jpg, author anonymous (own work, 2006), used unchanged in the app's photo flow | Public domain, Commons template PD-self. Replace it if Jim supplies his own photo |
+| Demo film narration (not in the repository) | Generated 2026-11-01 by Inworld TTS on Jim's Inworld account, voice Dennis. The app's own tour lines in the film are voice Ashley | Generated on Jim's account |

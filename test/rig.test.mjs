@@ -231,6 +231,10 @@ test('hands-on: dragging a pedal turns the whole drive, a door stays within its 
   assert.equal(car.parts.get('door_fr').angle, 0, 'the other doors stay shut');
   assert.equal(car.grab('piston_1').part, 'crankshaft', 'a piston turns the crankshaft');
   const b = car.grab('battery'), bat = car.parts.get('battery');
+  car.drag(b, new THREE.Vector3(), new THREE.Vector3());
+  assert.equal(bat.offset.length(), 0, 'holding still moves nothing');
+  car.drag(b, new THREE.Vector3(), b.pull.clone().multiplyScalar(0.01));
+  assert.ok(Math.abs(bat.offset.length() - 0.01) < 1e-9, 'it follows the hand, no jump to the limit');
   car.drag(b, new THREE.Vector3(), b.pull.clone().multiplyScalar(0.2));
   assert.ok(bat.offset.length() > 0.1, 'battery pulled out');
   car.drag(b, new THREE.Vector3(), b.pull.clone().multiplyScalar(-5));
@@ -268,4 +272,60 @@ test('repair challenge: a fault stops part of the drive and shows the damage unt
   assert.equal(chain.offset.length(), 0, 'repaired: the chain is back');
   rig.drive('pedal', 0.5); run(rig, 1);
   assert.ok(Math.abs(wheel.angle) > 0.1, 'and the wheel turns');
+});
+
+for (const id of JSON.parse(read('index.json')).exhibits) {
+  test(`${id}: exploding keeps every part above the ground and every gap as designed`, async () => {
+    const m = exhibit(id), root = await loadModel(id), rest = new THREE.Box3().setFromObject(root), rig = new Rig(root, m), floor = m.floor ?? rest.min.y;
+    const low = new Map([...rig.parts].map(([k, p]) => [k, new THREE.Box3().setFromObject(p.obj).min.y]));
+    rig.setExplode(1); run(rig, 3); rig.explode = 1; rig.update(0); root.updateMatrixWorld(true);
+    assert.ok(new THREE.Box3().setFromObject(root).min.y >= rest.min.y - 1e-3, 'nothing under the lowest point of the model');
+    for (const [k, p] of rig.parts) assert.ok(new THREE.Box3().setFromObject(p.obj).min.y >= Math.min(floor, low.get(k)) - 1e-3, k);
+    const moved = [...rig.parts.values()].filter((p) => !p.nested && p.spread.y !== p.explodeVec.y);
+    assert.ok(moved.every((p) => Math.abs(p.spread.y - p.explodeVec.y - (moved[0].spread.y - moved[0].explodeVec.y)) < 1e-9), 'all rise together');
+  });
+}
+
+test('steam: the wheels stay on the rails while the engine lifts off them, and a detach stops at the ground', async () => {
+  const rig = new Rig(await loadModel('steam'), exhibit('steam')), wheel = rig.parts.get('wheelset_1'), frames = rig.parts.get('frames'), track = rig.parts.get('track');
+  rig.setExplode(1); run(rig, 3); rig.explode = 1; rig.update(0);
+  assert.ok(Math.abs(wheel.obj.position.y - wheel.base.pos.y) < 1e-6);
+  assert.ok(Math.abs(track.obj.position.y - track.base.pos.y) < 1e-6);
+  assert.ok(frames.obj.position.y - frames.base.pos.y > 0.8);
+  rig.reset(); rig.explode = 0; rig.detach(['wheelset_1'], { dir: 'down', amount: 1 }); run(rig, 2);
+  assert.ok(wheel.obj.position.y >= wheel.base.pos.y - 1e-9);
+});
+
+test('an opening shell turns to glass and comes back; a part in focus stays solid', async () => {
+  const m = exhibit('jet'), rig = new Rig(await loadModel('jet'), m);
+  const shell = rig.parts.get('fan_cowl_left').meshes[0], inner = rig.parts.get('hp_compressor').meshes[0];
+  rig.setExplode(1); run(rig, 3);
+  assert.ok(shell.o.material.transparent && shell.o.material.opacity < 0.5, 'taps pass through the open shell');
+  assert.equal(shell.o.castShadow, false);
+  assert.equal(inner.o.material.opacity, inner.base.opacity);
+  rig.highlight(['fan_cowl_left']);
+  assert.equal(shell.o.material.opacity, shell.base.opacity);
+  rig.reset(); run(rig, 3);
+  assert.equal(rig.glass, 0);
+  assert.equal(shell.o.material.opacity, shell.base.opacity);
+  assert.equal(shell.o.material.transparent, shell.base.transparent);
+});
+
+test('setXray opens the shell without exploding, works with isolate, and a demo can call it', async () => {
+  const rig = new Rig(await loadModel('jet'), exhibit('jet')), shell = rig.parts.get('fan_case').meshes[0], c = new Choreo(rig);
+  c.play(cleanSteps([{ do: 'xray', amount: 2, at: 0 }], exhibit('jet')));
+  c.update(0.1); assert.equal(rig.xray, 1);
+  run(rig, 3);
+  assert.ok(shell.o.material.opacity < 0.5); assert.equal(rig.explode, 0);
+  rig.isolate(['fan']); assert.equal(shell.o.material.opacity, 0.1);
+  rig.isolated = null; rig.lit.clear(); rig.setXray(null); run(rig, 3);
+  assert.equal(shell.o.material.opacity, shell.base.opacity);
+});
+
+test('a demo reports each step as it plays', async () => {
+  const rig = new Rig(await load(), manifest), c = new Choreo(rig), seen = [];
+  c.onStep = (s) => seen.push(s.do);
+  c.play(cleanSteps([{ do: 'isolate', parts: ['chain'], at: 0 }, { do: 'drive', drive: 'pedal', at: 1 }], manifest));
+  c.update(0.5); assert.deepEqual(seen, ['isolate']);
+  c.update(1); assert.deepEqual(seen, ['isolate', 'drive']);
 });
