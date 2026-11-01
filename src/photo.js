@@ -96,7 +96,7 @@ export async function runPhoto(file, app) {
   try { r = await post(`/api/identify?lang=${lang}`, blob, 'image/jpeg'); } catch { status(w('fail')); badge(); return; }
   if (cur !== me) return;
   if (!r.match) { status(r.say || w('fail')); badge(); app.speak(r.say); return; }
-  me.exhibit = r.exhibit; me.machine = r.machine || '';
+  me.exhibit = r.exhibit; me.machine = r.machine || ''; me.boxes = r.boxes || {};
   const opening = app.learn(r.exhibit);   // the 3D model loads behind the photo while SAM works
   await opening;
   if (cur !== me) return;
@@ -109,7 +109,7 @@ export async function runPhoto(file, app) {
   try {
     const s = await post(`/api/segment?exhibit=${encodeURIComponent(r.exhibit)}&${me.parts.map((p) => `part=${encodeURIComponent(p.id)}`).join('&')}`, blob, 'image/jpeg');
     if (cur !== me) return;
-    for (const x of s.results || []) me.masks.set(x.part, x);
+    for (const x of s.results || []) me.masks.set(x.part, { ...x, masks: oneMask(x, me.boxes[x.part]) });
   } catch (e) { console.warn('segment failed:', e.message); }
   if (cur !== me) return;
   draw(me, app);
@@ -146,8 +146,28 @@ function draw(me, app) {
 }
 
 // the part's pixels cut out of the photo, placed exactly over where it is on screen
+// SAM finds every instance of its prompt ("rear wheel" also finds the front one): keep the mask that best fits where Muse
+// said this part is (box as fractions of the photo), else SAM's most confident one, else the first
+export function oneMask(res, box) {
+  const ms = res.masks || [];
+  if (ms.length < 2) return ms;
+  const W = res.frame?.w, H = res.frame?.h;
+  if (box && W && H) {
+    const [l, t, r, b] = [box[0] * W, box[1] * H, box[2] * W, box[3] * H], area = (x) => Math.max(0, x.right - x.left) * Math.max(0, x.bottom - x.top);
+    const iou = (m) => { const i = area({ left: Math.max(l, m.bounds.left), top: Math.max(t, m.bounds.top), right: Math.min(r, m.bounds.right), bottom: Math.min(b, m.bounds.bottom) }); return i / (area(m.bounds) + (r - l) * (b - t) - i || 1); };
+    return [ms.reduce((a, m) => (iou(m) > iou(a) ? m : a))];
+  }
+  return [ms.reduce((a, m) => ((m.confidence ?? 0) > (a.confidence ?? 0) ? m : a))];
+}
+
 function cutout(me, part) {
   const res = me.masks.get(part.id), frame = ui.img.getBoundingClientRect(), k = frame.width / me.w;
+  const box = me.boxes?.[part.id];
+  if (!res && box) {   // no SAM mask: the rectangle Muse pointed at stands in for it
+    const L = box[0] * me.w, T = box[1] * me.h, c = Object.assign(document.createElement('canvas'), { width: Math.max(1, Math.round((box[2] - box[0]) * me.w)), height: Math.max(1, Math.round((box[3] - box[1]) * me.h)) });
+    const g = c.getContext('2d'); g.beginPath(); g.roundRect(0, 0, c.width, c.height, Math.min(c.width, c.height) * 0.15); g.clip(); g.drawImage(ui.img, L, T, c.width, c.height, 0, 0, c.width, c.height);
+    return { c, x: frame.left + L * k, y: frame.top + T * k, w: c.width * k, h: c.height * k };
+  }
   if (!res) {   // no mask: a round crop from the middle of the photo stands in for it
     const s = Math.min(me.w, me.h) * 0.4, c = Object.assign(document.createElement('canvas'), { width: s, height: s }), g = c.getContext('2d');
     g.beginPath(); g.arc(s / 2, s / 2, s / 2, 0, Math.PI * 2); g.clip(); g.drawImage(ui.img, (me.w - s) / 2, (me.h - s) / 2, s, s, 0, 0, s, s);
