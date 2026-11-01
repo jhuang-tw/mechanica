@@ -96,3 +96,4 @@ None of its code, models or media are in this repository; everything here was re
 | Helicopter shell (in `public/exhibits/heli/model.glb`) | Tripo3D mesh, generated 2026-10-27, then processed by `tools/exhibits/heli/build.py` | Generated on Jim's paid Tripo3D plan (confirmed 2026-10-28), which covers publishing |
 | Spoken lesson lines and answers | Generated at run time by Inworld TTS-2 Flash (voices Xinyi, Ashley) on Jim's Inworld account; Azure neural TTS or the browser's own voice as fallbacks. No audio files are stored in the repository | Under the Inworld and Azure terms of service |
 | Music | None in the app or the repository | — |
+| Demo film score (`mechanica-score.wav`, not in the repository) | Original, generated 2026-11-01 by a numpy and scipy script written for the film, no samples or third-party material | Ours |
