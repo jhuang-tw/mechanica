@@ -120,7 +120,7 @@ async function ask(text) {
     const r = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(r.error || `HTTP ${res.status}`);
     chat = [...chat, { role: 'user', content: text }, { role: 'assistant', content: r.say }].slice(-6);
-    say('AI', r.say, false, true);
+    say('Muse Spark', r.say, false, true);
     const steps = cleanSteps(r.steps, ex);
     if (steps.length) viewer.choreo.play(steps);
   } catch (e) {

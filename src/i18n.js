@@ -15,10 +15,10 @@ export const isEn = lang === 'en';
 export const S = {
   // landing
   docTitle: ['Mechanica · 修好它，就懂了', 'Mechanica · Fix it to understand it'],
-  docDesc: ['修好一台壞掉的機器：看症狀、說出你的猜測，Meta AI 在 3D 模型上幫你檢查；也能一步一步學它的原理。', 'Fix a broken machine: watch the symptom, say your guess, and Meta AI checks it on the 3D model. Or learn how it works, step by step.'],
+  docDesc: ['修好一台壞掉的機器：看症狀、說出你的猜測，Meta Muse Spark 在 3D 模型上幫你檢查；也能一步一步學它的原理。', 'Fix a broken machine: watch the symptom, say your guess, and Meta Muse Spark checks it on the 3D model. Or learn how it works, step by step.'],
   vrClass: ['VR 上課', 'Learn in VR'],
   pickA: ['選一台來', 'Pick one to '], pickB: ['修', 'fix'],
-  pickLede: ['每台機器都有一個地方壞了。看症狀、說出你的猜測，Meta AI 會在 3D 模型上幫你檢查，修好之後再說說看為什麼。', 'Every machine has one thing broken. Watch the symptom and say your guess. Meta AI checks it on the 3D model, and once it is fixed you explain why it failed.'],
+  pickLede: ['每台機器都有一個地方壞了。看症狀、說出你的猜測，Meta Muse Spark 會在 3D 模型上幫你檢查，修好之後再說說看為什麼。', 'Every machine has one thing broken. Watch the symptom and say your guess. Meta Muse Spark checks it on the 3D model, and once it is fixed you explain why it failed.'],
   photoB: ['身邊有真的機器？', 'Got a real machine nearby?'],
   photoS: ['拍下來，幫你找到對應的機器和零件', 'Take a photo and we find the matching machine and parts'],
   foot: ['Mechanica · 手機、電腦和 VR 頭戴都能上課', 'Mechanica · works on phones, computers and VR headsets'],
@@ -41,7 +41,7 @@ export const S = {
   // chips
   firstLesson: [(t) => `第一課：${t}`, (t) => `Lesson 1: ${t}`], guessFirst: ['先猜再看', 'Guess first'], ride: ['坐上去', 'Take a seat'], askAI: ['問 Muse', 'Ask Muse'],
   // ask
-  youAsked: ['你問', 'You asked'], aiDown: ['AI 暫時連不上', 'The AI is not reachable'], aiDownTip: ['可以先上一堂課，或點零件看說明。', 'Try a lesson, or tap a part to read about it.'],
+  youAsked: ['你問', 'You asked'], aiDown: ['Muse Spark 暫時連不上', 'Muse Spark is not reachable'], aiDownTip: ['可以先上一堂課，或點零件看說明。', 'Try a lesson, or tap a part to read about it.'],
   // mic
   tapAgain: ['說完再點一下送出', 'Tap again when you are done'], speakNow: ['說吧，放開就送出', 'Speak, release to send'], vrSpeak: ['說吧，說完按「說完了」', 'Speak, then press Done'],
   noMic: ['沒有麥克風權限，改用鍵盤打字', 'No microphone access, type instead'], vrNoMic: ['沒有麥克風權限', 'No microphone access'],
@@ -85,7 +85,7 @@ export const S = {
   tourChip: ['讓 Muse 帶你看', 'Muse, show me'], museDirector: ['Muse Spark 導演', 'Directed by Muse Spark'],
   tourPlanning: ['Muse Spark 正在規劃鏡頭…', 'Muse Spark is planning the shots…'], tourShot: [(i, n) => `鏡頭 ${i}/${n}`, (i, n) => `Shot ${i} of ${n}`],
   tourBy: [(n) => `Meta Muse Spark 即時導演：${n} 次工具呼叫排出鏡頭、X 光、拆解與驅動`, (n) => `Directed live by Meta Muse Spark: ${n} tool calls set the camera, X-ray, teardown and drives`],
-  tourOffline: ['AI 暫時連不上，播放展品內建導覽', 'AI is offline: playing the exhibit\'s built-in tour'], tourDone: ['導覽結束。換你自己拆拆看！', 'That was the tour. Now take it apart yourself!'],
+  tourOffline: ['Muse Spark 暫時連不上，播放展品內建導覽', 'Muse Spark is offline: playing the exhibit\'s built-in tour'], tourDone: ['導覽結束。換你自己拆拆看！', 'That was the tour. Now take it apart yourself!'],
   tourAgain: ['再導一次', 'Direct again'], vrTour: ['Muse 帶你看', 'Muse tour'],
   vrTutor: ['Muse 家教', 'Muse tutor'], vrGuess: ['先猜再看', 'Guess first'], vrClose: ['合起來', 'Put together'], vrOpen: ['拆開', 'Explode'],
   vrReset: ['重設', 'Reset'], vrDone: ['說完了', 'Done'], vrAnswer: ['回答家教', 'Answer'], vrAsk: ['問 Muse', 'Ask Muse'],
