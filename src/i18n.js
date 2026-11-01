@@ -82,6 +82,11 @@ export const S = {
   clue: ['線索', 'Clue'], seeAnswer: ['看答案', 'Show answer'], answerT: ['答案', 'Answer'],
   // VR
   noVR: ['這個瀏覽器不能進 VR', 'This browser cannot enter VR'],
+  tourChip: ['讓 Muse 帶你看', 'Muse, show me'], museDirector: ['Muse Spark 導演', 'Directed by Muse Spark'],
+  tourPlanning: ['Muse Spark 正在規劃鏡頭…', 'Muse Spark is planning the shots…'], tourShot: [(i, n) => `鏡頭 ${i}/${n}`, (i, n) => `Shot ${i} of ${n}`],
+  tourBy: [(n) => `Meta Muse Spark 即時導演：${n} 次工具呼叫排出鏡頭、X 光、拆解與驅動`, (n) => `Directed live by Meta Muse Spark: ${n} tool calls set the camera, X-ray, teardown and drives`],
+  tourOffline: ['AI 暫時連不上，播放展品內建導覽', 'AI is offline: playing the exhibit\'s built-in tour'], tourDone: ['導覽結束。換你自己拆拆看！', 'That was the tour. Now take it apart yourself!'],
+  tourAgain: ['再導一次', 'Direct again'], vrTour: ['Muse 帶你看', 'Muse tour'],
   vrTutor: ['AI 家教', 'AI tutor'], vrGuess: ['先猜再看', 'Guess first'], vrClose: ['合起來', 'Put together'], vrOpen: ['拆開', 'Explode'],
   vrReset: ['重設', 'Reset'], vrDone: ['說完了', 'Done'], vrAnswer: ['回答家教', 'Answer'], vrAsk: ['問 Muse', 'Ask Muse'],
   vrMenuClose: ['關選單', 'Close'], vrExit: ['離開 VR', 'Exit VR'],

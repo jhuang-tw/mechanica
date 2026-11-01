@@ -299,6 +299,7 @@ export class VR {
     const close = (fn) => () => { this.menu.mesh.visible = false; fn(); };
     const ls = a.ex.lessons.map((l) => ({ icon: 'lesson', label: l.title, size: 28, on: close(() => a.startLesson(l, false)) })), per = ls.length > 3 ? 2 : 3;   // long titles need the width
     for (let i = 0; i < ls.length; i += per) row(ls.slice(i, i + per), 112);
+    row([{ icon: 'tutor', label: t('vrTour'), size: 32, on: close(() => a.startTour()) }], 96);
     row([
       { icon: 'tutor', label: t('vrTutor'), on: close(() => a.startTutor()) },
       { icon: 'guess', label: t('vrGuess'), on: close(() => a.quizLesson()) },

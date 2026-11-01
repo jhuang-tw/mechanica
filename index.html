@@ -130,6 +130,14 @@
   #lesson button:disabled { opacity:.3; }
   #lesson button.mode { width:auto; padding:0 10px; font-size:14px; font-weight:600; color:var(--accent); }
   body.tutor .chips, body.tutor #caption { display:none; }
+  body.touring .chips, body.touring #controls { display:none; }
+  #tour { border-radius:16px; padding:6px 6px 8px 14px; display:grid; gap:2px; }
+  #tour .row { justify-content:space-between; }
+  #tour b { flex:1; font-size:14px; color:var(--accent); font-variant-numeric:tabular-nums; }
+  #tour small { color:var(--dim); font-size:12px; }
+  #tour button { height:40px; padding:0 10px; border:0; background:none; font-weight:600; display:grid; place-items:center; }
+  #tour-again { color:var(--accent); }
+  .chip.tour { background:var(--accent); color:var(--ink); font-weight:700; border-color:transparent; }
   body.fix .chips, body.fix #caption, body.fix #explode, body.fix #photo, body.fix #lesson { display:none; }
   body.fix #controls { justify-content:flex-end; }
   .seg { display:flex; flex:none; padding:3px; border-radius:12px; background:var(--glass); border:1px solid var(--line2); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); }
@@ -253,6 +261,10 @@
     <div id="lesson" class="row glass" hidden>
       <button id="l-prev" type="button" aria-label="Previous step" data-t-aria="prev"><svg class="i"><use href="#i-back"/></svg></button><span id="l-step"></span>
       <button id="l-next" type="button" aria-label="Next step" data-t-aria="next"><svg class="i"><use href="#i-next"/></svg></button><button id="l-all" class="mode" type="button" aria-label="Switch between playing it all and step by step" data-t-aria="allAria" data-t="all">Play all</button><button id="l-stop" type="button" aria-label="End" data-t-aria="end"><svg class="i"><use href="#i-x"/></svg></button>
+    </div>
+    <div id="tour" class="glass" hidden>
+      <div class="row"><b id="tour-t"></b><button id="tour-again" type="button" data-t="tourAgain">Direct again</button><button id="tour-stop" type="button" aria-label="End" data-t-aria="end"><svg class="i"><use href="#i-x"/></svg></button></div>
+      <small id="tour-by"></small>
     </div>
     <div id="ride" class="glass" hidden>
       <div class="row"><b id="r-read"></b><button id="r-see" type="button" aria-pressed="false" data-t="xray">X-ray</button><button id="r-stop" type="button" aria-label="Get off" data-t-aria="getOff"><svg class="i"><use href="#i-x"/></svg></button></div>

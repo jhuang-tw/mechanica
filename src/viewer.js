@@ -29,7 +29,7 @@ export class Viewer {
     let dragging = false;
     this.controls.addEventListener('start', () => (dragging = true));
     this.controls.addEventListener('end', () => (dragging = false));
-    this.controls.addEventListener('change', () => { if (dragging) { this.goal = null; this.userView = true; } });
+    this.controls.addEventListener('change', () => { if (dragging) { this.goal = null; this.spin = null; this.userView = true; } });
     this.pickTaps(canvas);
     addEventListener('resize', () => this.resize());
     this.resize();
@@ -38,7 +38,8 @@ export class Viewer {
       const dt = Math.min(timer.update().getDelta(), 0.1);
       this.choreo?.update(dt); this.rig?.update(dt); this.ride?.update(dt);
       if (r.xr.isPresenting) this.vr?.update(dt);
-      else if (this.goal) {   // glide to a framing, then hand the camera back to the user
+      else if (this.spin) this.circle(dt);
+      if (!r.xr.isPresenting && this.goal) {   // glide to a framing, then hand the camera back to the user
         const k = Math.min(1, dt * 3);
         this.controls.target.lerp(this.goal.target, k); this.camera.position.lerp(this.goal.pos, k);
         if (this.camera.position.distanceTo(this.goal.pos) < 0.005) this.goal = null;
@@ -80,6 +81,23 @@ export class Viewer {
     this.fit(box, new THREE.Vector3(...(this.rig?.m.view || [0.55, 0.35, 1])).normalize());   // manifest `view`: the side worth seeing first (a cutaway)
     this.camera.position.copy(this.goal.pos); this.controls.target.copy(this.goal.target); this.goal = null;
     this.controls.update();
+  }
+  // one shot of a tour: glide to the parts (null: the whole machine, framed wider the more it is pulled apart), then circle
+  // `orbit` degrees around it over `seconds`. In VR the headset is the camera, so only the parts light up.
+  shot(ids, { explode = 0, orbit = 0, seconds = 5 } = {}) {
+    if (ids?.length) this.focus(ids);
+    else {
+      const box = new THREE.Box3().setFromObject(this.model), s = box.getSize(new THREE.Vector3()).length();
+      this.fit(box, this.camera.position.clone().sub(this.controls.target).normalize(), s * (1 + 1.5 * explode));
+    }
+    this.spin = orbit ? { rate: THREE.MathUtils.degToRad(orbit) / seconds, left: seconds } : null;
+  }
+  circle(dt) {
+    const a = this.spin.rate * Math.min(dt, this.spin.left), y = new THREE.Vector3(0, 1, 0);
+    if ((this.spin.left -= dt) <= 0) this.spin = null;
+    const around = (p, c) => p.sub(c).applyAxisAngle(y, a).add(c);
+    around(this.camera.position, this.controls.target);
+    if (this.goal) around(this.goal.pos, this.goal.target);
   }
   // glide to the given parts, keeping the current viewing direction
   focus(ids) {

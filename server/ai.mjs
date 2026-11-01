@@ -2,12 +2,14 @@
 //   identify()    photo -> exhibit + the parts in view (muse-spark vision)
 //   segment()     photo + parts -> one mask per part (SAM 3.1), the start of taking the real thing apart
 //   choreograph() question -> a timed demonstration the browser plays (muse-spark tool calling over the exhibit's parts)
+//   tour()        one tap -> a 30–60 s narrated, cinematic teardown Muse Spark directs scene by scene (tool calling)
 //   transcribe()  speech -> Taiwan traditional text (Muse ASR + one quick cleanup pass)
 // Exhibits come from public/exhibits/index.json + <id>/manifest.json, the same manifest the browser loads. Every model answer is checked against it.
 import { readFileSync } from 'node:fs';
 import * as SAM from '@meta-sam/parser';
 import { chat, sam, asr } from './meta.mjs';
 import { localize, mentioned } from '../src/localize.js';
+import { TOUR, cleanTour, fallbackTour } from '../src/tour.js';
 
 const DIR = new URL('../public/exhibits/', import.meta.url);
 const fail = (message, status = 400) => Object.assign(new Error(message), { status });
@@ -146,6 +148,67 @@ ${e.parts.map((p) => `${p.id}=${p.name}${p.info ? '：' + p.info : ''}`).join('\
     return { say: part?.info || e.intro, steps: part ? [{ do: 'isolate', at: 0, parts: [part.id] }] : [], model: 'exhibit' };
   }
   return { say: r.text.slice(0, EN(e) ? 400 : 200), steps: cleanSteps(r.calls, e), model: r.model };
+}
+
+// ---------- one tap -> a Muse-directed tour ----------
+// Muse Spark plans the whole film in one call: it calls scene() once per shot, in order. cleanTour() checks every shot
+// against the manifest. A good tour is kept for a while per exhibit and language (it is the same machine), unless asked fresh.
+export function tourTools(e) {
+  const en = EN(e), ids = e.parts.map((p) => p.id);
+  const parts = (d) => ({ type: 'array', items: { type: 'string', enum: ids }, description: d });
+  const p = {
+    say: { type: 'string', description: en ? 'the narrator\'s one spoken sentence for this shot, at most 30 words, vivid and concrete' : '這個鏡頭的一句旁白，台灣繁體中文口語，≤ 40 字，生動具體' },
+    seconds: { type: 'number', description: en ? `how long the shot holds, ${TOUR.seconds.join('–')} s` : `鏡頭停留秒數 ${TOUR.seconds.join('–')}` },
+    focus: parts(en ? 'parts the camera frames; empty = the whole machine' : '鏡頭對準的零件；空的＝整台'),
+    orbit: { type: 'number', description: en ? `degrees the camera circles during the shot, ±${TOUR.orbit} (slow drama: 30–90)` : `鏡頭在這段繞著轉幾度，±${TOUR.orbit}（慢慢轉最有戲：30–90）` },
+    explode: { type: 'number', description: en ? 'how far the whole machine is pulled apart, 0 (assembled) – 1 (fully exploded)' : '整台拆開的程度，0（組好）– 1（全部拉開）' },
+    ...(e.parts.some((x) => x.shell) ? { xray: { type: 'number', description: en ? 'how see-through the outer shell is, 0 – 1 (0.8: you see the insides through a glass shell); while exploded the shell is glass anyway' : '外殼透明程度 0–1（0.8：隔著像玻璃的外殼看見內部）；拆開時外殼本來就會變透明' } } : {}),
+    isolate: parts(en ? 'parts to light up while everything else goes faint' : '要亮起來的零件，其他變淡'),
+    detach: parts(en ? 'parts lifted out on their own to be seen clearly' : '單獨拆出來看清楚的零件'),
+    ...(e.drives?.length ? { drive: { type: 'string', enum: e.drives.map((d) => d.id), description: e.drives.map((d) => `${d.id}=${d.name}`).join(en ? '; ' : '；') }, speed: { type: 'number', description: '−1–1' } } : {}),
+  };
+  return [{ name: 'scene', description: en ? `One shot of the tour. Call it ${TOUR.scenes.join('–')} times in a row, in playing order.` : `導覽的一個鏡頭。連續呼叫 ${TOUR.scenes.join('–')} 次，照播放順序。`, parameters: { type: 'object', properties: p, required: ['say', 'seconds'] } }];
+}
+const tours = new Map();   // `${exhibit}|${lang}` -> { at, out }
+const TOUR_KEEP = 30 * 60e3;
+export async function tour({ exhibit: id, lang, fresh = false }) {
+  const e = exhibit(id, lang), en = EN(e), key = `${e.id}|${en ? 'en' : 'zh'}`, kept = tours.get(key);
+  if (!fresh && kept && Date.now() - kept.at < TOUR_KEEP) return { ...kept.out, kept: true };
+  const chain = (e.lessons || []).map((l) => `${l.title}: ${l.steps.map((s) => s.say).join(' → ')}`).join('\n');
+  const system = en ? `You are the film director and narrator of a ${TOUR.total >= 60 ? '30–60' : '30'} second cinematic teardown of a 3D ${e.title || e.name}, made for a stage demo. Every shot is read aloud by a voice.
+Direct it with the scene tool: call it ${TOUR.scenes.join('–')} times, in order. Make it feel like a premium product film:
+1. Open wide on the whole machine, the camera circling slowly (orbit 40–90), one line that hooks the viewer.
+2. Turn the shell to glass (xray 0.8) to reveal what is inside.
+3. Pull it apart (explode 0.6–1) for the big reveal, keep the glass shell.
+4. Follow the power path link by link: focus and isolate the parts, run the real mechanism with drive, detach a key part to show it alone.
+5. Close: explode 0, xray 0, the camera circling once more, one line that makes them want to try it themselves.
+Rules: one sentence per shot, at most 30 words, plain spoken English; only numbers and specs that appear in the part descriptions; follow the cause → effect chains below; 30–60 seconds in all.
+Parts (id=name: description):
+${partList(e)}
+Cause → effect chains:
+${chain}` : `你是「${e.title || e.name}」3D 模型的電影導演兼旁白，要做一段 30–60 秒、上台展示用的電影式拆解導覽。每個鏡頭的旁白都會被唸出來。
+用 scene 工具導：連續呼叫 ${TOUR.scenes.join('–')} 次，照播放順序。拍得像頂級產品廣告片：
+1. 開場：整台遠景，鏡頭慢慢繞（orbit 40–90），一句抓住人的話。
+2. 外殼變成玻璃（xray 0.8），露出裡面。
+3. 拆開（explode 0.6–1），最震撼的一刻，外殼保持透明。
+4. 順著動力一路追下去：focus、isolate 每一段零件，用 drive 讓真實機構動起來，detach 把關鍵零件單獨拉出來看。
+5. 收尾：explode 0、xray 0，鏡頭再繞一圈，一句讓人想自己動手玩的話。
+規則：每個鏡頭一句，台灣繁體中文口語 ≤ 40 字；數字規格只能用零件說明裡有的；照下面的因果鏈；全長 30–60 秒。
+零件（id=名稱：說明）：
+${partList(e)}
+因果鏈：
+${chain}`;
+  const plain = en ? `Give me a tour of the ${e.name.toLowerCase()}.` : `帶我看${e.name}。`;
+  const ask = (content) => chat({ system, tools: tourTools(e), maxTokens: 1800, ms: 45000, temperature: 0.5, messages: [{ role: 'user', content }] });
+  let scenes = [], model = 'exhibit', calls = 0;
+  try {
+    const r = await retried(ask, en ? `Direct a tour of the ${e.name.toLowerCase()} that makes people say wow.` : `導一段讓人驚呼的${e.name}導覽。`, plain);
+    calls = r.calls.length; scenes = cleanTour(r.calls.filter((c) => c.name === 'scene').map((c) => c.args), e); model = r.model;
+  } catch (err) { console.error(`tour: ${err.name === 'TimeoutError' ? 'timeout' : String(err.message).slice(0, 80)}`); }   // no Muse: the exhibit's own tour, never nothing
+  if (scenes.length < TOUR.scenes[0]) return { scenes: fallbackTour(e), model: 'exhibit', calls };
+  const out = { scenes, model, calls };
+  tours.set(key, { at: Date.now(), out });
+  return out;
 }
 
 // ---------- speech -> text ----------

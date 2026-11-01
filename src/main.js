@@ -2,6 +2,7 @@
 // or 原理 on the same exhibit (tap parts, explode, ask the AI, lessons, quiz, tutor); the landing page picks another machine.
 // Photo and VR are reachable from both.
 import { cleanSteps } from './choreo.js';
+import { cleanTour, fallbackTour, TourPlayer } from './tour.js';
 import { Recorder, shrink, speak, prefetch, unlockSpeech } from './media.js';
 import { t, lang, isEn, applyStatic, switchLang, here } from './i18n.js';
 import { localize, mentioned } from './localize.js';
@@ -86,15 +87,16 @@ function pick(id) {
   say(p.name, p.info, false, true);
 }
 $('explode-r').oninput = (e) => rig?.setExplode(+e.target.value);
-function stopAll() { clearTimeout(flow); clearTimeout(symptomT); stopRide(); if (fix) { fix = null; rig?.setFault(null); } document.body.classList.remove('fix'); $('fix').hidden = true; if (viewer) viewer.lessonMode = false; lesson = quiz = tutor = explain = null; vr?.refresh(); document.body.classList.remove('lesson', 'tutor'); $('lesson').hidden = $('quiz').hidden = $('tutor').hidden = true; $('q').placeholder = t('askPh'); viewer?.choreo?.cancel(); rig?.reset(); $('explode-r').value = 0; }
+function stopAll() { endTour(); clearTimeout(flow); clearTimeout(symptomT); stopRide(); if (fix) { fix = null; rig?.setFault(null); } document.body.classList.remove('fix'); $('fix').hidden = true; if (viewer) viewer.lessonMode = false; lesson = quiz = tutor = explain = null; vr?.refresh(); document.body.classList.remove('lesson', 'tutor'); $('lesson').hidden = $('quiz').hidden = $('tutor').hidden = true; $('q').placeholder = t('askPh'); viewer?.choreo?.cancel(); rig?.reset(); $('explode-r').value = 0; }
 $('reset').onclick = () => { if (fix) { viewer.frame(); return symptom(); } stopAll(); speak(''); viewer.frame(); pointed = null; say(ex.name, ex.intro); };
 
 // ---------- suggestions: AI questions and lessons ----------
 function chips() {
-  const chip = (cls, label, run) => { const b = Object.assign(document.createElement('button'), { className: `chip ${cls}`, type: 'button', onclick: run }); b.innerHTML = icon({ lesson: 'book', quiz: 'q', ai: 'spark', ask: 'spark', tutor: 'cap' }[cls.split(' ').pop()]) + '<span></span>'; b.lastChild.textContent = label; return b; };
+  const chip = (cls, label, run) => { const b = Object.assign(document.createElement('button'), { className: `chip ${cls}`, type: 'button', onclick: run }); b.innerHTML = icon({ lesson: 'book', quiz: 'q', ai: 'spark', ask: 'spark', tutor: 'cap', tour: 'spark' }[cls.split(' ').pop()]) + '<span></span>'; b.lastChild.textContent = label; return b; };
   // 原理: one row, the lessons in order first; the AI tutor and a typed question after them (the mic asks anything)
   $('ai-chips').replaceChildren();
   $('chips').replaceChildren(
+    chip('ai tour', t('tourChip'), () => startTour()),
     ...ex.lessons.map((l, i) => chip('lesson', i ? l.title : t('firstLesson', l.title), () => startLesson(l, false))),
     ...(ex.lessons.some((l) => l.steps.some((s) => s.quiz)) ? [chip('lesson quiz', t('guessFirst'), () => startLesson(ex.lessons.find((l) => l.steps.some((s) => s.quiz)), true))] : []),
     ...(ex.ride ? [chip('lesson', t('ride'), startRide)] : []),
@@ -127,6 +129,44 @@ async function ask(text) {
     console.warn('ask failed:', e.message);
   }
 }
+// ---------- 讓 Muse 帶你看: one tap, Muse Spark directs a 30–60 s narrated teardown (camera, X-ray, explode, drives) ----------
+let touring = null;   // the exhibit a tour was asked for, while it plans or plays
+const xray = (v) => rig?.setXray(v || null);   // 0: the shell follows the explode (glass while apart)
+function endTour() {
+  if (!touring) return;
+  touring = null; tourPlayer?.stop(); xray(null);
+  document.body.classList.remove('touring'); $('tour').hidden = true;
+}
+let tourPlayer = null;
+async function startTour(fresh = false) {
+  if (!rig) return;
+  stopAll(); speak(''); setMode('learn');
+  const me = touring = { ex };
+  document.body.classList.add('touring'); $('tour').hidden = false;
+  $('tour-t').textContent = t('museDirector'); $('tour-by').textContent = '';
+  say(t('museDirector'), t('tourPlanning'), true);
+  vr?.say(t('tourPlanning'));
+  let r;
+  try {
+    const res = await fetch('/api/tour', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ exhibit: ex.id, lang, fresh }), signal: AbortSignal.timeout(55000) });
+    r = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(r.error || `HTTP ${res.status}`);
+  } catch (e) { console.warn('tour failed:', e.message); r = { scenes: fallbackTour(ex), model: 'exhibit' }; }
+  if (touring !== me) return;
+  const scenes = cleanTour(r.scenes, ex);
+  if (!scenes.length) { endTour(); return say(ex.name, ex.intro); }
+  prefetch(scenes.map((s) => s.say));
+  $('tour-by').textContent = r.model === 'exhibit' ? t('tourOffline') : t('tourBy', r.calls || scenes.length);
+  tourPlayer ||= new TourPlayer(viewer, {
+    xray, explode: (v) => ($('explode-r').value = v),
+    done: (finished) => { if (!finished) return; touring = null; xray(null); document.body.classList.remove('touring'); $('tour').hidden = true; say(ex.name, t('tourDone'), false, true); },
+  });
+  tourPlayer.line = (i, s) => { $('tour-t').textContent = t('tourShot', i + 1, scenes.length); return say(t('museDirector'), s.say, false, true); };
+  tourPlayer.play(scenes);
+}
+$('tour-stop').onclick = () => { stopAll(); speak(''); viewer.frame(); say(ex.name, ex.intro); };
+$('tour-again').onclick = () => startTour(true);
+
 // without the AI: a question that names a part still gets that part
 const offline = (text) => mentioned(ex, text);
 
@@ -519,7 +559,7 @@ const app = {
   get ex() { return ex; }, get rig() { return rig; }, get lesson() { return lesson; }, get quiz() { return quiz; }, get recording() { return holding; },
   get tutoring() { return !!(tutor || explain); },
   get choices() { return [...document.querySelectorAll('#f-choices button, #t-choices button')].filter((b) => !b.disabled && b.offsetParent); },   // tutor / repair / explain options, tapped in VR
-  open, pick, go, answer, startLesson, startTutor: () => startTutor(),
+  open, pick, go, answer, startLesson, startTutor: () => startTutor(), startTour: () => startTour(),
   quizLesson: () => startLesson(ex.lessons.find((l) => l.steps.some((s) => s.quiz)) || ex.lessons[0], true),
   stopLesson: () => { stopAll(); say(ex.name, ex.intro); },
   explode: (v) => { rig.setExplode(v); $('explode-r').value = v; },
@@ -540,5 +580,6 @@ $('home-vr').onclick = async () => { await learn(ex?.id || list[0]); enterVR(); 
 addEventListener('pointerdown', unlockSpeech, { once: true });
 // no landing page first: a broken machine is the way in (?ex= picks which, ?learn opens 原理)
 const qs = new URLSearchParams(location.search), start = exhibits[qs.get('ex')] ? qs.get('ex') : null;
-if (qs.has('learn') && start) learn(start);
+if (qs.has('tour') && start) learn(start).then(() => startTour());   // ?ex=jet&tour: straight into Muse's tour (a demo link)
+else if (qs.has('learn') && start) learn(start);
 else startFix(faults.find((x) => x.ex === start)?.key || faults.find((x) => !solvedKeys().includes(x.key))?.key || faults[0]?.key);
