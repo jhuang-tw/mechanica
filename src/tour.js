@@ -46,7 +46,7 @@ export class TourPlayer {
   async play(scenes) {
     const me = this.on = ++this.run, v = this.viewer, r = v.rig;
     v.choreo.cancel(); r.reset(); v.lessonMode = true; v.userView = false;
-    let out = [];
+    let out = [], cut = [];
     for (const [i, s] of scenes.entries()) {
       if (this.on !== me) return;
       r.stop();
@@ -58,11 +58,13 @@ export class TourPlayer {
       if (s.isolate.length) r.isolate(s.isolate); else { r.isolated = null; r.highlight([]); }
       if (s.drive) r.drive(s.drive, s.speed);
       // camera: after isolate (which glides on its own), so the shot's own framing wins
-      v.shot(s.focus.length ? s.focus : null, { explode: s.explode, orbit: s.orbit, seconds: s.seconds });
+      r.show(cut);   // what the last close-up cut away comes back
+      cut = v.shot(s.focus.length ? s.focus : null, { explode: s.explode, orbit: s.orbit, seconds: s.seconds, keep: s.isolate }) || [];
       const timer = new Promise((ok) => setTimeout(ok, s.seconds * 1000));
       await Promise.all([timer, this.line?.(i, s)]);
     }
     if (this.on !== me) return;
+    r.show(cut);
     this.on = 0; v.lessonMode = false; r.stop(); r.setExplode(0); this.explode?.(0); this.xray?.(0); r.isolated = null; r.highlight([]); r.detach(out, { amount: 0 });
     v.shot(null, { orbit: 0 });
     this.done?.(true);
