@@ -44,6 +44,7 @@ function tiles() {
   }));
 }
 tiles();
+const note = (msg) => { toast(msg, 6000); vr?.note(msg); };
 const toast = (msg, ms = 2500) => { $('toast').textContent = msg; $('toast').hidden = !msg; clearTimeout(toast.t); if (msg) toast.t = setTimeout(() => ($('toast').hidden = true), ms); };
 
 async function open(id) {
@@ -194,7 +195,7 @@ const release = async () => {
   try {
     const res = await fetch(`/api/stt?exhibit=${ex.id}&lang=${lang}`, { method: 'POST', headers: { 'Content-Type': 'audio/wav' }, body: wav, signal: AbortSignal.timeout(20000) });
     const { text } = await res.json();
-    if (text) ask(text); else say('', t('notHeard'));
+    if (text) { note(t('museHeard', text)); ask(text); } else say('', t('notHeard'));
   } catch { say('', t('noVoice')); }
 };
 for (const ev of ['pointerup', 'pointercancel']) $('mic').addEventListener(ev, () => { if (!tapMode) lift(); });
@@ -423,6 +424,7 @@ async function startFix(key) {
   await open(c.ex);
   stopAll(); speak('');
   fix = { ...c, stage: 'diagnose', tries: 0, help: 0, history: [], out: new Set() };
+  $('f-trace').textContent = '';
   rig.setFault(c.f);
   document.body.classList.add('fix'); $('fix').hidden = false; setMode('fix');
   $('f-bar').textContent = t('fixBarEx', ex.name);
@@ -440,21 +442,35 @@ function symptom() {
   if (fix.f.see) { rig.isolate(fix.f.see); rig.highlight([]); }   // the mechanism in view, nothing lit: finding it is the learner's job
   rig.drive(fix.f.drive, fix.f.speed ?? 0.5);
 }
+// the tool calls Muse Spark made this turn, one at a time as the model plays them
+const callName = (s) => { const p = s.parts || []; return [s.do, s.drive, p.slice(0, 2).join(', ') + (p.length > 2 ? ` +${p.length - 2}` : '')].filter(Boolean).join(' '); };
+function traceCalls(x, r) {
+  const calls = [], show = (c) => {
+    calls.push(c);
+    $('f-trace').textContent = `Muse Spark · ${calls.join(' → ')}`;
+    vr?.note(`Muse Spark · ${calls.slice(-3).join(' → ')}`);   // the panel holds three lines
+  };
+  viewer.choreo.onStep = (s) => { if (fix === x) show(callName(s)); };
+  if (r.result) show(callName({ do: 'check', parts: r.suspect }));
+  else if (r.grade) show(`grade ${r.grade.verdict}`);
+}
 async function fixTurn(text, pointed) {
   const x = fix;
   if (!x || x.busy || x.stage === 'done') return;
   x.busy = true; clearTimeout(symptomT); speak('');
   card('', '', x.stage === 'diagnose' ? t('youGuess', text) : t('youSay', text)); $('fix').classList.add('thinking'); $('f-hint').hidden = true;
-  let r;
+  $('f-trace').textContent = ''; viewer.choreo.onStep = null;
+  let r, live = true;
   try {
     const res = await fetch('/api/fix', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ exhibit: x.ex, lang, fault: x.f.id, stage: x.stage, text, pointed, history: x.history, solved: solvedKeys() }), signal: AbortSignal.timeout(30000) });
     r = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(r.error || `HTTP ${res.status}`);
-  } catch (e) { console.warn('fix failed:', e.message); r = offlineFix(x, text, pointed); }
+  } catch (e) { console.warn('fix failed:', e.message); r = offlineFix(x, text, pointed); live = false; }
   x.busy = false; $('fix').classList.remove('thinking');
   if (fix !== x) return;
   x.history = [...x.history, { role: 'user', content: text }, { role: 'assistant', content: r.say }].slice(-4);
   const steps = cleanSteps(r.steps, ex);
+  if (live) traceCalls(x, r);
   if (steps.length) viewer.choreo.play(steps);
   const wait = (steps.length ? Math.min(12, Math.max(...steps.map((s) => s.at + (s.duration || 2)))) + 1.5 : 0) * 1000;
   speak(r.say); vr?.say(r.say);
