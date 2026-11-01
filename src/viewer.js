@@ -97,11 +97,12 @@ export class Viewer {
       const box = this.boxAt(explode), d = box.getSize(new THREE.Vector3()), dir = d.x >= d.z ? new THREE.Vector3(0, 0, 1) : new THREE.Vector3(1, 0, 0);
       if (dir.dot(this.camera.position.clone().sub(this.controls.target)) < 0) dir.negate();   // the side the camera is already on
       this.fill(box, dir.setY(0.3).normalize());
+      orbit = Math.max(-25, Math.min(25, orbit));   // a wide turn would swing the long side away again
       // once the parts have landed, frame them again from their real vertices (the estimate above runs a little wide)
       setTimeout(() => {
         if (this.shotN !== n || this.userView || !this.model) return;
         const at = this.goal ? this.goal.pos.clone().sub(this.goal.target) : this.camera.position.clone().sub(this.controls.target);
-        this.fill(new THREE.Box3().setFromObject(this.model, true), at.normalize(), 1.03);
+        this.fill(new THREE.Box3().setFromObject(this.model), at.normalize(), 1.04, this.corners());
       }, 800);
     }
     this.spin = orbit ? { rate: THREE.MathUtils.degToRad(orbit) / seconds, left: seconds } : null;
@@ -144,13 +145,29 @@ export class Viewer {
     }
     return box.isEmpty() ? new THREE.Box3().setFromObject(this.model) : box;
   }
-  // close enough that the box's corners just fit the clear part of the view, looking along -dir
-  fill(box, dir, margin = 1.06) {
+  // the corners of every visible mesh's box: far tighter than one box around a machine pulled apart in all directions
+  corners() {
+    const pts = [], b = new THREE.Box3();
+    this.model.traverseVisible((o) => {
+      if (!o.isMesh || o.material.opacity < 0.05) return;
+      b.setFromObject(o);
+      if (!b.isEmpty()) for (let i = 0; i < 8; i++) pts.push(new THREE.Vector3(i & 1 ? b.max.x : b.min.x, i & 2 ? b.max.y : b.min.y, i & 4 ? b.max.z : b.min.z));
+    });
+    return pts;
+  }
+  // close enough that the box's corners (or the given points) just fit the clear part of the view, looking along -dir
+  fill(box, dir, margin = 1.06, pts = null) {
     const c = box.getCenter(new THREE.Vector3()), v = THREE.MathUtils.degToRad(this.camera.fov) / 2, tv = Math.tan(v), th = tv * (this.seen || this.camera.aspect);
     const right = new THREE.Vector3(0, 1, 0).cross(dir).normalize(), up = dir.clone().cross(right).normalize(), k = new THREE.Vector3();
     let dist = 0;
-    for (let i = 0; i < 8; i++) {
-      k.set(i & 1 ? box.max.x : box.min.x, i & 2 ? box.max.y : box.min.y, i & 4 ? box.max.z : box.min.z).sub(c);
+    if (pts?.length) { box = new THREE.Box3().setFromPoints(pts); box.getCenter(c); }
+    const all = pts?.length ? pts : Array.from({ length: 8 }, (_, i) => new THREE.Vector3(i & 1 ? box.max.x : box.min.x, i & 2 ? box.max.y : box.min.y, i & 4 ? box.max.z : box.min.z));
+    // centre on the middle of what the camera will see, not of the box: then both sides can come to the edge
+    let lo = Infinity, hi = -Infinity, dn = Infinity, upm = -Infinity;
+    for (const q of all) { const x = q.clone().sub(c); lo = Math.min(lo, x.dot(right)); hi = Math.max(hi, x.dot(right)); dn = Math.min(dn, x.dot(up)); upm = Math.max(upm, x.dot(up)); }
+    c.addScaledVector(right, (lo + hi) / 2).addScaledVector(up, (dn + upm) / 2);
+    for (const q of all) {
+      k.copy(q).sub(c);
       dist = Math.max(dist, k.dot(dir) + Math.abs(k.dot(right)) / th, k.dot(dir) + Math.abs(k.dot(up)) / tv);
     }
     const target = c.clone(); if ((this.seen || this.camera.aspect) < 1) target.y -= (box.max.y - box.min.y) * 0.3;   // portrait: above the bottom sheet
