@@ -76,7 +76,7 @@ None of its code, models or media are in this repository; everything here was re
 | Steam repair challenge hides the coupling rods while they are off | — | `e1f985d` | 2026-10-31 |
 | VR menu without emoji: own vector line icons (lesson, tutor, guess, explode / put together, reset, mic / stop, close, exit, back / next, wrist gear) drawn on the panel canvas next to plain labels, so every headset browser shows the same thing | — | `ddcf05f` | 2026-10-31 |
 | 讓 Muse 帶你看 / Muse tour: one tap and Muse Spark directs a 30–60 s narrated teardown, calling a `scene` tool 3–8 times (camera framing and orbit, explode, X-ray glass shell, isolate, detach, real drives, one spoken line each); every shot checked against the manifest, kept 30 min per exhibit, exhibit's own tour as fallback; phone, VR menu and `?ex=jet&tour` link | Muse Spark tool calling (+ Inworld voice) | `168a606` | 2026-11-01 |
-| Photo to 3D: Muse Spark names the machine and the parts in a phone photo, SAM 3.1 traces each part on the photo, a tapped trace is cut out of the photo and flies into that part of the exploded 3D model, and Muse explains it and shows it moving | Muse Spark (vision, tool calling), SAM 3.1 | `9009acc` | 2026-11-01 |
+| Photo to 3D: Muse Spark names the machine and the parts in a phone photo, SAM 3.1 traces each part on the photo, a tapped trace is cut out of the photo and flies into that part of the exploded 3D model, and Muse explains it and shows it moving | Muse Spark (vision, tool calling), SAM 3.1 | `9009acc`, `63e386b` | 2026-11-01 |
 
 ## Third-party (unmodified dependencies, used under their licenses)
 | Package | License |
