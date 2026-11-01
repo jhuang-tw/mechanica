@@ -50,7 +50,7 @@ const meta = createServer(async (req, res) => {
   if (sys.includes('講一遍')) return msg({ content: '{"covered":[true,"yes",false],"wrong":"","say":"你講對了踩踏板。"}' });
   if (sys.includes('語音辨識')) return msg({ content: '鏈條怎麼帶動後輪' });
   if (JSON.stringify(user).includes('Y2F0')) return msg({ content: '{"match":false,"say":"這是一隻貓。"}' });
-  return msg({ content: '```json\n{"match":true,"exhibit":"bike","confidence":0.9,"machine":"公路車","parts":["chain","rear_derailleur","made_up","chain"],"say":"這是公路車，看看鏈條。"}\n```' });
+  return msg({ content: '```json\n{"match":true,"exhibit":"bike","confidence":0.9,"machine":"公路車","parts":["chain","rear_derailleur","made_up","chain"],"boxes":{"chain":[100,500,600,700],"rear_derailleur":[5,5],"made_up":[0,0,9,9]},"say":"這是公路車，看看鏈條。"}\n```' });
 });
 await new Promise((ok) => meta.listen(0, ok));
 Object.assign(process.env, { INWORLD_API_KEY: 'aW53b3JsZA==', INWORLD_BASE_URL: `http://127.0.0.1:${meta.address().port}`, AZURE_SPEECH_KEY: 'speech-key', AZURE_SPEECH_ENDPOINT: `http://127.0.0.1:${meta.address().port}`, META_API_KEY: 'test-key', META_BASE_URL: `http://127.0.0.1:${meta.address().port}/v1`, DAILY_LIMIT: '27' });
@@ -63,6 +63,7 @@ try {
   // photo -> exhibit + visible parts (unknown and duplicate ids dropped); the key went in the header
   let r = await (await post('/api/identify', Buffer.from('bike'), 'image/jpeg')).json();
   assert.deepEqual([r.match, r.exhibit, r.parts, r.say], [true, 'bike', ['chain', 'rear_derailleur'], '這是公路車，看看鏈條。']);
+  assert.deepEqual(r.boxes, { chain: [0.1, 0.5, 0.6, 0.7] }, 'Muse boxes kept only for listed parts, malformed dropped');
   assert.equal(seen.at(-1).auth, 'Bearer test-key');
   assert.match(seen.at(-1).b.messages[1].content[1].image_url.url, /^data:image\/jpeg;base64,YmlrZQ==$/);
   r = await (await post('/api/identify', Buffer.from('cat'), 'image/jpeg')).json();
@@ -74,6 +75,7 @@ try {
   assert.equal(seen.length - before, 2);
   assert.deepEqual(r.results.map((x) => x.part), ['rear_derailleur']);
   assert.match(r.results[0].masks[0].path, /^M/);
+  assert.deepEqual(r.results[0].frame, { w: 320, h: 334 }, 'the frame SAM measured in, for laying the masks over the photo');
   assert.equal((await post('/api/segment?exhibit=bike&part=engine', Buffer.from('x'), 'image/jpeg')).status, 400);
   samText = "<0f>0<|box;x1=1;y1=1;x2=2;y2=2;w=9;h=9|><|mask;x=0;y=0;data=5000,5000,!!|>";
   r = await (await post('/api/segment?exhibit=bike&part=rear_derailleur', Buffer.from('bike'), 'image/jpeg')).json();
