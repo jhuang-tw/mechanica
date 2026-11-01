@@ -3,6 +3,7 @@
 // shell is, which parts are lit or pulled out, which mechanism runs. Scenes are model output, so cleanTour() checks
 // every field against the exhibit's manifest (unknown parts and drives dropped, numbers clamped, count and length bounded).
 // Shared by the server (it cleans what Muse sends) and the browser (it cleans again before playing).
+const EASE = 2.4;
 export const TOUR = { scenes: [3, 8], seconds: [3, 10], total: 60, orbit: 120, say: [60, 220] };
 const clamp = (v, lo, hi, d) => (Number.isFinite(+v) && v !== null && v !== '' ? Math.min(hi, Math.max(lo, +v)) : d);
 const list = (v, ok) => [...new Set((Array.isArray(v) ? v : typeof v === 'string' ? [v] : []).filter((id) => ok.has(id)))];
@@ -53,7 +54,7 @@ export class TourPlayer {
       r.detach(out.filter((id) => !s.detach.includes(id)), { amount: 0, duration: 0.8 });   // what this shot no longer pulls out goes back
       if (s.detach.length) r.detach(s.detach, { amount: 0.35, duration: 1.2 });
       out = s.detach;
-      this.explode?.(s.explode); r.setExplode(s.explode);
+      this.explode?.(s.explode); r.tween(EASE, r.explodeTarget, s.explode, (v) => r.setExplode(v));   // the parts travel out and home, so the eye can follow them
       this.xray?.(s.xray);
       if (s.isolate.length) r.isolate(s.isolate); else { r.isolated = null; r.highlight([]); }
       if (s.drive) r.drive(s.drive, s.speed);
