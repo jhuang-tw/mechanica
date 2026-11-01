@@ -103,7 +103,7 @@ export class Viewer {
         if (this.shotN !== n || this.userView || !this.model) return;
         const at = this.goal ? this.goal.pos.clone().sub(this.goal.target) : this.camera.position.clone().sub(this.controls.target);
         this.fill(new THREE.Box3().setFromObject(this.model), at.normalize(), 1.04, this.corners());
-      }, 800);
+      }, 3000);
     }
     this.spin = orbit ? { rate: THREE.MathUtils.degToRad(orbit) / seconds, left: seconds } : null;
     return cut;
