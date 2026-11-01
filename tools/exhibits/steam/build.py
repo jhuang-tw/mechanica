@@ -463,7 +463,7 @@ def build():
     for side in (1, -1): motion(side)
     # exploded view: the wheels stay on the rails and the rest rises off them in layers. The app scales shell parts by 0.25.
     for pid, p in PARTS.items():
-        if pid.startswith('wheelset'): p['explode'] = V((0, 0, 0.001))
+        if pid.startswith('wheelset'): p['explode'] = V((0, 0, 0))
         elif pid in SHELL: p['explode'] = p['explode'] * (SHELL_SPREAD / 0.25) + V((0, 0, LIFT / 0.25))
         elif pid != 'track': p['explode'] = p['explode'] * SPREAD + V((0, 0, LIFT))
 
