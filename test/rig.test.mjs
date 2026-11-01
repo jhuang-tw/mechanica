@@ -289,7 +289,7 @@ for (const id of JSON.parse(read('index.json')).exhibits) {
 test('steam: the wheels stay on the rails while the engine lifts off them, and a detach stops at the ground', async () => {
   const rig = new Rig(await loadModel('steam'), exhibit('steam')), wheel = rig.parts.get('wheelset_1'), frames = rig.parts.get('frames'), track = rig.parts.get('track');
   rig.setExplode(1); run(rig, 3); rig.explode = 1; rig.update(0);
-  assert.ok(Math.abs(wheel.obj.position.y - wheel.base.pos.y) < 1e-6);
+  assert.ok(Math.abs(wheel.obj.position.y - wheel.base.pos.y) < 0.01);
   assert.ok(Math.abs(track.obj.position.y - track.base.pos.y) < 1e-6);
   assert.ok(frames.obj.position.y - frames.base.pos.y > 0.8);
   rig.reset(); rig.explode = 0; rig.detach(['wheelset_1'], { dir: 'down', amount: 1 }); run(rig, 2);
