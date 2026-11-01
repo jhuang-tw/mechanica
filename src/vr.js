@@ -95,7 +95,7 @@ export class VR {
     this.v = viewer; this.app = app; this.xr = viewer.renderer.xr; this.scene = viewer.scene;
     this.root = new THREE.Group(); this.scene.add(this.root);   // everything VR adds, removed on exit
     this.menu = new Panel(0.34, 0.3); this.lessonPanel = new Panel(0.4, 0.12); this.sub = new Panel(1, 0.08, 1400);
-    this.cue = new Panel(0.6, 0.1, 1200);   // the green "fixed" banner
+    this.cue = new Panel(0.6, 0.1, 1200);   // the green "fixed" banner, and what the Meta models heard and did
     for (const p of [this.sub, this.cue]) { p.mesh.material.depthTest = false; p.mesh.renderOrder = 20; }
     this.root.add(this.menu.mesh, this.lessonPanel.mesh, this.sub.mesh, this.cue.mesh);
     this.gear = new THREE.Mesh(new THREE.CircleGeometry(0.016, 24), new THREE.MeshBasicMaterial({ map: gearTexture(), transparent: true, toneMapped: false }));
@@ -339,6 +339,7 @@ export class VR {
     this.subT = text ? 0 : 99;
   }
   cheer(text) { this.cue.pill(text, '#2fbf71', '#06210f', 60, 1); this.cueT = 0; }
+  note(text) { this.cue.pill(text, 'rgba(10,14,20,0.78)', '#8fd3ff', 44, 3); this.cueT = -4; }   // what the Meta models heard and did: stays longer than a banner
 }
 
 function gearTexture() {

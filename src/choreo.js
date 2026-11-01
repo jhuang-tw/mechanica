@@ -39,6 +39,7 @@ export class Choreo {
   }
   run(s) {
     const r = this.rig, end = (fn) => s.duration && this.stops.push([this.t + s.duration, fn]);
+    this.onStep?.(s);
     switch (s.do) {
       case 'highlight': return r.highlight([...r.lit, ...s.parts]);
       case 'isolate': return r.isolate(s.parts);

@@ -299,3 +299,11 @@ test('setXray opens the shell without exploding, works with isolate, and a demo 
   rig.isolated = null; rig.lit.clear(); rig.setXray(null); run(rig, 3);
   assert.equal(shell.o.material.opacity, shell.base.opacity);
 });
+
+test('a demo reports each step as it plays', async () => {
+  const rig = new Rig(await load(), manifest), c = new Choreo(rig), seen = [];
+  c.onStep = (s) => seen.push(s.do);
+  c.play(cleanSteps([{ do: 'isolate', parts: ['chain'], at: 0 }, { do: 'drive', drive: 'pedal', at: 1 }], manifest));
+  c.update(0.5); assert.deepEqual(seen, ['isolate']);
+  c.update(1); assert.deepEqual(seen, ['isolate', 'drive']);
+});
