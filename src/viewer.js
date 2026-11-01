@@ -55,7 +55,9 @@ export class Viewer {
     this.renderer.setSize(w, h, false);
     this.camera.aspect = w / h;
     const left = this.panel?.getBoundingClientRect().left ?? w;
-    if (left > w * 0.3 && left < w - 1) this.camera.setViewOffset(w, h, (w - left) / 2, 0, w, h); else this.camera.clearViewOffset();
+    const side = left > w * 0.3 && left < w - 1;
+    if (side) this.camera.setViewOffset(w, h, (w - left) / 2, 0, w, h); else this.camera.clearViewOffset();
+    this.seen = (side ? left : w) / h;   // the aspect of the part of the canvas the panel leaves clear
     this.camera.updateProjectionMatrix();
   }
 
@@ -85,12 +87,45 @@ export class Viewer {
   // one shot of a tour: glide to the parts (null: the whole machine, framed wider the more it is pulled apart), then circle
   // `orbit` degrees around it over `seconds`. In VR the headset is the camera, so only the parts light up.
   shot(ids, { explode = 0, orbit = 0, seconds = 5 } = {}) {
-    if (ids?.length) this.focus(ids);
-    else {
-      const box = new THREE.Box3().setFromObject(this.model), s = box.getSize(new THREE.Vector3()).length();
-      this.fit(box, this.camera.position.clone().sub(this.controls.target).normalize(), s * (1 + 1.5 * explode));
+    if (ids?.length) this.outside(this.focus(ids, 0.4), this.boxAt(explode));   // a close-up, but never from inside the machine: the faded parts would smear across the view
+    else if (explode < 0.3) this.fill(this.boxAt(explode), this.camera.position.clone().sub(this.controls.target).normalize());
+    else {   // pulled apart: from the side of its long axis (an engine's parts line up along the shaft), filling the frame
+      const box = this.boxAt(explode), d = box.getSize(new THREE.Vector3()), dir = d.x >= d.z ? new THREE.Vector3(0, 0, 1) : new THREE.Vector3(1, 0, 0);
+      if (dir.dot(this.camera.position.clone().sub(this.controls.target)) < 0) dir.negate();   // the side the camera is already on
+      this.fill(box, dir.setY(0.3).normalize());
     }
     this.spin = orbit ? { rate: THREE.MathUtils.degToRad(orbit) / seconds, left: seconds } : null;
+  }
+  // push the camera back along its line of sight until it is clear of the whole machine's box
+  outside(ok, box) {
+    if (!ok || !this.goal) return;
+    const dir = this.goal.pos.clone().sub(this.goal.target).normalize(), exit = new THREE.Ray(this.goal.target, dir).intersectBox(box.clone().expandByScalar(box.getSize(new THREE.Vector3()).length() * 0.06), new THREE.Vector3());
+    if (exit && exit.distanceTo(this.goal.target) > this.goal.pos.distanceTo(this.goal.target)) this.goal.pos.copy(exit);
+  }
+  // where the machine will be once the explode reaches `t` (it eases there over half a second): each part's box moved along its explode vector
+  boxAt(t) {
+    const box = new THREE.Box3(), b = new THREE.Box3(), o = new THREE.Vector3(), v = new THREE.Vector3();
+    for (const p of this.rig.parts.values()) {
+      if (!p.obj.visible) continue;
+      b.setFromObject(p.obj);
+      if (b.isEmpty()) continue;
+      const m = p.obj.parent.matrixWorld;
+      v.copy(p.explodeVec).multiplyScalar(t - this.rig.explode).applyMatrix4(m).sub(o.set(0, 0, 0).applyMatrix4(m));
+      box.union(b.translate(v));
+    }
+    return box.isEmpty() ? new THREE.Box3().setFromObject(this.model) : box;
+  }
+  // close enough that the box's corners just fit the clear part of the view, looking along -dir
+  fill(box, dir, margin = 1.08) {
+    const c = box.getCenter(new THREE.Vector3()), v = THREE.MathUtils.degToRad(this.camera.fov) / 2, tv = Math.tan(v), th = tv * (this.seen || this.camera.aspect);
+    const right = new THREE.Vector3(0, 1, 0).cross(dir).normalize(), up = dir.clone().cross(right).normalize(), k = new THREE.Vector3();
+    let dist = 0;
+    for (let i = 0; i < 8; i++) {
+      k.set(i & 1 ? box.max.x : box.min.x, i & 2 ? box.max.y : box.min.y, i & 4 ? box.max.z : box.min.z).sub(c);
+      dist = Math.max(dist, k.dot(dir) + Math.abs(k.dot(right)) / th, k.dot(dir) + Math.abs(k.dot(up)) / tv);
+    }
+    const target = c.clone(); if ((this.seen || this.camera.aspect) < 1) target.y -= (box.max.y - box.min.y) * 0.3;   // portrait: above the bottom sheet
+    this.goal = { target, pos: target.clone().addScaledVector(dir, dist * margin) };
   }
   circle(dt) {
     const a = this.spin.rate * Math.min(dt, this.spin.left), y = new THREE.Vector3(0, 1, 0);
@@ -100,16 +135,17 @@ export class Viewer {
     if (this.goal) around(this.goal.pos, this.goal.target);
   }
   // glide to the given parts, keeping the current viewing direction
-  focus(ids) {
+  focus(ids, near = 0.15) {
     const box = new THREE.Box3();
     for (const id of ids) { const p = this.rig.parts.get(id); if (p) box.expandByObject(p.obj); }
-    if (box.isEmpty()) return;
+    if (box.isEmpty()) return false;
     // look from the side those parts are on (an engine at the front is seen from the front, not through a wheel)
     const all = new THREE.Box3().setFromObject(this.model), size = all.getSize(new THREE.Vector3()).length();
     const out = box.getCenter(new THREE.Vector3()).sub(all.getCenter(new THREE.Vector3())).setY(0);
     const dir = this.camera.position.clone().sub(this.controls.target).normalize();
     if (out.length() > size * 0.05) dir.addScaledVector(out.normalize(), 1.5).setY(0.5).normalize();
-    this.fit(box, dir, size * 0.15);
+    this.fit(box, dir, size * near);
+    return true;
   }
   fit(box, dir, min = 0) {
     const c = box.getCenter(new THREE.Vector3()), s = Math.max(box.getSize(new THREE.Vector3()).length(), min);   // not closer than a share of the whole model
