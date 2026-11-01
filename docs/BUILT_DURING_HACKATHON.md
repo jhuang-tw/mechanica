@@ -100,3 +100,5 @@ None of its code, models or media are in this repository; everything here was re
 | Spoken lesson lines and answers | Generated at run time by Inworld TTS-2 Flash (voices Xinyi, Ashley) on Jim's Inworld account; Azure neural TTS or the browser's own voice as fallbacks. No audio files are stored in the repository | Under the Inworld and Azure terms of service |
 | Music | None in the app or the repository | — |
 | Demo film score (`mechanica-score.wav`, not in the repository) | Original, generated 2026-11-01 by a numpy and scipy script written for the film, no samples or third-party material | Ours |
+| Demo film photo (not in the repository) | "Electric bicycle with front motor.jpg", https://commons.wikimedia.org/wiki/File:Electric_bicycle_with_front_motor.jpg, author anonymous (own work, 2006), used unchanged in the app's photo flow | Public domain, Commons template PD-self. Replace it if Jim supplies his own photo |
+| Demo film narration (not in the repository) | Generated 2026-11-01 by Inworld TTS on Jim's Inworld account, voice Dennis. The app's own tour lines in the film are voice Ashley | Generated on Jim's account |
