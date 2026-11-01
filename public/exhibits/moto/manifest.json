@@ -49,7 +49,7 @@
    ]
   },
   {
-   "id": "cam_cover",
+   "id": "cam_cover", "shell": true,
    "name": "凸輪軸蓋",
    "en": "motorcycle cam cover",
    "info": "引擎最上方的頂蓋，負責密封兩根凸輪軸與機油。",
@@ -175,7 +175,7 @@
    ]
   },
   {
-   "id": "clutch_cover",
+   "id": "clutch_cover", "shell": true,
    "name": "離合器蓋",
    "en": "motorcycle clutch cover",
    "info": "引擎右側的圓蓋，用來保護並密封離合器。",
@@ -269,7 +269,7 @@
    ]
   },
   {
-   "id": "headlight_cowl",
+   "id": "headlight_cowl", "shell": true,
    "name": "頭燈罩",
    "en": "motorcycle headlight cowl",
    "info": "包覆車頭大燈與儀表板的整流外殼。",
@@ -360,7 +360,7 @@
    ]
   },
   {
-   "id": "tank",
+   "id": "tank", "shell": true,
    "name": "油箱",
    "en": "motorcycle fuel tank",
    "info": "儲存汽油，騎乘時雙膝可夾緊油箱穩定身體。",
@@ -379,7 +379,7 @@
    ]
   },
   {
-   "id": "side_cover_l",
+   "id": "side_cover_l", "shell": true,
    "name": "左側蓋",
    "en": "motorcycle left side cover",
    "info": "座墊下方的護蓋，內部藏有電瓶與行車電腦（ECU）。",
@@ -388,7 +388,7 @@
    ]
   },
   {
-   "id": "side_cover_r",
+   "id": "side_cover_r", "shell": true,
    "name": "右側蓋",
    "en": "motorcycle right side cover",
    "info": "座墊右下方的車身護蓋。",

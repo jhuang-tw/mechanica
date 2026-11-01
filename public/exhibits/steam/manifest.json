@@ -351,7 +351,7 @@
    ]
   },
   {
-   "id": "boiler_cladding",
+   "id": "boiler_cladding", "shell": true,
    "name": "鍋爐外殼",
    "en": "steam locomotive boiler cladding",
    "info": "包覆在鍋爐外的隔熱鐵皮，減少熱量散失。按拆開（🧩）可看內部的火箱與煙管。",
@@ -362,7 +362,7 @@
    ]
   },
   {
-   "id": "smokebox",
+   "id": "smokebox", "shell": true,
    "name": "煙箱和煙囪",
    "en": "steam locomotive smokebox and chimney",
    "info": "鍋爐最前方的圓筒室，匯集煙管排出的熱煙，靠噴汽管的抽氣效應一起從煙囪排出。",
@@ -384,7 +384,7 @@
    ]
   },
   {
-   "id": "tank_l",
+   "id": "tank_l", "shell": true,
    "name": "左水櫃",
    "en": "steam locomotive left side tank",
    "info": "車身兩側儲放鍋爐用水的水箱。自備水櫃的車頭稱為「水櫃式機車」，不必額外拖掛煤水車。",
@@ -394,7 +394,7 @@
    ]
   },
   {
-   "id": "tank_r",
+   "id": "tank_r", "shell": true,
    "name": "右水櫃",
    "en": "steam locomotive right side tank",
    "info": "右側儲水櫃，與左側水櫃連通以保持左右平衡。",
@@ -404,7 +404,7 @@
    ]
   },
   {
-   "id": "cab",
+   "id": "cab", "shell": true,
    "name": "司機室",
    "en": "steam locomotive cab",
    "info": "司機操作調節閥與逆轉機、以及司爐鏟煤進火箱的工作空間。",
@@ -415,7 +415,7 @@
    ]
   },
   {
-   "id": "cab_roof",
+   "id": "cab_roof", "shell": true,
    "name": "司機室頂",
    "en": "steam locomotive cab roof",
    "info": "司機室頂棚，可向上掀開觀看內部操作桿。",

@@ -41,15 +41,18 @@ float grainNoise(vec3 p) {
              mix(mix(gh(i + vec3(0, 0, 1)), gh(i + vec3(1, 0, 1)), f.x), mix(gh(i + vec3(0, 1, 1)), gh(i + vec3(1, 1, 1)), f.x), f.y), f.z);
 }`;
 // every exhibit material: a highlight that keeps the real material (a warm rim glow, `m.userData.rim.value` 0..1, set by
-// the rig) and, on bare metal, the grain above
+// the rig), glass for an opening shell (`m.userData.glass.value` 0..1: clear face-on, a cool glow at the edges) and, on bare
+// metal, the grain above
 function dress(m, grain) {
-  const rim = m.userData.rim = { value: 0 };
+  const rim = m.userData.rim = { value: 0 }, glass = m.userData.glass = { value: 0 };
   m.onBeforeCompile = (sh) => {
-    sh.uniforms.uRim = rim;
+    sh.uniforms.uRim = rim; sh.uniforms.uGlass = glass;
     let f = sh.fragmentShader.replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
 float rimK = 1.0 - abs(dot(normal, normalize(vViewPosition)));
-totalEmissiveRadiance += uRim * vec3(1.0, 0.62, 0.15) * (1.3 * rimK * rimK * rimK * rimK);`);
-    f = `uniform float uRim;\n${f}`;
+totalEmissiveRadiance += uRim * vec3(1.0, 0.62, 0.15) * (1.3 * rimK * rimK * rimK * rimK);
+totalEmissiveRadiance += uGlass * vec3(0.45, 0.8, 1.0) * (0.9 * rimK * rimK * rimK);
+diffuseColor.a *= mix(1.0, 0.2 + 1.6 * rimK * rimK, uGlass);`);
+    f = `uniform float uRim;\nuniform float uGlass;\n${f}`;
     if (grain) {
       sh.uniforms.uGrain = grain;
       sh.vertexShader = `uniform float uGrain;\nvarying vec3 vGrain;\n${sh.vertexShader}`.replace('#include <begin_vertex>', '#include <begin_vertex>\nvGrain = position * uGrain;');

@@ -39,7 +39,7 @@ export const S = {
   typeAria: ['打字提問', 'Type a question'], photoAria: ['拍真的機器', 'Photograph a real machine'], micAria: ['按住說話', 'Hold to talk'],
   loading: ['載入中…', 'Loading…'],
   // chips
-  firstLesson: [(t) => `第一課：${t}`, (t) => `Lesson 1: ${t}`], guessFirst: ['先猜再看', 'Guess first'], ride: ['坐上去', 'Take a seat'], askAI: ['問 AI 老師', 'Ask the AI'],
+  firstLesson: [(t) => `第一課：${t}`, (t) => `Lesson 1: ${t}`], guessFirst: ['先猜再看', 'Guess first'], ride: ['坐上去', 'Take a seat'], askAI: ['問 Muse', 'Ask Muse'],
   // ask
   youAsked: ['你問', 'You asked'], aiDown: ['AI 暫時連不上', 'The AI is not reachable'], aiDownTip: ['可以先上一堂課，或點零件看說明。', 'Try a lesson, or tap a part to read about it.'],
   // mic
@@ -83,7 +83,7 @@ export const S = {
   // VR
   noVR: ['這個瀏覽器不能進 VR', 'This browser cannot enter VR'],
   vrTutor: ['AI 家教', 'AI tutor'], vrGuess: ['先猜再看', 'Guess first'], vrClose: ['合起來', 'Put together'], vrOpen: ['拆開', 'Explode'],
-  vrReset: ['重設', 'Reset'], vrDone: ['說完了', 'Done'], vrAnswer: ['回答家教', 'Answer'], vrAsk: ['問 AI', 'Ask AI'],
+  vrReset: ['重設', 'Reset'], vrDone: ['說完了', 'Done'], vrAnswer: ['回答家教', 'Answer'], vrAsk: ['問 Muse', 'Ask Muse'],
   vrMenuClose: ['關選單', 'Close'], vrExit: ['離開 VR', 'Exit VR'],
   // language switch: names the other language
   switchTo: ['EN', '中文'], switchAria: ['Switch to English', '切換成中文'],

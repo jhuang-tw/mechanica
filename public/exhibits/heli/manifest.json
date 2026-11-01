@@ -300,7 +300,7 @@
    ]
   },
   {
-   "id": "fuselage",
+   "id": "fuselage", "shell": true,
    "fixed": true,
    "name": "機身",
    "en": "helicopter fuselage",
@@ -312,7 +312,7 @@
    ]
   },
   {
-   "id": "canopy",
+   "id": "canopy", "shell": true,
    "name": "座艙罩",
    "en": "helicopter canopy",
    "info": "大面積透明擋風罩，提供飛行員前方與下方的廣闊視野。",
@@ -323,7 +323,7 @@
    ]
   },
   {
-   "id": "door_l",
+   "id": "door_l", "shell": true,
    "name": "左前門",
    "en": "helicopter front left door",
    "info": "左前座艙門，前緣鉸鏈設計。",
@@ -334,7 +334,7 @@
    ]
   },
   {
-   "id": "door_r",
+   "id": "door_r", "shell": true,
    "name": "右前門",
    "en": "helicopter front right door",
    "info": "右前駕駛座艙門，前緣鉸鏈設計。",
@@ -344,7 +344,7 @@
    ]
   },
   {
-   "id": "rear_door_l",
+   "id": "rear_door_l", "shell": true,
    "name": "左後門",
    "en": "helicopter rear left door",
    "info": "左後乘客艙門。",
@@ -355,7 +355,7 @@
    ]
   },
   {
-   "id": "rear_door_r",
+   "id": "rear_door_r", "shell": true,
    "name": "右後門",
    "en": "helicopter rear right door",
    "info": "右後乘客艙門。",
@@ -366,7 +366,7 @@
    ]
   },
   {
-   "id": "transmission_cowling",
+   "id": "transmission_cowling", "shell": true,
    "name": "齒輪箱整流罩",
    "en": "helicopter transmission cowling",
    "info": "包覆主齒輪箱與下斜盤的流線外罩，可減少飛行風阻。",
@@ -376,7 +376,7 @@
    ]
   },
   {
-   "id": "engine_cowling",
+   "id": "engine_cowling", "shell": true,
    "name": "引擎整流罩",
    "en": "helicopter engine cowling",
    "info": "渦軸引擎的隔熱整流外罩，後方留有排氣口。",
@@ -386,7 +386,7 @@
    ]
   },
   {
-   "id": "tail_boom",
+   "id": "tail_boom", "shell": true,
    "name": "尾桁",
    "en": "helicopter tail boom",
    "info": "向後延伸的長尾管，內部容納尾傳動軸；拉長力臂能讓尾旋翼用較小的推力抵消主旋翼反扭力。",

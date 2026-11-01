@@ -88,6 +88,7 @@ export function toolsFor(e) {
     T('detach', '把零件拆下來、往外移開，看清楚它', { parts, at, dir: { type: 'string', enum: DIRS }, amount: { type: 'number', description: '展品大小的比例 0–1' } }, ['parts']),
     T('rotate', '單獨轉動零件（不連動別的）', { parts, at, degrees: { type: 'number', description: '±1080' }, duration: { type: 'number', description: '秒 0.5–8' } }, ['parts']),
     ...(e.drives?.length ? [T('drive', '讓真實機構運轉：照真實連動帶動整串零件', { drive: { type: 'string', enum: e.drives.map((d) => d.id), description: e.drives.map((d) => `${d.id}=${d.name}`).join('；') }, speed: { type: 'number', description: '−1–1' }, duration: { type: 'number', description: '秒 1–10' }, at }, ['drive'])] : []),
+    ...(e.parts.some((p) => p.shell) ? [T('xray', '把外殼變透明，看見被擋住的內部機構', { amount: { type: 'number', description: '透明程度 0–1，0 是還原' }, at })] : []),
     T('reset', '全部還原', { at }),
   ];
 }
@@ -103,6 +104,7 @@ function toolsEn(e) {
     T('detach', 'Take the parts off and move them out to see them clearly', { parts, at, dir: { type: 'string', enum: DIRS }, amount: { type: 'number', description: 'fraction of the exhibit size, 0–1' } }, ['parts']),
     T('rotate', 'Turn parts on their own (nothing else follows)', { parts, at, degrees: { type: 'number', description: '±1080' }, duration: { type: 'number', description: 'seconds, 0.5–8' } }, ['parts']),
     ...(e.drives?.length ? [T('drive', 'Run the real mechanism: every linked part moves at its real ratio', { drive: { type: 'string', enum: e.drives.map((d) => d.id), description: e.drives.map((d) => `${d.id}=${d.name}`).join('; ') }, speed: { type: 'number', description: '−1–1' }, duration: { type: 'number', description: 'seconds, 1–10' }, at }, ['drive'])] : []),
+    ...(e.parts.some((p) => p.shell) ? [T('xray', 'Turn the outer shell see-through to reveal the mechanism behind it', { amount: { type: 'number', description: 'how see-through, 0–1; 0 puts it back' }, at })] : []),
     T('reset', 'Put everything back', { at }),
   ];
 }
@@ -113,6 +115,7 @@ export function cleanSteps(calls, e) {
     const s = { do: name, at: num(a.at, 0, MAX_T, 0) };
     if (name === 'drive') return drives.has(a.drive) ? { ...s, drive: a.drive, speed: num(a.speed, -1, 1, 0.5), duration: num(a.duration, 1, 10, 4) } : null;
     if (name === 'reset') return s;
+    if (name === 'xray') return { ...s, amount: num(a.amount, 0, 1, 1) };
     const parts = (Array.isArray(a.parts) ? a.parts : []).filter((p) => ids.has(p));
     if (!parts.length) return null;
     if (name === 'detach') return { ...s, parts, dir: DIRS.includes(a.dir) ? a.dir : 'out', amount: num(a.amount, 0, 1, 0.3) };

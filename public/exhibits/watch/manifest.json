@@ -39,7 +39,7 @@
    ]
   },
   {
-   "id": "case_back",
+   "id": "case_back", "shell": true,
    "name": "底蓋",
    "en": "watch case back",
    "info": "旋入式錶背蓋，配合防水墊圈鎖緊密封，拆開即可看到機芯背面。",
@@ -70,7 +70,7 @@
    ]
   },
   {
-   "id": "dial",
+   "id": "dial", "shell": true,
    "name": "錶盤",
    "en": "watch dial",
    "info": "顯示時間刻度的面盤，下方是跨輪組，後方則是機芯主夾板。",

@@ -273,3 +273,29 @@ test('repair challenge: a fault stops part of the drive and shows the damage unt
   rig.drive('pedal', 0.5); run(rig, 1);
   assert.ok(Math.abs(wheel.angle) > 0.1, 'and the wheel turns');
 });
+
+test('an opening shell turns to glass and comes back; a part in focus stays solid', async () => {
+  const m = exhibit('jet'), rig = new Rig(await loadModel('jet'), m);
+  const shell = rig.parts.get('fan_cowl_left').meshes[0], inner = rig.parts.get('hp_compressor').meshes[0];
+  rig.setExplode(1); run(rig, 3);
+  assert.ok(shell.o.material.transparent && shell.o.material.opacity < 0.5, 'taps pass through the open shell');
+  assert.equal(shell.o.castShadow, false);
+  assert.equal(inner.o.material.opacity, inner.base.opacity);
+  rig.highlight(['fan_cowl_left']);
+  assert.equal(shell.o.material.opacity, shell.base.opacity);
+  rig.reset(); run(rig, 3);
+  assert.equal(rig.glass, 0);
+  assert.equal(shell.o.material.opacity, shell.base.opacity);
+  assert.equal(shell.o.material.transparent, shell.base.transparent);
+});
+
+test('setXray opens the shell without exploding, works with isolate, and a demo can call it', async () => {
+  const rig = new Rig(await loadModel('jet'), exhibit('jet')), shell = rig.parts.get('fan_case').meshes[0], c = new Choreo(rig);
+  c.play(cleanSteps([{ do: 'xray', amount: 2, at: 0 }], exhibit('jet')));
+  c.update(0.1); assert.equal(rig.xray, 1);
+  run(rig, 3);
+  assert.ok(shell.o.material.opacity < 0.5); assert.equal(rig.explode, 0);
+  rig.isolate(['fan']); assert.equal(shell.o.material.opacity, 0.1);
+  rig.isolated = null; rig.lit.clear(); rig.setXray(null); run(rig, 3);
+  assert.equal(shell.o.material.opacity, shell.base.opacity);
+});

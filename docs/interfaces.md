@@ -17,7 +17,7 @@
 | `intro` | 打開展品時的一句話 |
 | `suggest[]` | 建議問題（畫面上的按鈕，送給 AI） |
 | `looksLike` | 真實世界裡像什麼（拍照比對用） |
-| `parts[]` | `{id, name, en, info, aliases[], axis?}`。`id` 就是模型的節點名稱；`en` 是給 SAM 的完整英文描述（"bicycle chain"）；`axis` 是零件自己的轉軸（零件本身座標），有 axis 的零件可以自由旋轉；`fixed: true` 的零件（車架、車身這類底座）不能拖，拖它就是轉視角 |
+| `parts[]` | `{id, name, en, info, aliases[], axis?}`。`id` 就是模型的節點名稱；`en` 是給 SAM 的完整英文描述（"bicycle chain"）；`axis` 是零件自己的轉軸（零件本身座標），有 axis 的零件可以自由旋轉；`fixed: true` 的零件（車架、車身這類底座）不能拖，拖它就是轉視角；`shell: true` 的外殼零件在拆解或 Rig 的 `setXray(t)` 時淡成玻璃，點擊會穿過去選到內部 |
 | `drives[]` | 真實機構 `{id, name, rpm, moves:[{part, ratio}]}`：速度 1 時第一個零件轉 rpm，其他乘 ratio |
 | `drives[].swing` | 有 `swing`（度）就是來回擺動（方向盤），`period` 秒一個來回；ratio 乘在角度上；move 有 `slide:[x,y,z]`（公尺）就改成沿這個向量來回滑動；`oneWay: true` 只往一邊擺（0 → swing → 0，像門、引擎蓋）；move 也可以有自己的 `period`（擒縱叉擺得比擺輪快一倍） |
 | `linkages[]` | 曲柄滑塊（引擎）`{type:"slider_crank", crank, r, L, up, cylinders:[{piston, rod, phase, slides?, follow?, valve?, valveAmp?, valveLead?}]}`：活塞（和 `slides`，如十字頭）沿 `up` 滑動、連桿從曲柄銷擺到活塞銷、`follow`（聯結桿）跟著曲柄銷平移不轉、`valve` 領先 `valveLead` 弧度滑動 `valveAmp` 公尺，跟著 `crank` 的角度。<br>斜盤（直升機）`{type:"swashplate", mast, plates[], hub, blades[], collective:{part,max}, cyclic:{part,max}, rise, tilt, pitch, cyclicPitch, flap}`：總距桿角度（÷max）讓斜盤上升 `rise` 公尺、槳葉一起變距 `pitch` 度；週期桿讓斜盤前傾 `tilt` 度、每片槳葉變距 `cyclicPitch`·sin(方位角)、蹺蹺板旋翼頭傾 `flap` 度 |

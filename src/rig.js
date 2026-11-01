@@ -3,7 +3,7 @@
 // and reset() always gets back there.
 import * as THREE from 'three';
 
-const AMBER = new THREE.Color(1, 0.62, 0.15), GHOST = 0.1, TAU = Math.PI * 2;
+const AMBER = new THREE.Color(1, 0.62, 0.15), GHOST = 0.1, SHELL = 0.4, TAU = Math.PI * 2;
 const DIRS = { up: [0, 1, 0], down: [0, -1, 0], front: [1, 0, 0], back: [-1, 0, 0], left: [0, 0, -1], right: [0, 0, 1] };
 const ease = (t) => (t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2);
 
@@ -34,11 +34,12 @@ export class Rig {
         base: { pos: obj.position.clone(), quat: obj.quaternion.clone() },
         axis: new THREE.Vector3(...(def.axis || obj.userData.axis || [0, 0, 1])).normalize(),
         angle: 0, offset: new THREE.Vector3(),
-        explodeVec: Array.isArray(ex) ? new THREE.Vector3(...ex) : nested ? new THREE.Vector3()
-          : (c.lengthSq() < 1e-6 ? new THREE.Vector3(0, 1, 0) : c.normalize()).multiplyScalar(this.size * 0.2),
+        explodeVec: (Array.isArray(ex) ? new THREE.Vector3(...ex) : nested ? new THREE.Vector3()
+          : (c.lengthSq() < 1e-6 ? new THREE.Vector3(0, 1, 0) : c.normalize()).multiplyScalar(this.size * 0.2)).multiplyScalar(def.shell ? 0.25 : 1),   // glass stays close: the machine's outline around its insides
       });
     }
     this.explode = 0; this.explodeTarget = 0;
+    this.xray = null; this.glass = 0;   // shell parts: xray forces see-through 0..1, null follows the explode
     this.tweens = []; this.spins = new Map();   // part id -> rad/s
     this.swings = new Map();   // part id -> { amp (rad), w (rad/s), t }: back-and-forth, like a steering wheel
     this.linkages = (manifest.linkages || []).filter((l) => (l.type === 'slider_crank' && this.parts.has(l.crank)) || (l.type === 'swashplate' && this.parts.has(l.mast)));
@@ -55,10 +56,13 @@ export class Rig {
   paint() {
     for (const [id, p] of this.parts) {
       const ghost = this.isolated && !this.isolated.has(id), lit = this.lit.has(id);
+      const fade = p.def.shell && !lit ? this.glass : 0, clear = ghost || fade > 0;   // an opening shell turns to glass; below 0.5 opacity taps reach the parts inside
       for (const { o, base } of p.meshes) {
-        if (o.material.transparent !== (ghost || base.transparent)) { o.material.transparent = ghost || base.transparent; o.material.needsUpdate = true; }
-        o.material.opacity = ghost ? GHOST : base.opacity;
-        o.material.depthWrite = !ghost;
+        if (o.material.transparent !== (clear || base.transparent)) { o.material.transparent = clear || base.transparent; o.material.needsUpdate = true; }
+        o.material.opacity = ghost ? GHOST : base.opacity + (SHELL - base.opacity) * fade;
+        o.material.depthWrite = !clear;
+        if (p.def.shell) o.castShadow = fade < 0.5;
+        if (o.material.userData.glass) o.material.userData.glass.value = ghost ? 0 : fade;
         if (o.material.userData.rim) o.material.userData.rim.value = lit ? 1 : 0;   // look.js: rim glow, the material stays visible
         else if (o.material.emissive) o.material.emissive.copy(lit ? AMBER : base.emissive).multiplyScalar(lit ? 0.45 : 1);
       }
@@ -101,9 +105,10 @@ export class Rig {
   spin(id, rad) { if (rad) this.spins.set(id, rad); else this.spins.delete(id); }
   stop() { this.spins.clear(); for (const [id, s] of this.swings) { const p = this.parts.get(id); p.angle = 0; if (s.slide) p.offset.set(0, 0, 0); } this.swings.clear(); }
   setExplode(t) { this.explodeTarget = Math.min(1, Math.max(0, t)); }
+  setXray(t) { this.xray = t == null ? null : Math.min(1, Math.max(0, t)); }
 
   reset() {
-    this.tweens = []; this.stop(); this.lit.clear(); this.isolated = null; this.explodeTarget = 0;
+    this.tweens = []; this.stop(); this.lit.clear(); this.isolated = null; this.explodeTarget = 0; this.xray = null;
     for (const p of this.parts.values()) { p.angle = 0; p.offset.set(0, 0, 0); p.obj.visible = true; }
     this.brokenLook();
     this.paint();
@@ -183,6 +188,8 @@ export class Rig {
     // swings: back and forth, or with oneWay 0 → amp → 0 (a door)
     for (const [id, s] of this.swings) { const a = (s.t += dt) * s.w, k = s.oneWay ? (1 - Math.cos(a)) / 2 : Math.sin(a), p = this.parts.get(id); if (s.slide) p.offset.copy(s.slide).multiplyScalar(k); else p.angle = s.amp * k; }
     this.explode += (this.explodeTarget - this.explode) * Math.min(1, dt * 6);
+    const see = this.xray ?? this.explodeTarget;
+    if (this.glass !== see) { this.glass = Math.abs(see - this.glass) < 0.002 ? see : this.glass + (see - this.glass) * Math.min(1, dt * 6); this.paint(); }
     const q = new THREE.Quaternion();
     for (const p of this.parts.values()) {
       p.obj.quaternion.copy(p.base.quat).multiply(q.setFromAxisAngle(p.axis, p.angle));
