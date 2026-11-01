@@ -74,6 +74,7 @@ try {
   assert.equal(seen.length - before, 2);
   assert.deepEqual(r.results.map((x) => x.part), ['rear_derailleur']);
   assert.match(r.results[0].masks[0].path, /^M/);
+  assert.deepEqual(r.results[0].frame, { w: 320, h: 334 }, 'the frame SAM measured in, for laying the masks over the photo');
   assert.equal((await post('/api/segment?exhibit=bike&part=engine', Buffer.from('x'), 'image/jpeg')).status, 400);
   samText = "<0f>0<|box;x1=1;y1=1;x2=2;y2=2;w=9;h=9|><|mask;x=0;y=0;data=5000,5000,!!|>";
   r = await (await post('/api/segment?exhibit=bike&part=rear_derailleur', Buffer.from('bike'), 'image/jpeg')).json();

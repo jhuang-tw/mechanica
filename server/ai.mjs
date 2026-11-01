@@ -59,8 +59,13 @@ ${list}`;
 export async function segment({ image, mime, exhibit: id, parts }) {
   const e = exhibit(id), want = [...new Set(parts)].slice(0, 4).map((p) => e.parts.find((x) => x.id === p));
   if (!want.length || want.some((p) => !p)) throw fail('unknown part');
-  const out = await Promise.allSettled(want.map(async (p) => ({ part: p.id, masks: parseMasks(await sam({ prompt: p.en || p.name, mime, image })) })));
+  const out = await Promise.allSettled(want.map(async (p) => { const text = await sam({ prompt: p.en || p.name, mime, image }); return { part: p.id, frame: frameOf(text), masks: parseMasks(text) }; }));
   return { exhibit: e.id, results: out.filter((r) => r.status === 'fulfilled' && r.value.masks.length).map((r) => r.value) };
+}
+// the pixel size SAM measured its boxes in (the box token's w/h), so the browser can lay the masks over the photo it showed
+export function frameOf(text) {
+  const [, w, h] = /<\|box;[^|]*?\bw=(\d+);h=(\d+)/.exec(text) || [];
+  return w && h ? { w: Number(w), h: Number(h) } : undefined;
 }
 export function parseMasks(text) {
   // read each mask's H×W before decoding, so a hostile payload can't make us allocate a huge raster (NaN fails too)
