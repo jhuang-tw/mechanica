@@ -6,6 +6,8 @@
   找到後修好它，再用你自己的話說說看為什麼，AI 評你的解釋、挑下一台。
 - **原理**：一步一步的 3D 課程、先猜再看、AI 家教，問任何問題 AI 會**自己編排零件動作**示範給你看。有 Quest 的話，同一個網址可以進 VR（選用）。
 
+線上試玩：https://mechanica.hoson.xyz （手機瀏覽器直接開；Quest 按 VR）
+
 Meta Global AI Developer Hackathon · Indie track。本 repo 的所有程式、資料與模型都是活動期間（2026-10-26 起）做的。
 
 ## 執行
@@ -37,7 +39,9 @@ public/exhibits/      展品：index.json 列表；<id>/manifest.json、model.gl
 server/               Node 伺服器：靜態檔＋/api（Meta LLM、工具呼叫、看圖、SAM、語音）
 tools/                產模腳本（Blender／程式）
 docs/interfaces.md    展品 manifest、模型節點、API 的約定
-docs/demo/            比賽影片與提交資料
+docs/PITCH.md         比賽提交說明（英文）
+docs/BUILT_DURING_HACKATHON.md  每個功能 → commit → 日期
+LICENSE               MIT
 test/                 node --test
 ```
 

@@ -176,10 +176,11 @@ $('ask').onsubmit = (e) => { e.preventDefault(); ask($('q').value); $('q').value
 
 // hold to talk
 const rec = new Recorder();
-let holding = false;
+let holding = false, cap = 0;
 const talk = async () => {
   holding = true; speak('');
-  try { await rec.start(); $('mic').classList.add('rec'); toast(tapMode ? t('tapAgain') : t('speakNow')); vr?.say(t('vrSpeak')); if (!holding) release(); }
+  // 30 s of 16 kHz WAV is ~1 MB, well under the server's 2 MB limit; a forgotten tap would otherwise fail with 413
+  try { await rec.start(); $('mic').classList.add('rec'); toast(tapMode ? t('tapAgain') : t('speakNow')); vr?.say(t('vrSpeak')); if (!holding) release(); else cap = setTimeout(release, 30000); }
   catch { holding = false; toast(t('noMic')); vr?.say(t('vrNoMic')); }
 };
 let tapMode = false, downAt = 0;
@@ -188,7 +189,7 @@ $('mic').onpointerdown = (e) => { e.preventDefault(); if (holding) return releas
 const lift = () => { if (!holding) return; if (Date.now() - downAt < 400) { tapMode = true; return toast(t('tapAgain'), 20000); } release(); };
 const release = async () => {
   if (!holding) return;
-  holding = false; $('mic').classList.remove('rec'); toast('');
+  holding = false; clearTimeout(cap); $('mic').classList.remove('rec'); toast('');
   const wav = await rec.stop();
   if (!wav) return toast(t('tooShort'));
   say(t('youSaid'), t('transcribing'), true);
