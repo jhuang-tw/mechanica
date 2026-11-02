@@ -1,6 +1,7 @@
 # Built during the hackathon (Oct 26 – Nov 4, 2026)
 
 Every line of code and every asset in this repository was created during the Meta Global AI Developer Hackathon (Indie track).
+Team: Jim (GitHub `jhuang-tw`), solo.
 The GitHub repository was created on 2026-10-27 (19:03 UTC, 2026-10-28 03:03 Taiwan time). Its first commit is `9577cd8` (2026-10-27 20:34 +08:00). The git history is the record.
 
 The history has three root commits because the work started in three folders on 2026-10-27 and was joined by merges that night: `9577cd8` (server and Meta AI calls), `14c8ce8` (steam locomotive CAD) and `4da19c8` (the app, the other exhibits' CAD and Blender builds, and the VR mode, committed as one snapshot at 23:58 +08:00). Features below that list `4da19c8` or `9577cd8` were built on 2026-10-27 inside those snapshots; their earlier local commit ids are not in this repository.
@@ -78,7 +79,16 @@ None of its code, models or media are in this repository; everything here was re
 | VR menu without emoji: own vector line icons (lesson, tutor, guess, explode / put together, reset, mic / stop, close, exit, back / next, wrist gear) drawn on the panel canvas next to plain labels, so every headset browser shows the same thing | — | `ddcf05f` | 2026-10-31 |
 | 讓 Muse 帶你看 / Muse tour: one tap and Muse Spark directs a 30–60 s narrated teardown, calling a `scene` tool 3–8 times (camera framing and orbit, explode, X-ray glass shell, isolate, detach, real drives, one spoken line each); every shot checked against the manifest, kept 30 min per exhibit, exhibit's own tour as fallback; phone, VR menu and `?ex=jet&tour` link | Muse Spark tool calling (+ Inworld voice) | `168a606` | 2026-11-01 |
 | Photo to 3D: Muse Spark names the machine and the parts in a phone photo, SAM 3.1 traces each part on the photo, a tapped trace is cut out of the photo and flies into that part of the exploded 3D model, and Muse explains it and shows it moving | Muse Spark (vision, tool calling), SAM 3.1 | `9009acc`, `63e386b` | 2026-11-01 |
-| Explode stays above the ground: the part that would go deepest stops at the floor and the rest of the machine rises by the same height, so every gap stays; steam wheels stay on the rails while the engine lifts off them, fixed parts standing on the ground stay put | — | `07c2475` | 2026-11-02 |
+| three.js r181 → r187 for better PBR shading | — | `d0ffdbc` | 2026-10-31 |
+| VR: real hand meshes and the headset's own controller models instead of joint dots (WebXR generic-hand meshes, MIT, see Third-party) | — | `655837d` | 2026-10-31 |
+| VR panels: wrapped text, success cue, panel state on entry; menu grid without the car tile | — | `456b286`, `47c541f` | 2026-10-31 |
+| VR at real proportions: 34 cm menu low and to the right, full labels, one ray from the hand in use, magnified exhibits say so | — | `d881e5e` | 2026-11-01 |
+| Answers survive Meta's safety filter: a refused harmless question, tutor, repair or explain call is retried once with a plain rephrase | Muse Spark | `1ba58c0`, `fff8c50` | 2026-10-31 |
+| Repair challenge, second pass: after the tools run a second Muse call says what the model showed; the explain stage knows the machine is repaired and replays only the missed link; prompts tuned on real Muse output; panel fits phones upright and on their side and steps aside while the model replays; the fault just fixed is never offered next | Muse Spark (tool calling) | `dae9fa8`, `3cdeb53`, `668591e`, `7ff4a9a`, `3eb915c` | 2026-11-01 |
+| Drag: a pulled part follows the hand instead of jumping to its limit | — | `7ca5534` | 2026-11-01 |
+| Muse tour framing: exploded shots from the side fitted to the real mesh outlines, close-ups from outside with what blocks them cut away, smaller turns | Muse Spark (tool calling) | `510c005`, `37abc82`, `3646627` | 2026-11-01 |
+| The model is named everywhere: the answer box says Muse Spark instead of "AI", landing copy and offline notes say Meta Muse Spark | — | `67f2a7a` | 2026-11-01 |
+| Explode stays above the ground: the part that would go deepest stops at the floor and the rest of the machine rises by the same height, so every gap stays; steam wheels stay on the rails while the engine lifts off them, fixed parts standing on the ground stay put; steam exploded view lifts in layers and the Muse tour eases into it | — | `07c2475`, `6dd7275`, `5f88d49` | 2026-11-01 – 2026-11-02 |
 
 ## Third-party (unmodified dependencies, used under their licenses)
 | Package | License |
@@ -89,6 +99,8 @@ None of its code, models or media are in this repository; everything here was re
 | build123d (CAD for the drivetrain parts, build tool only) | Apache-2.0 |
 | glTF Transform, meshoptimizer (GLB optimization, dev only) | MIT |
 | iwer (Meta's WebXR emulator, dev only) | MIT |
+| WebXR generic-hand meshes (`public/hands/`, from the W3C Immersive Web input profiles, © 2019 Amazon) | MIT (`public/hands/LICENSE.md`) |
+| Controller models (loaded at run time by three.js `XRControllerModelFactory` from the WebXR input profiles CDN, not stored in the repository) | MIT |
 
 ## Assets
 | Asset | Made with | Rights |
