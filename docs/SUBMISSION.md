@@ -1,50 +1,84 @@
-# Meta Global AI Developer Hackathon：規則重點與提交清單
+# Submission form: paste-ready answers
 
-來源（2026-10-27 讀取）：活動頁 https://dev.meta.ai/events/global-hackathon ，
-Official Rules／Waiver https://cerebralvalley.ai/e/meta-ai-developer-hackathon/waiver
+Meta Global AI Developer Hackathon · Indie track. Deadline **2026-11-04 21:00 ET** (Taiwan 2026-11-05 10:00).
+Submit at https://cerebralvalley.ai/e/meta-ai-developer-hackathon/hackathon/submit (sign in to see the exact fields).
+Each section below is one likely form field; paste the text under the heading. If the form has a field not listed here, the long description covers it.
 
-## 時程
-- 截止：**2026-11-04 21:00 ET**（台灣 11-05 週四 10:00）。評審 11/4–11/8，11/9 決賽與頒獎，加碼獎約 11/10 公布。
-- 提交入口：https://cerebralvalley.ai/e/meta-ai-developer-hackathon/hackathon/submit （需登入，表單欄位要 Jim 登入後才看得到）。
-- $150 Meta Model API 額度，**只有 10 天開發窗口**，領取前要看 Credit Terms。
+---
 
-## 評分（Official Rules，兩組通用）
-| 項目 | 比重 | 我們的對應 |
-|---|---|---|
-| Impact | 30% | 互動機械教室：八台機器的因果課程、先猜再看、拆零件；對象是學生、技職、維修新手、好奇的人 |
-| Use of Meta AI Tooling | 25% | muse-spark 工具呼叫驅動展品、AI 編排示範、猜測回饋、Muse Voice Transcribe；加分項：vision 認機器、SAM 3.1 標出零件 |
-| Technical Depth & Execution | 20% | 手機＋Quest 同一份程式、manifest 驅動展品、真實機構、因果示範、測試 |
-| Demo | 25% | 能現場跑的網址 + 3 分鐘影片 |
+## Project name
+Mechanica
 
-活動頁對 Indie 組的說法是「創意、技術野心、能不能動」，與上表一致。題目可選「Build for Your World」或「Push the Frontier」；我們建議填 **Push the Frontier**（製造／工程教育）。
+## Tagline (one line)
+An interactive machine classroom where Meta Muse Spark is the teacher: it repairs, X-rays and takes apart real machines in 3D, on your phone or in a Quest headset.
 
-## 資格問題的答案
-1. **既有程式碼可以用嗎？Indie 組不行。**（更正：waiver 沒寫，但 Jim 貼的「4. Hackathon Rules」寫了）
-   - Repo 必須公開。
-   - Demo 只能展示活動期間（10/26 起）做的功能，評審要能清楚分辨哪些是新的，否則可直接取消資格。
-   - Indie 組「New work only」；只有 Startup 組可以建立在既有產品上（但要標清楚新做的部分）。
-   - 舊的 VR Mechanics Explorer 第一個 commit 是 2026-10-20，早於活動，`mechanica/` 目前的內容幾乎都是從它複製來的，**不能原樣交 Indie**。
+## Track
+Indie
 
-   **已決定**：Indie 組，全新公開 repo `mechanica-meta`，從零重寫，舊專案只當參考，不搬程式、模型或媒體。
-   主打教學平台（互動機械教室：課程、先猜再看、拆零件、AI 動零件），拍照辨識是附帶功能。
-   `BUILT_DURING_HACKATHON.md` 帳本記錄每個功能 → commit → 日期。
-2. **一定要用 Meta 模型嗎？** 規則沒有強制，但「Use of Meta AI Tooling」占 25%，等於必須。**展示版要全部跑在 Meta 上**：LLM、工具呼叫、視覺、SAM 3.1、語音轉文字（`STT_PROVIDER=meta`）。Gemini 只當隱藏的備援，影片和說明都不要出現。
-3. **其他資格**：18 歲以上；台灣不在排除名單；Meta／Cerebral Valley 員工及其家人不行。Indie 組可 1–4 人，代表人提交並列出隊員。
-4. **授權**：作品所有權歸 Jim，但主辦方取得永久、免費、非獨家的使用授權（可用於行銷）。活動中分享的東西不算機密。
+## Theme
+Push the Frontier
 
-## 開源前檢查
-- `.env`、`*.pem`、`*.key` 已在 `.gitignore`；公開前再跑一次 secret 掃描（`npx gitleaks detect` 或 grep `API_KEY=` 有值的行），並看過整個 git 歷史，歷史裡出現過金鑰就要換鑰匙。
-- `.env.example` 有提到 archbro 路徑與 sub2api，公開前刪掉。
-- 資產權利：Blender 腳本產生的模型是自己的；外殼底模來自 **Tripo**，要確認 Jim 用的方案授權（免費方案通常是 CC BY 4.0、需標註來源）；旁白若用 TTS，要符合該服務條款；音樂只用免版稅。
-- 加上 LICENSE（建議 MIT）。
+## Short description (about 50 words)
+Mechanica teaches how machines work by letting you fix them. A broken bike, jet or steam locomotive runs in front of you; you guess the fault, and Meta Muse Spark checks your guess by moving the real parts of the 3D model with tool calls. It runs in any phone browser and in VR on Meta Quest.
 
-## 只有 Jim 能做的事
-- [ ] 在 GitHub 建公開 repo（或同意用 `gh` 建）並推上去。
-- [ ] 確認 Tripo 方案與授權。
-- [ ] 登入提交入口，確認表單欄位（影片長度上限、是否要 repo 連結、是否要公開網址），把欄位截圖或貼給我。
-- [ ] 確認已接受 Official Rules／waiver，並已領取 $150 額度（注意 10 天期限從何時算）。
-- [ ] 提供可公開的 demo 網址（Cloudflare tunnel 或部署），影片裡要能說「現在就能打開」。
-- [ ] 錄一段真人畫面：用手機拍自己的腳踏車（約 10 秒）。這是影片後段「附帶功能：拍真機器」的鏡頭，不是開場，我無法代拍。
-- [ ] 旁白：用自己的聲音錄，或同意我用 TTS。
-- [ ] 若要上傳 YouTube／Vimeo，用自己的帳號上傳（不公開連結即可）。
-- [ ] 最後按下提交。
+## Long description
+**The problem.** People learn machines with their hands: open the engine and watch the gears turn. Most learners never get that chance. Real machines are expensive, dangerous or sealed, textbooks show static cutaways, and videos can't answer "why".
+
+**What Mechanica does.** Eight machines modelled from scratch during the hackathon (road bicycle, car, steam locomotive, helicopter, turbofan jet, mechanical dive watch, mixed-reality headset, 700 cc motorbike; 282 moving parts) become a classroom where Meta Muse Spark is the teacher:
+
+1. **Repair challenge (home screen).** A broken machine runs in front of you. Say, type or tap what you think is wrong. Muse Spark checks your guess on the 3D model with tool calls (isolate the part, run the real drive, turn the shell to X-ray glass) and gives a clue, not the answer. When you find it, you repair it, explain why in your own words, and Muse grades the explanation and replays only the cause-and-effect link you missed. Every tool call appears on screen as it plays.
+2. **Muse tour.** One tap and Muse Spark directs a 30–60 second narrated teardown, calling a `scene` tool 3–8 times for camera moves, explode, X-ray, isolated parts and running drives.
+3. **X-ray teardown.** Taking a machine apart turns its shell to glass, so the mechanism stays in view while it runs.
+4. **Photo to 3D.** Photograph a real machine. Muse Spark vision names it and its visible parts, SAM 3.1 traces each part on the photo, and a tapped trace flies out of the photo into the matching part of the exploded 3D model.
+5. **Ask Muse, lessons and tutor.** Ask anything and the answer is a demonstration Muse Spark choreographs with the exhibit's own controls. 25 cause-and-effect lessons ask you to guess before each step; a Muse tutor grades free spoken answers and remembers weak spots.
+6. **Hands-on and VR.** Drag a pedal or piston and the whole drive follows at real gear ratios. The same URL runs in WebXR on Meta Quest: wrist menu, real hand meshes, two fists to explode and turn, voice questions through Muse Voice Transcribe.
+
+**Who it is for.** Vocational students, junior technicians, STEM classrooms and anyone curious, with nothing to install. English and Traditional Chinese. A typical session: a student opens the bicycle on a phone, sees the pedals spin while the wheel stays still, guesses "the brake", and Muse runs the drive with the chain isolated to show the force never reaches the rear sprocket. The student finds the slipped chain, puts it back, and explains in one sentence why the wheel now turns. A school without a bike, a jet engine or a steam locomotive on the bench gets the same fault-finding practice, and a teacher can project it or put the class in headsets.
+
+**Under the hood.** Each exhibit is one JSON manifest (parts, real drives with gear ratios, linkages, lessons, faults) that is also the schema for Muse's tools, so the model cannot name a part or move a value the machine doesn't have. The eight models are generated by scripts (build123d CAD for gears, cranks and casings, Blender for assembly and shells, a GLB optimizer for phones), one node per manifest part. A repair turn is two Muse calls with tool runs in between and takes about 4–6 seconds. 39 offline tests cover the rig, gestures, the photo matching, the tour validator, the server and both languages.
+
+## How we used Meta's models and tools
+- **Muse Spark tool calling (`muse-spark-1.3`)** is the core. Each exhibit's action surface (`isolate`, `highlight`, `hide`, `show`, `detach`, `rotate`, `drive`, `xray`) is exposed as tools whose part ids are enums from the exhibit manifest, so the model drives the simulation instead of only describing it. Task-specific tools sit on top: `check` and `grade` for the repair challenge, `grade` and `ask` for the tutor, `scene` for the directed tour. The server and client validate every call against the manifest (known parts only, clamped values) before it plays. A second Muse call after the tools run writes the clue from what the model actually showed.
+- **Muse Spark vision** names the machine in a photo and returns each visible part with a bounding box.
+- **SAM 3.1** (with the official `@meta-sam/parser`) masks the parts Muse found. SAM returns every instance (both wheels for "rear wheel"), so the client keeps the mask that best matches Muse's box, which links each photo trace to one 3D part.
+- **Muse Voice Transcribe (`muse-voice-transcribe-1.0`)** handles every spoken question and answer, on phones and inside VR, followed by one Muse Spark pass that fixes part names.
+- **Meta Quest / WebXR**: the same web app runs in the Quest browser; Meta's **IWER** emulator was used to develop the VR mode without a headset.
+- Reliability for a public demo: retries when the safety filter refuses a harmless question, daily spend caps, the tour kept 30 minutes per exhibit.
+
+## Built with
+Meta Muse Spark (tool calling, vision), SAM 3.1, Muse Voice Transcribe, WebXR on Meta Quest, IWER, three.js, Vite, Node.js, build123d (CAD), Blender, glTF Transform, Inworld TTS (spoken lines).
+
+## What was built during the hackathon
+Everything. The public repository was created on 2026-10-27 and every commit, model and asset in it dates from the hackathon window (Oct 26 – Nov 4). `docs/BUILT_DURING_HACKATHON.md` lists each feature with the Meta model it uses, its commits and its date, plus third-party packages and the rights for every asset. An earlier private prototype was used only as a design reference; none of its code, models or media were reused.
+
+## Challenges we ran into
+Making a language model move a mechanism safely: every tool call has to name a real part and stay inside its range, so the manifest became the single contract shared by the model, the 3D rig and the tests. Linking SAM 3.1 masks to the right 3D part when SAM returns every instance of a class. Keeping one code base usable with fingers on a phone and with hand tracking in a headset.
+
+## What's next
+A teacher mode where one Quest leads a class of phones through the same repair. More machines written as data: every exhibit is a manifest of parts, drives, lessons and faults, so a new machine needs no new code.
+
+## Links
+- Live demo: https://mechanica.hoson.xyz
+- Code: https://github.com/jhuang-tw/mechanica
+- Demo video: `<paste video link>`
+
+## Team
+- Jim (GitHub: jhuang-tw), submitter
+
+---
+
+## Compliance check (2026-11-02)
+| Rule | Status |
+|---|---|
+| Repository is public | Yes: `jhuang-tw/mechanica`, public, created 2026-10-27 19:03 UTC |
+| Indie: new work only, built since Oct 26 | Yes: no code, models or media from before the hackathon; README and ledger say so |
+| Hackathon features clearly identified | README links the ledger; the ledger has one row per feature with commits and date |
+| Demo shows only hackathon-built features | Everything in the app is hackathon-built. The demo video must not show the earlier prototype; any AI-generated clip in it must be labelled as such |
+| Assets with rights only | Ledger asset table: own CAD and Blender models; Tripo3D shells on Jim's paid plan; MIT hand meshes; generated voice under Inworld terms; original film score; public-domain film photo |
+| No secrets in the repository | `.env` is git-ignored; no key values in the history (checked 2026-11-02) |
+| Meta tools named, not generic "AI" | App, README and this text name Muse Spark, SAM 3.1 and Muse Voice Transcribe |
+
+## Before pressing submit (Jim only)
+- [ ] Paste the video link above and in the form.
+- [ ] Check https://mechanica.hoson.xyz loads (the tunnel stops when the PC restarts).
+- [ ] Confirm the team list in the form matches the one above.
