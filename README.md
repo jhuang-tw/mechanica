@@ -1,48 +1,76 @@
 # Mechanica
 
-手機打開就能玩的機械教學，兩種模式：
+**An interactive machine classroom where Meta Muse Spark is the teacher.** Open it in a phone browser or in a Meta Quest headset, pick one of eight machines, and learn how it works by repairing it, taking it apart and asking questions. Muse Spark answers by moving the real parts of the 3D model.
 
-- **修理**（一打開就是）：一台壞掉的機器在你面前運轉。看症狀、說出你的猜測，Meta AI 在 3D 模型上檢查你懷疑的零件給你看；
-  找到後修好它，再用你自己的話說說看為什麼，AI 評你的解釋、挑下一台。
-- **原理**：一步一步的 3D 課程、先猜再看、AI 家教，問任何問題 AI 會**自己編排零件動作**示範給你看。有 Quest 的話，同一個網址可以進 VR（選用）。
+- Live demo: https://mechanica.hoson.xyz (phone browser; on Quest tap **VR**)
+- Built for the **Meta Global AI Developer Hackathon, Indie track**, by Jim (`jhuang-tw`).
+- **Everything in this repository was built during the hackathon** (repository created 2026-10-27, work from 2026-10-26 on). Each feature, its Meta model and its commits are listed in [`docs/BUILT_DURING_HACKATHON.md`](docs/BUILT_DURING_HACKATHON.md). An earlier private prototype was used only as a design reference; none of its code, models or media are here.
 
-線上試玩：https://mechanica.hoson.xyz （手機瀏覽器直接開；Quest 按 VR）
+## What it does
 
-Meta Global AI Developer Hackathon · Indie track。本 repo 的所有程式、資料與模型都是活動期間（2026-10-26 起）做的。
+| Feature | Meta model |
+|---|---|
+| **Repair challenge** (the home screen): a broken machine runs in front of you. Guess the fault by voice, typing or a tap; Muse Spark checks your guess on the 3D model with its tools (isolate, drive, X-ray) and gives a clue. Repair it, explain why in your own words, and Muse grades the explanation and replays the link you missed. Every tool call is shown on screen as it plays | Muse Spark tool calling, Muse Voice Transcribe |
+| **Muse tour** (讓 Muse 帶你看): one tap and Muse Spark directs a 30–60 s narrated teardown, calling a `scene` tool 3–8 times for camera moves, explode, X-ray, isolate and drives | Muse Spark tool calling |
+| **X-ray teardown**: taking a machine apart turns its shell to glass so the mechanism stays visible; Muse can call `xray` too | Muse Spark tool calling |
+| **Photo to 3D**: photograph a real machine; Muse Spark names it and its parts with boxes, SAM 3.1 traces each part on the photo, and a tapped trace flies into that part of the exploded 3D model | Muse Spark vision, SAM 3.1 |
+| **Ask Muse**: ask anything about the machine; the answer is a demonstration that Muse Spark choreographs with the exhibit's own controls | Muse Spark tool calling, Muse Voice Transcribe |
+| **Lessons, guess first, Muse tutor, explain it back**: 25 cause-and-effect lessons; predict before each step; a Socratic tutor that grades free answers and remembers weak spots | Muse Spark, Muse Voice Transcribe |
+| **Hands-on parts**: drag a pedal or piston and the whole drive follows at real gear ratios; doors and cowls swing on their hinges; first-person ride on the motorbike and car | — |
+| **VR mode on Meta Quest**: the same URL in WebXR, wrist menu, real hand meshes, two fists to explode, turn and move, voice questions | Muse Voice Transcribe |
 
-## 執行
+Eight exhibits, all modelled during the hackathon: road bicycle, car, steam locomotive, helicopter, turbofan jet, mechanical dive watch, mixed-reality headset and a 700 cc motorbike (282 parts). The app is in English and Traditional Chinese.
+
+## How Meta's models are used
+
+All model calls go through `server/meta.mjs`; keys stay on the server.
+
+- **Muse Spark** (`muse-spark-1.3`) with **tool calling**: the exhibit's whole action surface (`isolate`, `highlight`, `hide`, `show`, `detach`, `rotate`, `drive`, `xray`; the tour's `scene` tool adds camera framing, orbit and explode) is exposed as tools, with part ids as enums from the exhibit manifest. The server and client check every call against the manifest (known parts only, clamped values) before it plays. Used by Ask Muse, the Muse tour, the tutor, explain-back and the repair challenge (`check` and `grade` tools).
+- **Muse Spark vision**: names the machine in a photo and returns each visible part with a box.
+- **SAM 3.1** (`sam-3.1`, parsed with the official `@meta-sam/parser`): masks the parts Muse saw; the client keeps the mask instance that best matches Muse's box.
+- **Muse Voice Transcribe** (`muse-voice-transcribe-1.0`): push-to-talk WAV from the phone or the headset, followed by one Muse Spark pass that fixes part names.
+- Meta's **IWER** WebXR emulator is used in development to test the Quest mode without a headset.
+
+Spoken lines use Inworld TTS-2 Flash (not a Meta model), with Azure or the browser's own voice as fallbacks.
+
+## Run it
 
 ```bash
 npm install
-cp .env.example .env      # 填 META_API_KEY
-npm start                 # build ＋ server → http://localhost:8098
-npm run dev               # 開發：Vite 8099（/api 轉給 8098，另外要跑 node server/serve.mjs）
-npm test                  # 離線測試，不呼叫模型
+cp .env.example .env      # set META_API_KEY (INWORLD_API_KEY optional)
+npm start                 # build + server → http://localhost:8098
+npm run dev               # dev: Vite on 8099 (/api goes to 8098; also run node server/serve.mjs)
+npm test                  # offline tests, no model calls
 ```
 
-## VR（選用）
+Without a headset: `npm run dev`, then open `http://localhost:8099/?xr` to emulate a Quest 3 with IWER.
 
-頭戴裝置的瀏覽器打開同一個網址，按右上角 **VR**：
+## VR controls
 
-- 展品放在面前：大機器在地上照實際大小，小東西放大到桌子高度。
-- **選單**：左手張開、手掌朝向自己，手腕內側會出現 ⚙，用右手食指點一下（手把：Y 或 B）。選單裡可以換展品、選課程、先猜再看、拆開／合起、重設、🎤 問 AI、離開 VR。
-- **點零件**：手把扳機，或手指捏一下（沿著射線）。零件會亮起，說明用語音念出來。
-- **雙手握拳**（手把：兩邊都按握把）：拉開＝拆開，轉動＝旋轉，一起推或抬＝移動。每次握拳只做一種動作。
-- **字幕**：視線下方一行，幾秒後淡出；完整內容用語音念。課程和測驗的按鈕在手邊的面板上，用手指點或扳機選。
-- 開發時沒有頭戴裝置：`npm run dev` 後開 `http://localhost:8099/?xr`，會用 Meta 的 IWER 模擬一台 Quest 3。
+- **Menu**: open your left hand, palm facing you, and tap the gear on the inside of the wrist with your right index finger (controllers: Y or B). It switches exhibits, lessons, quiz, explode, reset, Muse tour, voice question and exit.
+- **Pick a part**: trigger, or pinch along the ray. The part lights up and its explanation is read aloud.
+- **Two fists** (controllers: both grips): pull apart to explode, twist to turn, push or lift together to move.
+- **Subtitles**: one line below your view that fades after a few seconds; the full answer is spoken.
 
-## 資料夾
+## Folders
 
 ```
-src/                  前端（Vite＋three.js）：首頁、看展品、零件動作引擎、AI 示範播放、VR
-public/exhibits/      展品：index.json 列表；<id>/manifest.json、model.glb、thumb.jpg
-server/               Node 伺服器：靜態檔＋/api（Meta LLM、工具呼叫、看圖、SAM、語音）
-tools/                產模腳本（Blender／程式）
-docs/interfaces.md    展品 manifest、模型節點、API 的約定
-docs/PITCH.md         比賽提交說明（英文）
-docs/BUILT_DURING_HACKATHON.md  每個功能 → commit → 日期
-LICENSE               MIT
+src/                  front end (Vite + three.js): landing, exhibit view, part rig, Muse playback, photo, VR
+public/exhibits/      exhibits: index.json; <id>/manifest.json, model.glb, thumb.jpg
+server/               Node server: static files + /api (Muse Spark, tools, vision, SAM 3.1, Voice Transcribe, TTS)
+tools/                model build scripts (build123d CAD, Blender, GLB optimizer, content export/import)
+docs/                 interfaces, hackathon ledger, submission text
 test/                 node --test
 ```
 
-要加或改約定，先改 `docs/interfaces.md`，再讓 `npm test` 過。不放品牌標誌；只用有權利的素材。
+To add or change a contract, edit `docs/interfaces.md` first, then make `npm test` pass. No brand logos; only assets we have rights to (see the asset table in the ledger).
+
+## License
+
+MIT, see [`LICENSE`](LICENSE). Third-party packages and assets keep their own licenses (listed in the ledger).
+
+---
+
+## 中文簡介
+
+Mechanica 是手機打開就能玩的機械教學，老師是 Meta Muse Spark。首頁是修理挑戰：看一台壞掉的機器，說出你的猜測，Muse Spark 用工具在 3D 模型上檢查給你看；另有 Muse 導覽、X 光拆解、真機照片 → SAM 3.1 → 3D 零件、課程與先猜再看、Muse 家教，同一個網址在 Quest 上可進 VR。所有程式、模型與資料都是活動期間（2026-10-26 起）做的，見 `docs/BUILT_DURING_HACKATHON.md`。
