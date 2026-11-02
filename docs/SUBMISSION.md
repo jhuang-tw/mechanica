@@ -60,7 +60,9 @@ A teacher mode where one Quest leads a class of phones through the same repair. 
 ## Links
 - Live demo: https://mechanica.hoson.xyz
 - Code: https://github.com/jhuang-tw/mechanica
-- Demo video: `<paste video link>`
+- Demo video: `<paste video link after uploading>`
+  File: `C:\AI\mechanica-xpost\demo\mechanica-demo-final.mp4` (90 s, 1920×1080, 30 fps, AAC, 93 MB), subtitles `subs-final.srt`, cover `cover.jpg` (1280×720), same folder.
+  Upload as unlisted (YouTube or Vimeo) on Jim's account, attach the subtitles, then paste the link here and in the form.
 
 ## Team
 - Jim (GitHub: jhuang-tw), submitter
@@ -73,12 +75,12 @@ A teacher mode where one Quest leads a class of phones through the same repair. 
 | Repository is public | Yes: `jhuang-tw/mechanica`, public, created 2026-10-27 19:03 UTC |
 | Indie: new work only, built since Oct 26 | Yes: no code, models or media from before the hackathon; README and ledger say so |
 | Hackathon features clearly identified | README links the ledger; the ledger has one row per feature with commits and date |
-| Demo shows only hackathon-built features | Everything in the app is hackathon-built. The demo video must not show the earlier prototype; any AI-generated clip in it must be labelled as such |
+| Demo shows only hackathon-built features | Yes: the final video (v14) shows only the live app, opens on app footage and has no generated video; all model results in it are real calls. VR shots are labelled "Emulated Quest view (IWER)"; the narration (Inworld TTS, credited at the end), the original score and the public-domain bicycle photo are listed in the ledger |
 | Assets with rights only | Ledger asset table: own CAD and Blender models; Tripo3D shells on Jim's paid plan; MIT hand meshes; generated voice under Inworld terms; original film score; public-domain film photo |
 | No secrets in the repository | `.env` is git-ignored; no key values in the history (checked 2026-11-02) |
 | Meta tools named, not generic "AI" | App, README and this text name Muse Spark, SAM 3.1 and Muse Voice Transcribe |
 
 ## Before pressing submit (Jim only)
-- [ ] Paste the video link above and in the form.
+- [ ] Upload `mechanica-demo-final.mp4` (unlisted), then paste the link above and in the form.
 - [ ] Check https://mechanica.hoson.xyz loads (the tunnel stops when the PC restarts).
 - [ ] Confirm the team list in the form matches the one above.
