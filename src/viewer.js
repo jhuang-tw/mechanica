@@ -42,7 +42,7 @@ export class Viewer {
       if (!r.xr.isPresenting && this.goal) {   // glide to a framing, then hand the camera back to the user
         const k = Math.min(1, dt * 3);
         this.controls.target.lerp(this.goal.target, k); this.camera.position.lerp(this.goal.pos, k);
-        if (this.camera.position.distanceTo(this.goal.pos) < 0.005) this.goal = null;
+        if (this.camera.position.distanceTo(this.goal.pos) < this.goal.pos.distanceTo(this.goal.target) * 0.01) this.goal = null;   // relative: 5 mm stopped a watch close-up a fifth short
       }
       if (!r.xr.isPresenting) this.controls.update();
       this.studio.update();
@@ -80,6 +80,8 @@ export class Viewer {
     this.goal = null; this.userView = false;
     const box = new THREE.Box3().setFromObject(this.model), s = box.getSize(new THREE.Vector3()).length();
     Object.assign(this.controls, { minDistance: s * 0.05, maxDistance: s * 4 });
+    // a small model (the watch is 11 cm) is seen closer than 2 cm: a fixed near plane sliced its parts off
+    this.camera.near = THREE.MathUtils.clamp(s * 0.01, 0.001, 0.02); this.camera.updateProjectionMatrix();
     this.fit(box, new THREE.Vector3(...(this.rig?.m.view || [0.55, 0.35, 1])).normalize());   // manifest `view`: the side worth seeing first (a cutaway)
     this.camera.position.copy(this.goal.pos); this.controls.target.copy(this.goal.target); this.goal = null;
     this.controls.update();
@@ -181,7 +183,7 @@ export class Viewer {
     if (this.goal) around(this.goal.pos, this.goal.target);
   }
   // glide to the given parts, keeping the current viewing direction
-  focus(ids, near = 0.15) {
+  focus(ids, near = 0.25) {   // near: not closer than this share of the whole model (0.15 put a small part edge to edge)
     const box = new THREE.Box3();
     for (const id of ids) { const p = this.rig.parts.get(id); if (p) box.expandByObject(p.obj); }
     if (box.isEmpty()) return false;
@@ -193,12 +195,23 @@ export class Viewer {
     this.fit(box, dir, size * near);
     return true;
   }
+  // portrait: the share of the canvas height the bottom sheet covers right now (the repair card can take half the screen)
+  cover() {
+    if (this.camera.aspect >= 1 || !this.panel) return 0;
+    const b = this.renderer.domElement.getBoundingClientRect();
+    if (!b.height) return 0.3;   // not laid out yet
+    let top = b.bottom;
+    for (const el of this.panel.children) if (!el.hidden && el.offsetHeight) top = Math.min(top, el.getBoundingClientRect().top);
+    return Math.min(0.6, Math.max(0.15, (b.bottom - top) / b.height));
+  }
   fit(box, dir, min = 0) {
     const c = box.getCenter(new THREE.Vector3()), s = Math.max(box.getSize(new THREE.Vector3()).length(), min);   // not closer than a share of the whole model
-    // far enough that the bounding sphere fits the narrower field of view (portrait phones: the horizontal one)
-    const v = THREE.MathUtils.degToRad(this.camera.fov), fov = Math.min(v, 2 * Math.atan(Math.tan(v / 2) * this.camera.aspect));
-    const target = c.clone(); target.y -= this.camera.aspect < 1 ? s * 0.22 : 0;   // portrait: the model sits above the bottom sheet
-    this.goal = { target, pos: target.clone().addScaledVector(dir, (s / 2) / Math.sin(fov / 2) * 0.95) };
+    // far enough that the bounding sphere fits the narrower field of view: the width, or the height the sheet leaves clear
+    const cv = this.cover(), tv = Math.tan(THREE.MathUtils.degToRad(this.camera.fov) / 2);
+    const d = (s / 2) / Math.sin(Math.atan(tv * Math.min(1 - cv, this.camera.aspect))) * 0.95;
+    const up = new THREE.Vector3(0, 1, 0).projectOnPlane(dir).normalize();
+    const target = c.clone().addScaledVector(up, -cv * d * tv);   // the model sits in the middle of the clear part, above the sheet
+    this.goal = { target, pos: target.clone().addScaledVector(dir, d) };
   }
 
   // a tap (not a drag) on a part picks it; one finger dragging a movable part moves it (rig.grab), anywhere else orbits; two fingers pinch and pan
