@@ -27,21 +27,22 @@ const thumb = (id) => `${BASE}${id}/${exhibits[id].thumb}`;
 const warm = (id) => viewerModule.then((m) => m.preload(BASE + id + '/' + exhibits[id].model));   // start the model download on touch
 const faults = list.flatMap((id) => (exhibits[id].faults || []).map((f) => ({ ex: id, f, key: `${id}/${f.id}` })));
 const solvedKeys = () => { try { return JSON.parse(localStorage.getItem('mechanica.fixed')) || []; } catch { return []; } };
+const cut = (id) => `${BASE}${id}/cut.webp`;   // transparent render of the model (thumb.jpg has a baked grey studio)
+function machineCard(id, b, done) {
+  const e = exhibits[id], f = e.faults?.[0], fixed = f && done.has(`${id}/${f.id}`);
+  b.innerHTML = `<span class="art well"><img alt="" src="${cut(id)}" onerror="this.onerror=null;this.src='${thumb(id)}'"></span><span class="body"><b></b><small></small><span class="tag"></span></span>`;
+  b.querySelector('b').textContent = e.name;
+  b.querySelector('small').textContent = f ? t('symptomShort', f.short) : e.title;
+  b.querySelector('.tag').textContent = fixed ? t('fixed') : t('toFix');
+  b.querySelector('.tag').classList.toggle('done', !!fixed);
+  b.onpointerdown = () => warm(id);
+  b.onclick = () => (f ? startFix(`${id}/${f.id}`) : learn(id));
+  return b;
+}
 function tiles() {
-  const done = new Set(solvedKeys());
-  $('tiles').replaceChildren(...list.map((id, i) => {
-    const e = exhibits[id], f = e.faults?.[0], b = Object.assign(document.createElement('button'), { className: 'tile', type: 'button' });
-    b.innerHTML = `<span class="well"><img alt="" loading="${i < 4 ? 'eager' : 'lazy'}" src="${thumb(id)}" onerror="this.style.visibility='hidden'"></span><span class="body"><span class="hd"><b></b><span class="n"></span></span><small></small><span class="first">${icon('book')}<span></span></span></span>${icon('next')}`;
-    const fixed = f && done.has(`${id}/${f.id}`);
-    b.querySelector('.n').textContent = fixed ? t('fixed') : t('toFix');
-    b.querySelector('.n').classList.toggle('done', !!fixed);
-    b.querySelector('b').textContent = e.name;
-    b.querySelector('small').textContent = f ? t('symptomShort', f.short) : e.title;
-    b.querySelector('.first span').textContent = t('lessonsN', e.lessons?.length || 0);
-    b.onpointerdown = () => warm(id);
-    b.onclick = () => (f ? startFix(`${id}/${f.id}`) : learn(id));
-    return b;
-  }));
+  const done = new Set(solvedKeys()), next = faults.find((x) => !done.has(x.key))?.ex || list[0];
+  machineCard(next, $('hero'), done).querySelector('.body').insertAdjacentHTML('beforeend', `<span class="go">${t('startFix')}${icon('next')}</span>`);
+  $('tiles').replaceChildren(...list.map((id) => machineCard(id, Object.assign(document.createElement('button'), { className: 'tile', type: 'button' }), done)));
 }
 tiles();
 const note = (msg) => { toast(msg, 6000); vr?.note(msg); };
