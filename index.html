@@ -199,6 +199,18 @@
   #quiz button { padding:13px 16px; text-align:left; border-radius:14px; background:var(--glass); border:1px solid var(--line2); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); }
   #quiz button.right { border-color:var(--ok); background:rgba(40,120,75,.55); }
   #quiz button.wrong { border-color:var(--bad); background:rgba(130,40,35,.55); }
+  /* welcome: the machine pulls apart and turns to glass, then the repair card comes in */
+  #intro { position:fixed; left:0; right:0; top:calc(76px + env(safe-area-inset-top)); z-index:4; display:flex; flex-direction:column; align-items:center; gap:6px; padding:0 16px; text-align:center; pointer-events:none; animation:introIn .7s ease-out both; }
+  #intro small { color:var(--accent); font:600 13px/1.2 var(--display); letter-spacing:.18em; text-transform:uppercase; }
+  #intro b { font:800 clamp(34px, 9vw, 56px)/1.1 var(--display); text-shadow:0 4px 24px rgba(0,0,0,.6); }
+  #intro span { max-width:30em; color:var(--dim); font-size:15px; text-shadow:0 2px 12px rgba(0,0,0,.8); }
+  #intro em { margin-top:10px; font-style:normal; color:var(--mute); font-size:12px; }
+  #intro.out { animation:introOut .5s ease-in both; }
+  @keyframes introIn { from { opacity:0; transform:translateY(-12px); } }
+  @keyframes introOut { to { opacity:0; transform:translateY(-12px); } }
+  body.intro #sheet, body.intro #controls, body.intro header .seg, body.intro #reset { visibility:hidden; }
+  #sheet { transition:opacity .5s, transform .5s; }
+  body.intro #sheet { opacity:0; transform:translateY(24px); }
   #toast { position:fixed; left:50%; top:calc(70px + env(safe-area-inset-top)); transform:translateX(-50%); z-index:5; padding:9px 16px; border-radius:999px; font-size:14px; background:var(--glass); border:1px solid var(--line2); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); white-space:nowrap; max-width:calc(100% - 32px); overflow:hidden; text-overflow:ellipsis; }
   /* a mouse can't swipe a row sideways: every chip stays in view, wrapped */
   @media (pointer:fine) { .chips { flex-wrap:wrap; overflow:visible; } }
@@ -316,6 +328,7 @@
     </div>
   </div>
 </section>
+<div id="intro" hidden><small data-t="welcomeKicker">Repair challenge</small><b id="intro-t"></b><span id="intro-s"></span><em data-t="tapSkip">Tap to skip</em></div>
 <div id="toast" hidden></div>
 <input id="photo-in" type="file" accept="image/*" capture="environment" hidden>
 <script type="module" src="/src/main.js"></script>

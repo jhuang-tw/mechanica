@@ -36,7 +36,7 @@ function machineCard(id, b, done) {
   b.querySelector('.tag').textContent = fixed ? t('fixed') : t('toFix');
   b.querySelector('.tag').classList.toggle('done', !!fixed);
   b.onpointerdown = () => warm(id);
-  b.onclick = () => (f ? startFix(`${id}/${f.id}`) : learn(id));
+  b.onclick = () => (f ? startFix(`${id}/${f.id}`, true) : learn(id));
   return b;
 }
 function tiles() {
@@ -415,11 +415,13 @@ $('m-fix').onclick = () => { if (!fix && ex.faults?.length) startFix(`${ex.id}/$
 const card = (cls, label, text, clue) => { $('fix').classList.remove('replay'); $('f-v').className = cls; $('f-v').replaceChildren(...(label ? [Object.assign(document.createElement('b'), { textContent: label }), ' '] : []), text, ...(clue ? [Object.assign(document.createElement('span'), { className: 'clue', textContent: t('clueLine', clue) })] : [])); };
 const choices = (items) => { $('f-choices').replaceChildren(...items.map(([text, run, go]) => Object.assign(document.createElement('button'), { type: 'button', textContent: text, className: go ? 'go' : '', onclick: run }))); vr?.refresh(); };
 const driveParts = (f) => [...new Set([...(ex.drives.find((d) => d.id === f.drive)?.moves || []).map((m) => m.part), ...f.broken])];
-async function startFix(key) {
+async function startFix(key, welcome = false) {
   const c = faults.find((x) => x.key === key);
   if (!c) return learn(list[0]);
+  if (welcome) document.body.classList.add('intro');   // keep the old card out of sight while the model loads
   await open(c.ex);
   stopAll(); speak('');
+  if (welcome) await intro(c);
   fix = { ...c, stage: 'diagnose', tries: 0, help: 0, history: [], out: new Set() };
   $('f-trace').textContent = '';
   rig.setFault(c.f);
@@ -429,6 +431,28 @@ async function startFix(key) {
   $('f-q').textContent = c.f.symptom;
   symptom();
   speak(c.f.symptom); vr?.say(c.f.symptom);
+}
+// the way in from the landing page: the machine pulls apart with its shell turned to glass, circles, comes back together,
+// then the repair card slides in. A tap skips it.
+function intro(c) {
+  document.body.classList.add('intro');
+  $('intro-t').textContent = ex.name; $('intro-s').textContent = t('symptomShort', c.f.short);
+  $('intro').className = ''; $('intro').hidden = false;
+  return new Promise((done) => {
+    const at = [], step = (ms, run) => at.push(setTimeout(run, ms));
+    const end = (e) => {
+      e?.stopPropagation();   // the skipping tap must not also land on a part as a guess
+      at.forEach(clearTimeout); removeEventListener('pointerdown', end, true);
+      rig.reset(); viewer.shot(null);
+      $('intro').classList.add('out'); setTimeout(() => ($('intro').hidden = true), 500);
+      document.body.classList.remove('intro'); done();
+    };
+    addEventListener('pointerdown', end, true);
+    step(400, () => { rig.setXray(1); rig.setExplode(1); viewer.shot(null, { explode: 1, orbit: 30, seconds: 5 }); });
+    step(1800, () => rig.isolate(driveParts(c.f)));   // everything but the broken drive turns to glass
+    step(4200, () => { rig.setExplode(0); viewer.shot(null, { orbit: 10, seconds: 1.5 }); });
+    step(5600, end);
+  });
 }
 // the broken machine running, as the learner first saw it (again after every check)
 function symptom() {

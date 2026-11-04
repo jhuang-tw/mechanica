@@ -20,6 +20,7 @@ export const S = {
   pickA: ['選一台來', 'Pick one to '], pickB: ['修', 'fix'],
   kicker: ['修好它，就懂了', 'Fix it to understand it'],
   how1: ['看症狀', 'Watch the symptom'], how2: ['說出你的猜測', 'Say your guess'], how3: ['在 3D 模型上檢查', 'checks it in 3D'],
+  welcomeKicker: ['修理挑戰', 'Repair challenge'], tapSkip: ['點一下跳過', 'Tap to skip'],
   allMachines: ['全部機器', 'All machines'], startFix: ['開始修理', 'Start the repair'],
   photoB: ['身邊有真的機器？', 'Got a real machine nearby?'],
   photoS: ['拍下來，幫你找到對應的機器和零件', 'Take a photo and we find the matching machine and parts'],
