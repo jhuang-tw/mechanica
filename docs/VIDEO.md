@@ -5,7 +5,7 @@ Every Meta model on screen gets a small lower-third tag, e.g. `Muse Spark · too
 Demo (25%) and Meta tooling (25%) are half the score, so show real model output and never mock-ups.
 Story order: **teaching first** (lessons, guessing, disassembly, AI moving parts); photo recognition is a bonus near the end.
 
-**Source** column: `REC` = I record it from the running app (phone viewport), `JIM` = only Jim can film it, `QUEST` = Quest capture, `GFX` = I make it.
+**Source** column: `REC` = recorded from the running app (phone viewport), `JIM` = filmed by Jim on a real device, `QUEST` = Quest capture, `GFX` = made as a graphic.
 
 | # | Time | Shot | Source | Voice-over |
 |---|---|---|---|---|
