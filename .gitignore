@@ -7,4 +7,3 @@ dist/
 *.pem
 *.key
 __pycache__/
-.claude/

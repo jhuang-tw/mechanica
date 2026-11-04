@@ -1,7 +1,7 @@
 # Export the teaching text of every exhibit (manifest.json 中 + en.json EN) as one bilingual Markdown with keys, for rewriting.
 # python3 tools/content/export_md.py <out-dir>   (reads REF via git show; set REF to the branch to export)
 import json, subprocess, sys, os
-REF = os.environ.get('REF', 'origin/main')   # the branch to export
+REF = 'origin/claude/project-thread-nul10q'   # PR #14 = main + "reasons" (wrong explanations for the why question)
 OUT = sys.argv[1]
 def load(p):
     return json.loads(subprocess.check_output(['git', 'show', f'{REF}:{p}']))
