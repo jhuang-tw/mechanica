@@ -590,9 +590,9 @@ $('home-vr').onclick = async () => { await learn(ex?.id || list[0]); enterVR(); 
 
 // first sound needs a tap on phones
 addEventListener('pointerdown', unlockSpeech, { once: true });
-// no landing page first: a broken machine is the way in (?ex= picks which, ?learn opens 原理)
+// the bare URL opens the landing page; ?ex= goes straight into that machine's repair (?learn opens 原理)
 const qs = new URLSearchParams(location.search), start = exhibits[qs.get('ex')] ? qs.get('ex') : null;
 if (qs.has('tour') && start) learn(start).then(() => startTour());   // ?ex=jet&tour: straight into Muse's tour (a demo link)
 else if (qs.has('learn') && start) learn(start);
-else if (qs.has('home')) home();
+else if (qs.has('home') || !start) home();
 else startFix(faults.find((x) => x.ex === start)?.key || faults.find((x) => !solvedKeys().includes(x.key))?.key || faults[0]?.key);
