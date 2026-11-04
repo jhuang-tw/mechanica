@@ -193,12 +193,23 @@ export class Viewer {
     this.fit(box, dir, size * near);
     return true;
   }
+  // portrait: the share of the canvas height the bottom sheet covers right now (the repair card can take half the screen)
+  cover() {
+    if (this.camera.aspect >= 1 || !this.panel) return 0;
+    const b = this.renderer.domElement.getBoundingClientRect();
+    if (!b.height) return 0.3;   // not laid out yet
+    let top = b.bottom;
+    for (const el of this.panel.children) if (!el.hidden && el.offsetHeight) top = Math.min(top, el.getBoundingClientRect().top);
+    return Math.min(0.6, Math.max(0.15, (b.bottom - top) / b.height));
+  }
   fit(box, dir, min = 0) {
     const c = box.getCenter(new THREE.Vector3()), s = Math.max(box.getSize(new THREE.Vector3()).length(), min);   // not closer than a share of the whole model
-    // far enough that the bounding sphere fits the narrower field of view (portrait phones: the horizontal one)
-    const v = THREE.MathUtils.degToRad(this.camera.fov), fov = Math.min(v, 2 * Math.atan(Math.tan(v / 2) * this.camera.aspect));
-    const target = c.clone(); target.y -= this.camera.aspect < 1 ? s * 0.22 : 0;   // portrait: the model sits above the bottom sheet
-    this.goal = { target, pos: target.clone().addScaledVector(dir, (s / 2) / Math.sin(fov / 2) * 0.95) };
+    // far enough that the bounding sphere fits the narrower field of view: the width, or the height the sheet leaves clear
+    const cv = this.cover(), tv = Math.tan(THREE.MathUtils.degToRad(this.camera.fov) / 2);
+    const d = (s / 2) / Math.sin(Math.atan(tv * Math.min(1 - cv, this.camera.aspect))) * 0.95;
+    const up = new THREE.Vector3(0, 1, 0).projectOnPlane(dir).normalize();
+    const target = c.clone().addScaledVector(up, -cv * d * tv);   // the model sits in the middle of the clear part, above the sheet
+    this.goal = { target, pos: target.clone().addScaledVector(dir, d) };
   }
 
   // a tap (not a drag) on a part picks it; one finger dragging a movable part moves it (rig.grab), anywhere else orbits; two fingers pinch and pan

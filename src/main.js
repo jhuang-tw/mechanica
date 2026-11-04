@@ -405,7 +405,7 @@ photoIn.onchange = async () => {
 // ---------- 修理挑戰: the exhibit's fault breaks a drive; guess → Muse checks it on the model → repair → explain why → next ----------
 let fix = null, symptomT;
 function setMode(m) { $('m-fix').setAttribute('aria-pressed', String(m === 'fix')); $('m-learn').setAttribute('aria-pressed', String(m === 'learn')); $('m-fix').disabled = !ex?.faults?.length; }
-async function learn(id = ex?.id) { await open(id); stopAll(); setMode('learn'); say(ex.name, ex.intro); }
+async function learn(id = ex?.id) { await open(id); stopAll(); setMode('learn'); say(ex.name, ex.intro); viewer.frame(); }   // after a repair the camera was still on its close-up
 $('m-learn').onclick = () => { if (fix) learn(); };
 $('m-fix').onclick = () => { if (!fix && ex.faults?.length) startFix(`${ex.id}/${ex.faults[0].id}`); };
 const card = (cls, label, text, clue) => { $('fix').classList.remove('replay'); $('f-v').className = cls; $('f-v').replaceChildren(...(label ? [Object.assign(document.createElement('b'), { textContent: label }), ' '] : []), text, ...(clue ? [Object.assign(document.createElement('span'), { className: 'clue', textContent: t('clueLine', clue) })] : [])); };
