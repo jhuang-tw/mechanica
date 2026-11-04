@@ -42,7 +42,7 @@ export class Viewer {
       if (!r.xr.isPresenting && this.goal) {   // glide to a framing, then hand the camera back to the user
         const k = Math.min(1, dt * 3);
         this.controls.target.lerp(this.goal.target, k); this.camera.position.lerp(this.goal.pos, k);
-        if (this.camera.position.distanceTo(this.goal.pos) < 0.005) this.goal = null;
+        if (this.camera.position.distanceTo(this.goal.pos) < this.goal.pos.distanceTo(this.goal.target) * 0.01) this.goal = null;   // relative: 5 mm stopped a watch close-up a fifth short
       }
       if (!r.xr.isPresenting) this.controls.update();
       this.studio.update();
@@ -80,6 +80,8 @@ export class Viewer {
     this.goal = null; this.userView = false;
     const box = new THREE.Box3().setFromObject(this.model), s = box.getSize(new THREE.Vector3()).length();
     Object.assign(this.controls, { minDistance: s * 0.05, maxDistance: s * 4 });
+    // a small model (the watch is 11 cm) is seen closer than 2 cm: a fixed near plane sliced its parts off
+    this.camera.near = THREE.MathUtils.clamp(s * 0.01, 0.001, 0.02); this.camera.updateProjectionMatrix();
     this.fit(box, new THREE.Vector3(...(this.rig?.m.view || [0.55, 0.35, 1])).normalize());   // manifest `view`: the side worth seeing first (a cutaway)
     this.camera.position.copy(this.goal.pos); this.controls.target.copy(this.goal.target); this.goal = null;
     this.controls.update();
@@ -181,7 +183,7 @@ export class Viewer {
     if (this.goal) around(this.goal.pos, this.goal.target);
   }
   // glide to the given parts, keeping the current viewing direction
-  focus(ids, near = 0.15) {
+  focus(ids, near = 0.25) {   // near: not closer than this share of the whole model (0.15 put a small part edge to edge)
     const box = new THREE.Box3();
     for (const id of ids) { const p = this.rig.parts.get(id); if (p) box.expandByObject(p.obj); }
     if (box.isEmpty()) return false;
