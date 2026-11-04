@@ -415,9 +415,11 @@ $('m-fix').onclick = () => { if (!fix && ex.faults?.length) startFix(`${ex.id}/$
 const card = (cls, label, text, clue) => { $('fix').classList.remove('replay'); $('f-v').className = cls; $('f-v').replaceChildren(...(label ? [Object.assign(document.createElement('b'), { textContent: label }), ' '] : []), text, ...(clue ? [Object.assign(document.createElement('span'), { className: 'clue', textContent: t('clueLine', clue) })] : [])); };
 const choices = (items) => { $('f-choices').replaceChildren(...items.map(([text, run, go]) => Object.assign(document.createElement('button'), { type: 'button', textContent: text, className: go ? 'go' : '', onclick: run }))); vr?.refresh(); };
 const driveParts = (f) => [...new Set([...(ex.drives.find((d) => d.id === f.drive)?.moves || []).map((m) => m.part), ...f.broken])];
+let welcomed = false;   // the intro plays once per visit; the next machine opens straight away
 async function startFix(key, welcome = false) {
   const c = faults.find((x) => x.key === key);
   if (!c) return learn(list[0]);
+  welcome &&= !welcomed; welcomed ||= welcome;
   if (welcome) document.body.classList.add('intro');   // keep the old card out of sight while the model loads
   await open(c.ex);
   stopAll(); speak('');
