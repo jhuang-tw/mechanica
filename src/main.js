@@ -66,7 +66,7 @@ async function open(id) {
   vr?.nameIt();
   $('vr').hidden = !(await Viewer.vrSupported());
 }
-function home() { stopAll(); speak(''); tiles(); $('app').hidden = true; $('home').hidden = false; window.history.replaceState(null, '', here()); }
+function home() { stopAll(); speak(''); tiles(); $('app').hidden = true; $('home').hidden = false; window.history.replaceState(null, '', here('home')); }   // ?home: a language switch stays on this page
 $('back').onclick = home;
 
 // ---------- caption ----------
@@ -405,7 +405,10 @@ photoIn.onchange = async () => {
 // ---------- 修理挑戰: the exhibit's fault breaks a drive; guess → Muse checks it on the model → repair → explain why → next ----------
 let fix = null, symptomT;
 function setMode(m) { $('m-fix').setAttribute('aria-pressed', String(m === 'fix')); $('m-learn').setAttribute('aria-pressed', String(m === 'learn')); $('m-fix').disabled = !ex?.faults?.length; }
-async function learn(id = ex?.id) { await open(id); stopAll(); setMode('learn'); say(ex.name, ex.intro); viewer.frame(); }   // after a repair the camera was still on its close-up
+async function learn(id = ex?.id) {
+  await open(id); stopAll(); setMode('learn'); say(ex.name, ex.intro); viewer.frame();   // after a repair the camera was still on its close-up
+  window.history.replaceState(null, '', here(`ex=${ex.id}&learn`));   // a language switch or reload stays in 原理
+}
 $('m-learn').onclick = () => { if (fix) learn(); };
 $('m-fix').onclick = () => { if (!fix && ex.faults?.length) startFix(`${ex.id}/${ex.faults[0].id}`); };
 const card = (cls, label, text, clue) => { $('fix').classList.remove('replay'); $('f-v').className = cls; $('f-v').replaceChildren(...(label ? [Object.assign(document.createElement('b'), { textContent: label }), ' '] : []), text, ...(clue ? [Object.assign(document.createElement('span'), { className: 'clue', textContent: t('clueLine', clue) })] : [])); };
@@ -591,4 +594,5 @@ addEventListener('pointerdown', unlockSpeech, { once: true });
 const qs = new URLSearchParams(location.search), start = exhibits[qs.get('ex')] ? qs.get('ex') : null;
 if (qs.has('tour') && start) learn(start).then(() => startTour());   // ?ex=jet&tour: straight into Muse's tour (a demo link)
 else if (qs.has('learn') && start) learn(start);
+else if (qs.has('home')) home();
 else startFix(faults.find((x) => x.ex === start)?.key || faults.find((x) => !solvedKeys().includes(x.key))?.key || faults[0]?.key);
