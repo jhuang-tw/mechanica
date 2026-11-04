@@ -31,7 +31,7 @@ function tiles() {
   const done = new Set(solvedKeys());
   $('tiles').replaceChildren(...list.map((id, i) => {
     const e = exhibits[id], f = e.faults?.[0], b = Object.assign(document.createElement('button'), { className: 'tile', type: 'button' });
-    b.innerHTML = `<span class="well"><span class="n"></span><img alt="" loading="${i < 4 ? 'eager' : 'lazy'}" src="${thumb(id)}" onerror="this.style.visibility='hidden'"></span><span class="body"><b></b><small></small><span class="first">${icon('book')}<span></span></span></span>`;
+    b.innerHTML = `<span class="well"><img alt="" loading="${i < 4 ? 'eager' : 'lazy'}" src="${thumb(id)}" onerror="this.style.visibility='hidden'"></span><span class="body"><span class="hd"><b></b><span class="n"></span></span><small></small><span class="first">${icon('book')}<span></span></span></span>${icon('next')}`;
     const fixed = f && done.has(`${id}/${f.id}`);
     b.querySelector('.n').textContent = fixed ? t('fixed') : t('toFix');
     b.querySelector('.n').classList.toggle('done', !!fixed);
