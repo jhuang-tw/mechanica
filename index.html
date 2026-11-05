@@ -38,39 +38,63 @@
   .top { gap:8px; } .top .mark { margin-right:auto; }
   .lang { font-size:13px; font-weight:700; letter-spacing:.02em; }
 
-  section.block { padding:36px 0 0; }
+  section.block { padding:20px 0 0; }
   .h2 { display:flex; align-items:baseline; justify-content:space-between; gap:10px; margin:0 0 14px; }
   .h2 h2 { margin:0; font-size:22px; }
   .h2 span { color:var(--mute); font-size:13px; }
 
-  .pick { padding:26px 0 18px; }
-  .pick h1 { margin:0; font-size:clamp(32px, 9vw, 52px); line-height:1.15; font-weight:800; }
+  .pick { padding:24px 0 4px; }
+  .kicker { margin:0 0 8px; color:var(--accent); font:600 13px/1.2 var(--display); letter-spacing:.16em; text-transform:uppercase; }
+  .pick h1 { margin:0; font-size:clamp(36px, 10.5vw, 60px); line-height:1.08; font-weight:800; letter-spacing:-.01em; }
   .pick h1 em { font-style:normal; color:var(--accent); }
-  .pick .lede { margin:10px 0 0; color:var(--dim); font-size:15px; max-width:34em; }
-  .tile .n.done { background:var(--ok); }
-  #tiles { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:12px; }
+
+  /* featured machine: the first one still broken */
+  #hero { position:relative; display:flex; flex-direction:column; width:100%; margin:20px 0 0; padding:0; overflow:hidden; text-align:left; border-radius:24px; border:1px solid rgba(255,176,46,.22);
+    background:radial-gradient(120% 90% at 50% 30%, rgba(255,176,46,.20), rgba(255,176,46,.04) 55%, transparent 75%), linear-gradient(180deg, #19202a, #10151c); }
+  #hero .art { position:relative; display:block; aspect-ratio:4/3; }
+  #hero .art img { position:absolute; inset:2% 4% -2%; width:92%; height:100%; object-fit:contain; filter:drop-shadow(0 18px 24px rgba(0,0,0,.55)); transition:transform .5s; }
+  #hero:hover .art img { transform:scale(1.03); }
+  #hero .body { display:flex; flex-direction:column; gap:6px; padding:4px 18px 18px; }
+  #hero b { font:700 24px/1.2 var(--display); }
+  #hero small { color:var(--dim); font-size:15px; line-height:1.45; }
+  #hero .go { display:inline-flex; align-items:center; justify-content:center; gap:8px; margin-top:10px; min-height:50px; border-radius:14px; background:var(--accent); color:var(--ink); font-weight:800; font-size:16px; }
+  #hero .go svg.i { width:20px; height:20px; }
+  .tag { align-self:flex-start; padding:2px 10px; border-radius:999px; font-size:12px; font-weight:700; color:var(--accent); background:rgba(255,176,46,.14); }
+  .tag.done { color:var(--ok); background:rgba(79,208,138,.14); }
+
+  .how { list-style:none; display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:8px; margin:14px 0 0; padding:0; }
+  .how li { display:flex; flex-direction:column; align-items:flex-start; gap:8px; padding:12px; border-radius:14px; background:rgba(255,255,255,.035); border:1px solid var(--line); font-size:13px; line-height:1.35; color:var(--dim); }
+  .how .ic { width:32px; height:32px; border-radius:9px; }
+  .how .ic svg.i { width:17px; height:17px; }
+  .how em { font-style:normal; font-weight:700; color:var(--accent2); }
+
+  .h2 { margin:0 0 12px; }
+  #tiles { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:10px; }
   .tile { display:flex; flex-direction:column; padding:0; overflow:hidden; text-align:left; border-radius:var(--r); background:var(--card); border:1px solid var(--line); }
   .tile:hover { border-color:var(--line2); background:var(--card2); }
-  .tile .well { position:relative; aspect-ratio:1; background:var(--well); overflow:hidden; }
-  .tile .well::after { content:""; position:absolute; inset:0; background:radial-gradient(closest-side, transparent 62%, rgba(0,0,0,.18)); }
-  .tile img { display:block; width:100%; height:100%; object-fit:cover; transition:transform .4s; }
-  .tile:hover img { transform:scale(1.04); }
-  .tile .n { position:absolute; z-index:1; top:8px; left:8px; padding:2px 8px; border-radius:999px; font-size:11px; font-weight:600; color:#10151c; background:rgba(255,255,255,.85); }
-  .tile .body { display:flex; flex-direction:column; gap:3px; padding:12px 12px 14px; flex:1; }
-  .tile b { font-size:17px; line-height:1.25; }
-  .tile small { color:var(--mute); font-size:12px; line-height:1.4; }
-  .tile .first { margin-top:auto; padding-top:8px; display:flex; align-items:center; gap:6px; color:var(--dim); font-size:13px; line-height:1.3; }
-  .tile .first svg.i { width:15px; height:15px; color:var(--accent); }
+  .tile .well { position:relative; display:block; aspect-ratio:1; background:radial-gradient(70% 60% at 50% 45%, rgba(255,255,255,.09), transparent 70%); }
+  .tile img { position:absolute; inset:6%; width:88%; height:88%; object-fit:contain; filter:drop-shadow(0 10px 14px rgba(0,0,0,.5)); transition:transform .4s; }
+  .tile:hover img { transform:scale(1.06); }
+  .tile .body { display:flex; flex-direction:column; gap:4px; padding:2px 12px 14px; }
+  .tile b { font-size:16px; line-height:1.25; }
+  .tile small { color:var(--dim); font-size:12.5px; line-height:1.4; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+  .tile .tag { margin-top:4px; font-size:11px; }
 
   .ic { display:grid; place-items:center; width:42px; height:42px; flex:none; border-radius:12px; background:rgba(255,176,46,.12); color:var(--accent); }
-  #home-photo { display:flex; align-items:center; gap:14px; width:100%; margin:0; padding:16px; text-align:left; border-radius:var(--r); background:transparent; border:1px dashed var(--line2); color:var(--dim); }
-  #home-photo .ic { background:rgba(255,255,255,.06); color:var(--text); }
+  #home-photo { display:flex; align-items:center; gap:14px; width:100%; margin:0; padding:16px; text-align:left; border-radius:var(--r); background:linear-gradient(120deg, rgba(255,176,46,.14), rgba(255,176,46,.04)); border:1px solid rgba(255,176,46,.28); color:var(--dim); }
   #home-photo b { display:block; color:var(--text); font-size:15px; }
   #home-photo span span { font-size:13px; }
   .foot { padding:28px 0 calc(28px + env(safe-area-inset-bottom)); color:var(--mute); font-size:12px; text-align:center; }
 
   @media (min-width:760px) {
-    #tiles { grid-template-columns:repeat(4, minmax(0,1fr)); gap:16px; }
+    .pick { padding-top:44px; }
+    #hero { display:grid; grid-template-columns:1.25fr 1fr; align-items:center; }
+    #hero .art { aspect-ratio:16/10; }
+    #hero .body { padding:28px 32px 28px 8px; }
+    #hero b { font-size:34px; }
+    #hero .go { align-self:flex-start; padding:0 26px; }
+    .how li { flex-direction:row; align-items:center; font-size:14px; }
+    #tiles { grid-template-columns:repeat(4, minmax(0,1fr)); gap:14px; }
   }
 
   /* ---------- exhibit ---------- */
@@ -175,6 +199,36 @@
   #quiz button { padding:13px 16px; text-align:left; border-radius:14px; background:var(--glass); border:1px solid var(--line2); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); }
   #quiz button.right { border-color:var(--ok); background:rgba(40,120,75,.55); }
   #quiz button.wrong { border-color:var(--bad); background:rgba(130,40,35,.55); }
+  /* landing: a machine on loop behind the title; the middle stays free so it can be turned by hand */
+  #welcome { position:fixed; inset:0; z-index:3; display:flex; flex-direction:column; gap:16px; pointer-events:none;
+    padding:calc(14px + env(safe-area-inset-top)) 16px calc(22px + env(safe-area-inset-bottom));
+    background:linear-gradient(rgba(10,13,18,.9), rgba(10,13,18,.35) 26%, transparent 38%, transparent 58%, rgba(10,13,18,.8) 74%, rgba(10,13,18,.96)); }
+  #welcome > * { pointer-events:auto; width:min(1080px, 100%); margin:0 auto; }
+  #welcome .top { padding-top:0; }
+  .w-copy { margin-top:10px !important; animation:introIn .9s .2s ease-out both; }
+  .w-copy h1 { margin:6px 0 0; font:800 clamp(38px, 11vw, 76px)/1.05 var(--display); letter-spacing:-.01em; text-shadow:0 4px 30px rgba(0,0,0,.6); }
+  .w-copy h1 em { font-style:normal; color:var(--accent); }
+  .w-copy p { margin:10px 0 0; max-width:30em; color:var(--dim); font-size:15px; line-height:1.5; text-shadow:0 2px 12px rgba(0,0,0,.8); }
+  .w-copy p em { font-style:normal; font-weight:700; color:var(--accent2); }
+  .w-go { margin-top:auto !important; display:flex; flex-direction:column; gap:10px; animation:introIn .9s .6s ease-out both; }
+  .w-go button { min-height:54px; border-radius:16px; font-size:17px; font-weight:800; }
+  #w-start { display:flex; align-items:center; justify-content:center; gap:8px; background:var(--accent); color:var(--ink); border:0; box-shadow:0 10px 30px rgba(255,176,46,.25); }
+  #w-all { background:rgba(14,19,26,.6); border:1px solid var(--line2); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); font-weight:700; }
+  body.welcome #app header, body.welcome #sheet, body.welcome #controls, body.welcome #toast { visibility:hidden; }
+  @media (min-width:760px) { .w-go { flex-direction:row; } .w-go button { padding:0 28px; } }
+
+  /* welcome: the machine pulls apart and turns to glass, then the repair card comes in */
+  #intro { position:fixed; left:0; right:0; top:calc(76px + env(safe-area-inset-top)); z-index:4; display:flex; flex-direction:column; align-items:center; gap:6px; padding:0 16px; text-align:center; pointer-events:none; animation:introIn .7s ease-out both; }
+  #intro small { color:var(--accent); font:600 13px/1.2 var(--display); letter-spacing:.18em; text-transform:uppercase; }
+  #intro b { font:800 clamp(34px, 9vw, 56px)/1.1 var(--display); text-shadow:0 4px 24px rgba(0,0,0,.6); }
+  #intro span { max-width:30em; color:var(--dim); font-size:15px; text-shadow:0 2px 12px rgba(0,0,0,.8); }
+  #intro em { margin-top:10px; font-style:normal; color:var(--mute); font-size:12px; }
+  #intro.out { animation:introOut .5s ease-in both; }
+  @keyframes introIn { from { opacity:0; transform:translateY(-12px); } }
+  @keyframes introOut { to { opacity:0; transform:translateY(-12px); } }
+  body.intro #sheet, body.intro #controls, body.intro header .seg, body.intro #reset { visibility:hidden; }
+  #sheet { transition:opacity .5s, transform .5s; }
+  body.intro #sheet { opacity:0; transform:translateY(24px); }
   #toast { position:fixed; left:50%; top:calc(70px + env(safe-area-inset-top)); transform:translateX(-50%); z-index:5; padding:9px 16px; border-radius:999px; font-size:14px; background:var(--glass); border:1px solid var(--line2); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); white-space:nowrap; max-width:calc(100% - 32px); overflow:hidden; text-overflow:ellipsis; }
   /* a mouse can't swipe a row sideways: every chip stays in view, wrapped */
   @media (pointer:fine) { .chips { flex-wrap:wrap; overflow:visible; } }
@@ -223,11 +277,20 @@
     </nav>
 
     <div class="pick">
+      <p class="kicker" data-t="kicker">Fix it to understand it</p>
       <h1><span data-t="pickA">Pick one to </span><em data-t="pickB">fix</em></h1>
-      <p class="lede" data-t="pickLede">Every machine has one thing broken. Watch the symptom and say your guess. Meta Muse Spark checks it on the 3D model, and once it is fixed you explain why it failed.</p>
     </div>
 
+    <button id="hero" type="button"></button>
+
+    <ol class="how">
+      <li><span class="ic"><svg class="i"><use href="#i-play"/></svg></span><span data-t="how1">Watch the symptom</span></li>
+      <li><span class="ic"><svg class="i"><use href="#i-mic"/></svg></span><span data-t="how2">Say your guess</span></li>
+      <li><span class="ic"><svg class="i"><use href="#i-spark"/></svg></span><span><em>Meta Muse Spark</em> <span data-t="how3">checks it in 3D</span></span></li>
+    </ol>
+
     <section class="block" id="all">
+      <div class="h2"><h2 data-t="allMachines">All machines</h2></div>
       <div id="tiles"></div>
     </section>
 
@@ -283,6 +346,16 @@
     </div>
   </div>
 </section>
+<div id="welcome" hidden>
+  <nav class="top"><div class="mark"><svg class="i"><use href="#i-gear"/></svg>MECHANICA</div><button class="pill lang" type="button" aria-label="切換成中文">中文</button></nav>
+  <div class="w-copy">
+    <p class="kicker" data-t="wKicker">Learn machines in 3D</p>
+    <h1><span data-t="wA">Fix it, </span><em data-t="wB">understand it</em></h1>
+    <p><span data-t="wLede1">Eight broken machines are waiting. Watch the symptom, say your guess, and</span> <em>Meta Muse Spark</em> <span data-t="wLede2">checks it on the 3D model.</span></p>
+  </div>
+  <div class="w-go"><button id="w-start" type="button"></button><button id="w-all" type="button"></button></div>
+</div>
+<div id="intro" hidden><small data-t="welcomeKicker">Repair challenge</small><b id="intro-t"></b><span id="intro-s"></span><em data-t="tapSkip">Tap to skip</em></div>
 <div id="toast" hidden></div>
 <input id="photo-in" type="file" accept="image/*" capture="environment" hidden>
 <script type="module" src="/src/main.js"></script>
