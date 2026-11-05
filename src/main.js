@@ -420,12 +420,15 @@ const driveParts = (f) => [...new Set([...(ex.drives.find((d) => d.id === f.driv
 let welcomeT;
 async function welcome(id = list.includes('jet') ? 'jet' : list[0]) {
   document.body.classList.add('welcome'); $('welcome').hidden = false;
+  const loading = open(id);
+  window.history.replaceState(null, '', here(''));   // open() wrote ?ex=: a reload or language switch before the model is in must come back here
   $('w-start').innerHTML = `<span></span>${icon('next')}`; $('w-start').firstChild.textContent = t('wStart', exhibits[id].name);
   $('w-all').textContent = t('wAll', list.length);
-  $('w-start').onclick = () => { const f = faults.find((x) => x.ex === id); leaveWelcome(); welcomed = true; startFix(f.key); };
-  $('w-all').onclick = () => { leaveWelcome(); home(); };
-  await open(id); stopAll(); say('', '');
-  window.history.replaceState(null, '', here(''));
+  $('w-start').onclick = async () => { const f = faults.find((x) => x.ex === id); leaveWelcome(); welcomed = true; await loading; startFix(f.key); };   // startFix on a half-loaded machine has no rig yet
+  $('w-all').onclick = async () => { await loading; leaveWelcome(); home(); };   // a machine opened while this one still loads would get its model swapped in
+  await loading;
+  if (!document.body.classList.contains('welcome')) return;   // already left for the picker or the repair
+  stopAll(); say('', '');
   const loop = (apart) => {
     if (!document.body.classList.contains('welcome')) return;
     rig.setXray(apart ? 1 : null); rig.setExplode(apart ? 1 : 0);
