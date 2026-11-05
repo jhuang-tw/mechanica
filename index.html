@@ -199,6 +199,24 @@
   #quiz button { padding:13px 16px; text-align:left; border-radius:14px; background:var(--glass); border:1px solid var(--line2); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); }
   #quiz button.right { border-color:var(--ok); background:rgba(40,120,75,.55); }
   #quiz button.wrong { border-color:var(--bad); background:rgba(130,40,35,.55); }
+  /* landing: a machine on loop behind the title; the middle stays free so it can be turned by hand */
+  #welcome { position:fixed; inset:0; z-index:3; display:flex; flex-direction:column; gap:16px; pointer-events:none;
+    padding:calc(14px + env(safe-area-inset-top)) 16px calc(22px + env(safe-area-inset-bottom));
+    background:linear-gradient(rgba(10,13,18,.9), rgba(10,13,18,.35) 26%, transparent 38%, transparent 58%, rgba(10,13,18,.8) 74%, rgba(10,13,18,.96)); }
+  #welcome > * { pointer-events:auto; width:min(1080px, 100%); margin:0 auto; }
+  #welcome .top { padding-top:0; }
+  .w-copy { margin-top:10px !important; animation:introIn .9s .2s ease-out both; }
+  .w-copy h1 { margin:6px 0 0; font:800 clamp(38px, 11vw, 76px)/1.05 var(--display); letter-spacing:-.01em; text-shadow:0 4px 30px rgba(0,0,0,.6); }
+  .w-copy h1 em { font-style:normal; color:var(--accent); }
+  .w-copy p { margin:10px 0 0; max-width:30em; color:var(--dim); font-size:15px; line-height:1.5; text-shadow:0 2px 12px rgba(0,0,0,.8); }
+  .w-copy p em { font-style:normal; font-weight:700; color:var(--accent2); }
+  .w-go { margin-top:auto !important; display:flex; flex-direction:column; gap:10px; animation:introIn .9s .6s ease-out both; }
+  .w-go button { min-height:54px; border-radius:16px; font-size:17px; font-weight:800; }
+  #w-start { display:flex; align-items:center; justify-content:center; gap:8px; background:var(--accent); color:var(--ink); border:0; box-shadow:0 10px 30px rgba(255,176,46,.25); }
+  #w-all { background:rgba(14,19,26,.6); border:1px solid var(--line2); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); font-weight:700; }
+  body.welcome #app header, body.welcome #sheet, body.welcome #controls, body.welcome #toast { visibility:hidden; }
+  @media (min-width:760px) { .w-go { flex-direction:row; } .w-go button { padding:0 28px; } }
+
   /* welcome: the machine pulls apart and turns to glass, then the repair card comes in */
   #intro { position:fixed; left:0; right:0; top:calc(76px + env(safe-area-inset-top)); z-index:4; display:flex; flex-direction:column; align-items:center; gap:6px; padding:0 16px; text-align:center; pointer-events:none; animation:introIn .7s ease-out both; }
   #intro small { color:var(--accent); font:600 13px/1.2 var(--display); letter-spacing:.18em; text-transform:uppercase; }
@@ -328,6 +346,15 @@
     </div>
   </div>
 </section>
+<div id="welcome" hidden>
+  <nav class="top"><div class="mark"><svg class="i"><use href="#i-gear"/></svg>MECHANICA</div><button class="pill lang" type="button" aria-label="切換成中文">中文</button></nav>
+  <div class="w-copy">
+    <p class="kicker" data-t="wKicker">Learn machines in 3D</p>
+    <h1><span data-t="wA">Fix it, </span><em data-t="wB">understand it</em></h1>
+    <p><span data-t="wLede1">Eight broken machines are waiting. Watch the symptom, say your guess, and</span> <em>Meta Muse Spark</em> <span data-t="wLede2">checks it on the 3D model.</span></p>
+  </div>
+  <div class="w-go"><button id="w-start" type="button"></button><button id="w-all" type="button"></button></div>
+</div>
 <div id="intro" hidden><small data-t="welcomeKicker">Repair challenge</small><b id="intro-t"></b><span id="intro-s"></span><em data-t="tapSkip">Tap to skip</em></div>
 <div id="toast" hidden></div>
 <input id="photo-in" type="file" accept="image/*" capture="environment" hidden>

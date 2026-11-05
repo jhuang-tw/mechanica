@@ -415,6 +415,26 @@ $('m-fix').onclick = () => { if (!fix && ex.faults?.length) startFix(`${ex.id}/$
 const card = (cls, label, text, clue) => { $('fix').classList.remove('replay'); $('f-v').className = cls; $('f-v').replaceChildren(...(label ? [Object.assign(document.createElement('b'), { textContent: label }), ' '] : []), text, ...(clue ? [Object.assign(document.createElement('span'), { className: 'clue', textContent: t('clueLine', clue) })] : [])); };
 const choices = (items) => { $('f-choices').replaceChildren(...items.map(([text, run, go]) => Object.assign(document.createElement('button'), { type: 'button', textContent: text, className: go ? 'go' : '', onclick: run }))); vr?.refresh(); };
 const driveParts = (f) => [...new Set([...(ex.drives.find((d) => d.id === f.drive)?.moves || []).map((m) => m.part), ...f.broken])];
+// the landing page: one machine on loop behind the title (pulls apart with its shell as glass, comes back together);
+// the big button fixes that machine, the other opens the picker
+let welcomeT;
+async function welcome(id = list.includes('jet') ? 'jet' : list[0]) {
+  document.body.classList.add('welcome'); $('welcome').hidden = false;
+  $('w-start').innerHTML = `<span></span>${icon('next')}`; $('w-start').firstChild.textContent = t('wStart', exhibits[id].name);
+  $('w-all').textContent = t('wAll', list.length);
+  $('w-start').onclick = () => { const f = faults.find((x) => x.ex === id); leaveWelcome(); welcomed = true; startFix(f.key); };
+  $('w-all').onclick = () => { leaveWelcome(); home(); };
+  await open(id); stopAll(); say('', '');
+  window.history.replaceState(null, '', here(''));
+  const loop = (apart) => {
+    if (!document.body.classList.contains('welcome')) return;
+    rig.setXray(apart ? 1 : null); rig.setExplode(apart ? 1 : 0);
+    viewer.shot(null, { explode: apart ? 1 : 0, orbit: apart ? 30 : 15, seconds: apart ? 5 : 3 });
+    welcomeT = setTimeout(() => loop(!apart), apart ? 5000 : 3000);
+  };
+  welcomeT = setTimeout(() => loop(true), 900);
+}
+function leaveWelcome() { clearTimeout(welcomeT); document.body.classList.remove('welcome'); $('welcome').hidden = true; rig?.reset(); }
 let welcomed = false;   // the intro plays once per visit; the next machine opens straight away
 async function startFix(key, welcome = false) {
   const c = faults.find((x) => x.key === key);
@@ -621,5 +641,6 @@ addEventListener('pointerdown', unlockSpeech, { once: true });
 const qs = new URLSearchParams(location.search), start = exhibits[qs.get('ex')] ? qs.get('ex') : null;
 if (qs.has('tour') && start) learn(start).then(() => startTour());   // ?ex=jet&tour: straight into Muse's tour (a demo link)
 else if (qs.has('learn') && start) learn(start);
-else if (qs.has('home') || !start) home();
+else if (qs.has('home')) home();
+else if (!start) welcome();
 else startFix(faults.find((x) => x.ex === start)?.key || faults.find((x) => !solvedKeys().includes(x.key))?.key || faults[0]?.key);
